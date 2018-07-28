@@ -1,0 +1,11 @@
+[package]
+authors = ["Sybrand Aarnoutse (syberant)"]
+name = "evolvim"
+version = "0.1.0"
+
+[lib]
+name = "lib_evolvim"
+path = "./src/lib/mod.rs"
+
+[dependencies]
+piston_window = "0.80.0"
