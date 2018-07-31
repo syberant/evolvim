@@ -3,9 +3,9 @@ authors = ["Sybrand Aarnoutse (syberant)"]
 name = "evolvim"
 version = "0.1.0"
 
+[dependencies]
+rand = "0.5.4"
+
 [lib]
 name = "lib_evolvim"
 path = "./src/lib/mod.rs"
-
-[dependencies]
-# piston_window = "0.80.0"

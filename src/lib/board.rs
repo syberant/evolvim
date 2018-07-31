@@ -4,41 +4,43 @@ use std::f64::consts::PI;
 // The amount of creatures to display in a list in the UI.
 // const LIST_SLOTS: usize = 6;
 /// The amount of times a year an object is updated.
-const _OBJECT_TIMESTEPS_PER_YEAR: f64 = 100.0;
+const OBJECT_TIMESTEPS_PER_YEAR: f64 = 100.0;
 const _POPULATION_HISTORY_LENGTH: usize = 200;
 const _THERMOMETER_MIN: f64 = -2.0;
 const _THERMOMETER_MAX: f64 = 2.0;
+const _DEFAULT_CREATURE_MINIMUM: usize = 60;
+
+pub type BoardSize = (usize, usize);
 
 pub struct Board {
     // Fields relevant for the board itself.
     board_width: usize,
     board_height: usize,
-    _tiles: Vec<Vec<Tile>>,
+    pub tiles: Vec<Vec<Tile>>,
 
     // Fields relevant for the creatures.
-    _creature_minimum: usize,
-    _soft_bodies_in_positions: Vec<Vec<Vec<SoftBody>>>,
-    _creatures: Vec<Creature>,
-    _selected_creature: Option<Creature>,
+    creature_minimum: usize,
+    pub soft_bodies_in_positions: SoftBodiesInPositions,
+    creatures: Vec<SoftBody>,
     _creature_id_up_to: usize,
     _creature_rank_metric: usize,
 
     // Fields relevant for time or history
     year: f64,
     // _time_step: f64,
-    _population_history: Vec<usize>,
     _playspeed: usize,
 
     // Fields relevant for temperature
-    _temperature: f64,
+    temperature: f64,
     min_temperature: f64,
     max_temperature: f64,
 
     // Fields relevant for rocks
-    _rocks: Vec<Rock>,
+    rocks: Vec<SoftBody>,
 
     // Miscelanious
-    _user_control: bool,
+    user_control: bool,
+    selected_creature: Option<*mut Creature>,
 }
 
 impl std::default::Default for Board {
@@ -53,24 +55,148 @@ impl std::default::Default for Board {
 }
 
 impl Board {
-    pub fn update(&mut self, _time_step: f64) {
-        unimplemented!();
+    /// Checks if the given creature was selected and if so, removes it by setting `self.selected_creature` to `None`.
+    pub fn unselect_if_dead(&mut self, creature: &mut Creature) {
+        let creature_pointer: *mut Creature = creature as *mut Creature;
+        if Some(creature_pointer) == self.selected_creature {
+            self.selected_creature = None;
+        }
     }
 
-    pub fn get_growth_over_time_range(&self, _last_updated: f64) -> f64 {
-        unimplemented!();
+    pub fn update(&mut self, time_step: f64) {
+        // let previous_year = self.year;
+        self.year += time_step;
+
+        // Possibly record population history here.
+
+        self.temperature = self.get_current_growth_rate();
+        let temp_change_into_frame = self.temperature - self.get_growth_rate(self.year - time_step);
+        let temp_change_out_of_frame =
+            self.get_growth_rate(self.year + time_step) - self.temperature;
+
+        if temp_change_into_frame * temp_change_out_of_frame < 0.0 {
+            // Temperature change flipped direction
+            for row in &self.tiles {
+                for _tile in row {
+                    // TODO: fix this!
+                    // tile.update();
+                }
+            }
+        }
+
+        // TODO: fix ugly and unidiomatic code.
+        // I know I create a mutable pointer here and use an immutable pointer to `self` further on,
+        // but it saves me tons of time doing it this way.
+        let rocks_pointer = &mut self.rocks as *mut Vec<SoftBody>;
+        unsafe {
+            for r in (*rocks_pointer).iter_mut() {
+                // This function takes an immutable pointer to `self`.
+                r.collide(self);
+            }
+        }
+
+        let creatures_pointer = &mut self.creatures as *mut Vec<SoftBody>;
+        unsafe {
+            for c in (*creatures_pointer).iter_mut() {
+                // These functions take an immutable pointer to `self`.
+                c.collide(self);
+                c.metabolize(time_step, self);
+
+                c.use_brain(time_step, !self.user_control);
+
+                if self.user_control {
+                    // TODO: provide user control over creature.
+                }
+            }
+        }
+
+        // Kill weak creatures.
+        self.remove_dead_creatures();
+
+        // Experimental: this was moved from above to always keep the creature minimum.
+        self.maintain_creature_minimum();
+
+        // Finish the iteration.
+        unsafe {
+            for r in (*rocks_pointer).iter_mut() {
+                // This function takes a mutable pointer to `self`.
+                r.apply_motions(time_step * OBJECT_TIMESTEPS_PER_YEAR, self);
+            }
+
+            for c in (*creatures_pointer).iter_mut() {
+                // This function takes a mutable pointer to `self`.
+                c.apply_motions(time_step * OBJECT_TIMESTEPS_PER_YEAR, self);
+
+                // TODO: implement seeing.
+                // c.see();
+            }
+        }
+
+        // TODO: implement filesaving.
+    }
+
+    /// Maintains the creature minimum by adding random creatures until there are at least `self.creature_minimum` creatures.
+    fn maintain_creature_minimum(&mut self) {
+        while self.creatures.len() < self.creature_minimum {
+            let creature = SoftBody::new_random_creature();
+            self.creatures.push(creature);
+        }
+    }
+
+    /// Checks for all creatures whether they are fit enough to live and kills them off if they're not.
+    ///
+    /// Utilizes the `should_die` function of `SoftBody`.
+    fn remove_dead_creatures(&mut self) {
+        let board_size = self.get_board_size();
+        let self_ptr: *mut Board = self as *mut Board;
+
+        // TODO: possibly optimise code
+        let mut i = 0;
+        while i < self.creatures.len() {
+            // let creature = &mut self.creatures[i];
+            if self.creatures[i].should_die() {
+                unsafe {
+                    // Infallable
+                    self.creatures[i].return_to_earth(self_ptr, board_size);
+                }
+                self.creatures.remove(i);
+            } else {
+                i += 1;
+            }
+        }
+    }
+
+    pub fn get_growth_over_time_range(&self, last_updated: f64) -> f64 {
+        let temp_range = self.max_temperature - self.min_temperature;
+        let m = self.min_temperature + temp_range * 0.5;
+
+        return (self.year - last_updated) * m
+            + (temp_range / PI / 4.0)
+                * ((PI * 2.0 * last_updated).sin() - (PI * 2.0 * self.year).sin());
     }
 
     /// Returns the current growth rate (temperature) based on the season.
-    pub fn get_growth_rate(&self) -> f64 {
+    pub fn get_current_growth_rate(&self) -> f64 {
+        self.get_growth_rate(self.year)
+    }
+
+    /// Returns the growth rate (temperature) for the given time.
+    fn get_growth_rate(&self, time: f64) -> f64 {
         let temp_range = self.max_temperature - self.min_temperature;
         return self.min_temperature + temp_range * 0.5
-            - temp_range * 0.5 * ((self.year % 1.0) * 2.0 * PI).cos();
+            - temp_range * 0.5 * ((time % 1.0) * 2.0 * PI).cos();
     }
 
     /// Returns the current time, i.e. `self.year`.
     pub fn get_time(&self) -> f64 {
         return self.year;
+    }
+
+    /// Returns a tuple with the width and height of this `Board`.
+    ///
+    /// Equivalent to `(board.get_board_width(), board.get_board_height())`.
+    pub fn get_board_size(&self) -> (usize, usize) {
+        return (self.board_width, self.board_height);
     }
 
     /// Returns the width of the board.

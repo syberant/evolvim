@@ -9,6 +9,13 @@ pub enum Tile {
 }
 
 impl Tile {
+    pub fn is_water(&self) -> bool {
+        match self {
+            Tile::Water => true,
+            Tile::Land(_) => false,
+        }
+    }
+
     /// Get the `food_level` of this tile, returns 0 if it is water.
     pub fn get_food_level(&self) -> f64 {
         match self {
@@ -22,6 +29,16 @@ impl Tile {
         match self {
             Tile::Water => {}
             Tile::Land(t) => t.update(board),
+        }
+    }
+
+    /// Adds the given value to the food level if it's possible.
+    ///
+    /// This does nothing for water tiles.
+    pub fn add_food_or_nothing(&mut self, food_to_add: f64) {
+        match self {
+            Tile::Water => {}
+            Tile::Land(t) => t.add_food(food_to_add),
         }
     }
 }
@@ -74,7 +91,7 @@ impl LandTile {
     /// This takes the maximum of 0 and `food_level` after adding.
     ///
     /// NOTE: Doesn't call `update()` like in carykh's Processing code.
-    fn add_food(&mut self, food_to_add: f64) {
+    pub fn add_food(&mut self, food_to_add: f64) {
         self.food_level = 0f64.max(self.food_level + food_to_add);
     }
 }

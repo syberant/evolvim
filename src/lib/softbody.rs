@@ -1,6 +1,9 @@
 use super::*;
 
 const COLLISION_FORCE: f64 = 0.01;
+const PIECES: usize = 20;
+const AGE_FACTOR: f64 = 1.0;
+const METABOLISM_ENERGY: f64 = 0.004;
 
 pub enum SoftBody {
     Rock(Rock),
@@ -24,6 +27,10 @@ impl SoftBody {
         }
     }
 
+    pub fn new_random_creature() -> SoftBody {
+        unimplemented!();
+    }
+
     /// Checks if the center is inside of the world, possibly corrects it and returns it.
     pub fn check_center_x(x: usize, board_width: usize) -> usize {
         return x.max(0).min(board_width - 1);
@@ -35,10 +42,10 @@ impl SoftBody {
     }
 
     /// Updates `SoftBodiesInPositions` and updates itself by calling `update_sbip_variables()`.
-    fn set_sbip(&mut self, board: &Board, sbip: &mut SoftBodiesInPositions) {
+    fn set_sbip(&mut self, sbip: &mut SoftBodiesInPositions, board_size: BoardSize) {
         // TODO: Look for optimizations here by cleaning and filling sbip more intelligently.
 
-        self.update_sbip_variables(board);
+        self.update_sbip_variables(board_size);
 
         if self.moved_between_tiles() {
             for x in self.previous_x_range() {
@@ -64,26 +71,38 @@ impl SoftBody {
         }
     }
 
+    /// Completely removes this `SoftBody` from `sbip`.
+    ///
+    /// NOTE: `SoftBody` is added again when `set_sbip` is called.
+    pub fn remove_from_sbip(&mut self, sbip: &mut SoftBodiesInPositions) {
+        for x in self.current_x_range() {
+            for y in self.current_y_range() {
+                sbip.remove_soft_body_at(x, y, self);
+            }
+        }
+    }
+
     /// Returns the distance between two points.
     ///
     /// Uses the Pythagorean theorem: A^2 + B^2 = C^2.
-    fn distance(x1: f64, y1: f64, x2: f64, y2: f64) -> f64 {
+    pub fn distance(x1: f64, y1: f64, x2: f64, y2: f64) -> f64 {
         ((x1 - x2).powi(2) + (y1 - y2).powi(2)).sqrt()
     }
 
-    pub fn collide(&mut self, sbip: &SoftBodiesInPositions) {
+    pub fn collide(&mut self, board: &Board) {
         let mut colliders: SoftBodiesAt = std::collections::HashSet::new();
 
         // Copy all possible colliders into `colliders`.
+        // NOTE: possibly tries to add one collider multiple times but this doesn't matter since `HashSet<T>` can only contain unique entries.
         for x in self.current_x_range() {
             for y in self.current_y_range() {
-                for i in sbip.get_soft_bodies_at(x, y) {
+                for i in board.soft_bodies_in_positions.get_soft_bodies_at(x, y) {
                     colliders.insert(*i);
                 }
             }
         }
 
-        // Remove itself
+        // Remove self
         colliders.remove(&(self as *const SoftBody));
 
         for collider in colliders {
@@ -114,20 +133,79 @@ impl SoftBody {
     }
 }
 
+// Here are all the functions only applicable to `Creature`s.
+impl SoftBody {
+    pub fn get_creature(&self) -> &Creature {
+        match self {
+            SoftBody::Creature(c) => c,
+            SoftBody::Rock(_) => panic!("This `SoftBody` is not a `Creature`! It looks like you accidentally called `get_creature`!"),
+        }
+    }
+
+    pub fn get_creature_mut(&mut self) -> &mut Creature {
+        match self {
+            SoftBody::Creature(c) => c,
+            SoftBody::Rock(_) => panic!("This `SoftBody` is not a `Creature`! It looks like you accidentally called `get_creature_mut`!"),
+        }
+    }
+
+    pub fn get_birth_time(&self) -> f64 {
+        return self.get_creature().get_birth_time();
+    }
+
+    pub unsafe fn return_to_earth(&mut self, board: *mut Board, board_size: BoardSize) {
+        for _i in 0..PIECES {
+            let tile_pos = self.get_random_covered_tile(board_size);
+            let tile = &mut (*board).tiles[tile_pos.0][tile_pos.1];
+            tile.add_food_or_nothing(self.get_energy() / PIECES as f64);
+
+            // TODO: check if this is neccessary and fix this mess!
+            tile.update(&(*board));
+        }
+
+        self.remove_from_sbip(&mut (*board).soft_bodies_in_positions);
+
+        // Unselect this creature if it was selected.
+        (*board).unselect_if_dead(self.get_creature_mut());
+    }
+
+    pub fn use_brain(&mut self, _time_step: f64, _use_output: bool) {
+        unimplemented!();
+    }
+
+    /// Performs the energy requirement to keep living.
+    pub fn metabolize(&mut self, time_step: f64, board: &Board) {
+        // TODO: fix ugly code.
+        let age = AGE_FACTOR * (board.get_time() - self.get_birth_time());
+        let creature = self.get_creature_mut();
+        let energy_to_lose = creature.get_energy() * METABOLISM_ENERGY * age * time_step;
+        creature.lose_energy(energy_to_lose);
+
+        // Creature should die if it doesn't have enough energy, this is done by `Board`.
+    }
+
+    pub fn should_die(&self) -> bool {
+        return self.get_creature().should_die();
+    }
+}
+
 // Here are all the functions which merely call the same function on the underlying types.
 impl SoftBody {
-    pub fn apply_motions(
-        &mut self,
-        time_step: f64,
-        board: &Board,
-        sbip: &mut SoftBodiesInPositions,
-    ) {
+    /// Calls the same function on all types and updates `SoftBodiesInPositions` by calling `set_sbip`.
+    pub fn apply_motions(&mut self, time_step: f64, board: &mut Board) {
         match self {
-            SoftBody::Rock(b) => b.apply_motions(time_step, board),
-            SoftBody::Creature(_b) => unimplemented!(),
+            SoftBody::Rock(b) => b.apply_motions(time_step, board.get_board_size()),
+            SoftBody::Creature(c) => c.apply_motions(time_step, board),
         };
+        let board_size = board.get_board_size();
+        self.set_sbip(&mut board.soft_bodies_in_positions, board_size);
+    }
 
-        self.set_sbip(board, sbip);
+    fn get_random_covered_tile(&self, board_size: BoardSize) -> (usize, usize) {
+        match self {
+            SoftBody::Rock(b) => b.get_random_covered_tile(board_size),
+            SoftBody::Creature(c) => c.base.get_random_covered_tile(board_size),
+        }
     }
 
     /// Returns `true` if this `SoftBody` has moved between tiles since the last update.
@@ -136,98 +214,105 @@ impl SoftBody {
     fn moved_between_tiles(&self) -> bool {
         match self {
             SoftBody::Rock(b) => b.moved_between_tiles(),
-            SoftBody::Creature(_b) => unimplemented!(),
+            SoftBody::Creature(c) => c.base.moved_between_tiles(),
         }
     }
 
     fn is_in_tile(&self, x: usize, y: usize) -> bool {
         match self {
             SoftBody::Rock(b) => b.is_in_tile(x, y),
-            SoftBody::Creature(_b) => unimplemented!(),
+            SoftBody::Creature(c) => c.base.is_in_tile(x, y),
         }
     }
 
     fn was_in_tile(&self, x: usize, y: usize) -> bool {
         match self {
             SoftBody::Rock(b) => b.was_in_tile(x, y),
-            SoftBody::Creature(_b) => unimplemented!(),
+            SoftBody::Creature(c) => c.base.was_in_tile(x, y),
         }
     }
 
     fn previous_x_range(&self) -> std::ops::RangeInclusive<usize> {
         match self {
             SoftBody::Rock(b) => b.previous_x_range(),
-            SoftBody::Creature(_b) => unimplemented!(),
+            SoftBody::Creature(c) => c.base.previous_x_range(),
         }
     }
 
     fn previous_y_range(&self) -> std::ops::RangeInclusive<usize> {
         match self {
             SoftBody::Rock(b) => b.previous_y_range(),
-            SoftBody::Creature(_b) => unimplemented!(),
+            SoftBody::Creature(c) => c.base.previous_y_range(),
         }
     }
 
     fn current_x_range(&self) -> std::ops::RangeInclusive<usize> {
         match self {
             SoftBody::Rock(b) => b.current_x_range(),
-            SoftBody::Creature(_b) => unimplemented!(),
+            SoftBody::Creature(c) => c.base.current_x_range(),
         }
     }
 
     fn current_y_range(&self) -> std::ops::RangeInclusive<usize> {
         match self {
             SoftBody::Rock(b) => b.current_y_range(),
-            SoftBody::Creature(_b) => unimplemented!(),
+            SoftBody::Creature(c) => c.base.current_y_range(),
         }
     }
 
-    fn update_sbip_variables(&mut self, board: &Board) {
+    fn update_sbip_variables(&mut self, board_size: BoardSize) {
         match self {
-            SoftBody::Rock(b) => b.update_sbip_variables(board),
-            SoftBody::Creature(_b) => unimplemented!(),
+            SoftBody::Rock(b) => b.update_sbip_variables(board_size),
+            SoftBody::Creature(c) => c.base.update_sbip_variables(board_size),
         };
     }
 
     fn get_px(&self) -> f64 {
         match self {
             SoftBody::Rock(b) => b.get_px(),
-            SoftBody::Creature(_b) => unimplemented!(),
+            SoftBody::Creature(c) => c.base.get_px(),
         }
     }
 
     fn get_py(&self) -> f64 {
         match self {
             SoftBody::Rock(b) => b.get_py(),
-            SoftBody::Creature(_b) => unimplemented!(),
+            SoftBody::Creature(c) => c.base.get_py(),
         }
     }
 
     fn get_radius(&self) -> f64 {
         match self {
             SoftBody::Rock(b) => b.get_radius(),
-            SoftBody::Creature(_b) => unimplemented!(),
+            SoftBody::Creature(c) => c.base.get_radius(),
         }
     }
 
     fn get_mass(&self) -> f64 {
         match self {
             SoftBody::Rock(b) => b.get_mass(),
-            SoftBody::Creature(_b) => unimplemented!(),
+            SoftBody::Creature(c) => c.base.get_mass(),
+        }
+    }
+
+    fn get_energy(&self) -> f64 {
+        match self {
+            SoftBody::Rock(b) => b.get_energy(),
+            SoftBody::Creature(c) => c.get_energy(),
         }
     }
 
     fn add_vx(&mut self, value_to_add: f64) {
         match self {
             SoftBody::Rock(b) => b.add_vx(value_to_add),
-            SoftBody::Creature(_b) => unimplemented!(),
+            SoftBody::Creature(c) => c.base.add_vx(value_to_add),
         }
     }
 
     fn add_vy(&mut self, value_to_add: f64) {
         match self {
             SoftBody::Rock(b) => b.add_vy(value_to_add),
-            SoftBody::Creature(_b) => unimplemented!(),
+            SoftBody::Creature(c) => c.base.add_vy(value_to_add),
         }
     }
 }
