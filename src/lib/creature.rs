@@ -11,6 +11,7 @@ const SAFE_SIZE: f64 = 1.25;
 pub struct Creature {
     pub base: Rock,
     birth_time: f64,
+    brain: Brain,
 }
 
 impl Creature {
@@ -26,6 +27,10 @@ impl Creature {
 
     pub fn should_die(&self) -> bool {
         return self.get_energy() > SAFE_SIZE;
+    }
+
+    pub fn run_brain(&mut self, input: BrainInput) -> BrainOutput {
+        return self.brain.run(input);
     }
 }
 

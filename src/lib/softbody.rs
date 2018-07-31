@@ -138,14 +138,14 @@ impl SoftBody {
     pub fn get_creature(&self) -> &Creature {
         match self {
             SoftBody::Creature(c) => c,
-            SoftBody::Rock(_) => panic!("This `SoftBody` is not a `Creature`! It looks like you accidentally called `get_creature`!"),
+            _ => panic!("This `SoftBody` is not a `Creature`! It looks like you accidentally called `get_creature`!"),
         }
     }
 
     pub fn get_creature_mut(&mut self) -> &mut Creature {
         match self {
             SoftBody::Creature(c) => c,
-            SoftBody::Rock(_) => panic!("This `SoftBody` is not a `Creature`! It looks like you accidentally called `get_creature_mut`!"),
+            _ => panic!("This `SoftBody` is not a `Creature`! It looks like you accidentally called `get_creature_mut`!"),
         }
     }
 
@@ -169,7 +169,22 @@ impl SoftBody {
         (*board).unselect_if_dead(self.get_creature_mut());
     }
 
-    pub fn use_brain(&mut self, _time_step: f64, _use_output: bool) {
+    pub fn use_brain(&mut self, time_step: f64, use_output: bool) {
+        let input = self.get_input();
+        let creature = self.get_creature_mut() as *mut Creature;
+        let output = self.get_creature_mut().run_brain(input);
+
+        if use_output {
+            // Safe because we are not changing `creature.brain`.
+            unsafe {
+                (*creature).base.accelerate(output[0], time_step);
+                (*creature).base.turn(output[1], time_step);
+                unimplemented!();
+            }
+        }
+    }
+
+    fn get_input(&self) -> BrainInput {
         unimplemented!();
     }
 

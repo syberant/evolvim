@@ -4,6 +4,7 @@ name = "evolvim"
 version = "0.1.0"
 
 [dependencies]
+nalgebra = "0.16.0"
 rand = "0.5.4"
 
 [lib]

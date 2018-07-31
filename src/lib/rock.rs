@@ -3,6 +3,9 @@ extern crate rand;
 use super::*;
 use std::f64::consts::PI;
 
+const ACCELERATION_ENERGY: f64 = 0.18;
+const ACCELERATION_BACK_ENERGY: f64 = 0.24;
+const TURN_ENERGY: f64 = 0.06;
 const FRICTION: f64 = 0.004;
 const ENERGY_DENSITY: f64 = 1.0
     / (super::creature::MINIMUM_SURVIVABLE_SIZE * super::creature::MINIMUM_SURVIVABLE_SIZE * PI);
@@ -56,6 +59,34 @@ impl Rock {
     /// Return this body's mass, used for physics, etc.
     pub fn get_mass(&self) -> f64 {
         return self.energy / ENERGY_DENSITY * self.density;
+    }
+
+    /// Accelerate
+    ///
+    /// Costs energy.
+    pub fn accelerate(&mut self, amount: f64, time_step: f64) {
+        let multiplier = amount * time_step / self.get_mass();
+        self.vx += self.rotation.cos() * multiplier;
+        self.vy += self.rotation.sin() * multiplier;
+
+        if amount >= 0.0 {
+            // Moving forward
+            self.lose_energy(amount * time_step * ACCELERATION_ENERGY);
+        } else {
+            // Moving backward
+            self.lose_energy(amount * time_step * ACCELERATION_BACK_ENERGY);
+        }
+    }
+
+    /// Increase turning velocity.
+    ///
+    /// Costs energy.
+    pub fn turn(&mut self, amount: f64, time_step: f64) {
+        self.vr += 0.04 * amount * time_step / self.get_mass();
+
+        // Call `abs()` because we can turn both ways.
+        let energy_to_lose = (amount * self.energy * time_step * TURN_ENERGY).abs();
+        self.lose_energy(energy_to_lose);
     }
 
     /// Updates positions and velocities based on `time_step` and some physics formulae.
