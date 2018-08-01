@@ -5,29 +5,32 @@ use self::dimension::DimName;
 use self::nalgebra::*;
 
 pub type BrainOutput<'a> = &'a [FPN];
-pub type BrainInput = [FPN; BRAIN_INPUT_SIZE];
+pub type BrainInput = [FPN; 10];
 
 type FPN = f64;
-type LayerLength = usize;
 
-/// The amount of neurons in the input layer. The bias is not included.
-const BRAIN_INPUT_SIZE: LayerLength = 10;
-/// The amount of neurons in the hidden layer. The bias is not included.
-const _HIDDEN_LAYER_SIZE: LayerLength = 10;
+/// The amount of neurons in the input layer.
+type _InputLayerSize = U10;
+/// The amount of neurons in the input layer plus the bias node.
+type InputLayerSizePlusBias = U11;
+/// The amount of neurons in the hidden layer.
+type HiddenLayerSize = U10;
+/// The amount of neurons in the hidden layer plus the bias node.
+type HiddenLayerSizePlusBias = U11;
 /// The amount of neurons in the output layer.
-const _BRAIN_OUTPUT_SIZE: LayerLength = 10;
+type OutputLayerSize = U10;
 
 pub struct Brain {
-    // This dimension should be equal to BRAIN_INPUT_SIZE + 1.
-    a_1: RowVectorN<FPN, U11>,
-    // These dimensions should be equal to BRAIN_INPUT_SIZE + 1 by HIDDEN_LAYER_SIZE.
-    theta_1: MatrixMN<FPN, U11, U10>,
-    // This dimension should be equal to HIDDEN_LAYER_SIZE + 1.
-    a_2: RowVectorN<FPN, U11>,
-    // These dimensions should be equal to HIDDEN_LAYER_SIZE + 1 by OUTPUT_LAYER_SIZE.
-    theta_2: MatrixMN<FPN, U11, U10>,
+    // This dimension should be equal to InputLayerSize + 1.
+    a_1: RowVectorN<FPN, InputLayerSizePlusBias>,
+    // These dimensions should be equal to InputLayerSize + 1 by HiddenLayerSize.
+    theta_1: MatrixMN<FPN, InputLayerSizePlusBias, HiddenLayerSize>,
+    // This dimension should be equal to HiddenLayerSize + 1.
+    a_2: RowVectorN<FPN, HiddenLayerSizePlusBias>,
+    // These dimensions should be equal to HiddenLayerSize + 1 by OutputLayerSize.
+    theta_2: MatrixMN<FPN, HiddenLayerSizePlusBias, OutputLayerSize>,
     // This dimension should be equal to OUTPUT_LAYER_SIZE.
-    a_3: RowVectorN<FPN, U10>,
+    a_3: RowVectorN<FPN, OutputLayerSize>,
 }
 
 impl Brain {
@@ -73,6 +76,22 @@ impl Brain {
     {
         for v in matrix.iter_mut() {
             *v = 1.0 / (1.0 + (-*v).exp());
+        }
+    }
+
+    /// Returns a brain with completely random weights.
+    pub fn new_random() -> Self {
+        Brain {
+            // Empty input
+            a_1: <MatrixMN<FPN, U1, InputLayerSizePlusBias>>::zeros(),
+            // Initialize random weights
+            theta_1: <MatrixMN<FPN, InputLayerSizePlusBias, HiddenLayerSize>>::new_random(),
+            // Empty hidden layer
+            a_2: <MatrixMN<FPN, U1, HiddenLayerSizePlusBias>>::zeros(),
+            // Initilaize random weights
+            theta_2: <MatrixMN<FPN, HiddenLayerSizePlusBias, OutputLayerSize>>::new_random(),
+            // Empty output
+            a_3: <MatrixMN<FPN, U1, OutputLayerSize>>::zeros(),
         }
     }
 
