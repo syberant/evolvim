@@ -61,6 +61,13 @@ impl Rock {
         return self.energy / ENERGY_DENSITY * self.density;
     }
 
+    /// Returns the total velocity.
+    ///
+    /// Does sqrt(vx^2 + vy^2).
+    pub fn get_total_velocity(&self) -> f64 {
+        return (self.vx.powi(2) + self.vy.powi(2)).sqrt();
+    }
+
     /// Accelerate
     ///
     /// Costs energy.
@@ -138,6 +145,15 @@ impl Rock {
         return (choice_x, choice_y);
     }
 
+    pub fn get_random_covered_tile_mut<'a>(
+        &self,
+        board_size: BoardSize,
+        tiles: &'a mut Vec<Vec<Tile>>,
+    ) -> &'a mut Tile {
+        let pos = self.get_random_covered_tile(board_size);
+        return &mut tiles[pos.0][pos.1];
+    }
+
     /// Returns true if this body is currently on water.
     pub fn is_on_water(&self, board: &Board) -> bool {
         // TODO: determine whether this is desirable and maybe come up with a better system.
@@ -189,6 +205,10 @@ impl Rock {
 impl Rock {
     pub fn lose_energy(&mut self, energy_to_lose: f64) {
         self.energy -= energy_to_lose.max(0.0);
+    }
+
+    pub fn add_energy(&mut self, energy_to_add: f64) {
+        self.energy += energy_to_add.max(0.0);
     }
 
     /// Sets the center of this `SoftBody` and makes sure the entire body stays inside of the world.

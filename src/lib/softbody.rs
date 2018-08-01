@@ -1,8 +1,10 @@
 use super::*;
+use constants::*;
 
 const COLLISION_FORCE: f64 = 0.01;
 const PIECES: usize = 20;
 const AGE_FACTOR: f64 = 1.0;
+const MATURE_AGE: f64 = 0.01;
 const METABOLISM_ENERGY: f64 = 0.004;
 
 pub enum SoftBody {
@@ -89,14 +91,14 @@ impl SoftBody {
         ((x1 - x2).powi(2) + (y1 - y2).powi(2)).sqrt()
     }
 
-    pub fn collide(&mut self, board: &Board) {
+    pub fn collide(&mut self, sbip: &SoftBodiesInPositions) {
         let mut colliders: SoftBodiesAt = std::collections::HashSet::new();
 
         // Copy all possible colliders into `colliders`.
         // NOTE: possibly tries to add one collider multiple times but this doesn't matter since `HashSet<T>` can only contain unique entries.
         for x in self.current_x_range() {
             for y in self.current_y_range() {
-                for i in board.soft_bodies_in_positions.get_soft_bodies_at(x, y) {
+                for i in sbip.get_soft_bodies_at(x, y) {
                     colliders.insert(*i);
                 }
             }
@@ -160,7 +162,7 @@ impl SoftBody {
             tile.add_food_or_nothing(self.get_energy() / PIECES as f64);
 
             // TODO: check if this is neccessary and fix this mess!
-            tile.update(&(*board));
+            tile.update((*board).get_time(), &(*board).climate);
         }
 
         self.remove_from_sbip(&mut (*board).soft_bodies_in_positions);
@@ -169,17 +171,38 @@ impl SoftBody {
         (*board).unselect_if_dead(self.get_creature_mut());
     }
 
-    pub fn use_brain(&mut self, time_step: f64, use_output: bool) {
+    pub fn use_brain(&mut self, time_step: f64, use_output: bool, board: &mut Board) {
         let input = self.get_input();
-        let creature = self.get_creature_mut() as *mut Creature;
-        let output = self.get_creature_mut().run_brain(input);
+        let unsafe_creature = self.get_creature_mut() as *mut Creature;
+        let creature = self.get_creature_mut();
+        let output = creature.brain.run(input);
+
+        let time = board.get_time();
 
         if use_output {
-            // Safe because we are not changing `creature.brain`.
+            creature.base.accelerate(output[0], time_step);
+            creature.base.turn(output[1], time_step);
+
+            // TODO: clean this mess.
             unsafe {
-                (*creature).base.accelerate(output[0], time_step);
-                (*creature).base.turn(output[1], time_step);
-                unimplemented!();
+                let board_size = board.get_board_size();
+                let mut tile = creature
+                    .base
+                    .get_random_covered_tile_mut(board_size, &mut board.tiles);
+                (*unsafe_creature).eat(output[2], time_step, time, &board.climate, &mut tile);
+            }
+
+            // Fight
+            // unimplemented!();
+
+            unsafe {
+                // Reproduce
+                if output[5] > 0.0
+                    && (*unsafe_creature).get_age(time) >= MATURE_AGE
+                    && creature.base.get_energy() > SAFE_SIZE
+                {
+                    unimplemented!();
+                }
             }
         }
     }

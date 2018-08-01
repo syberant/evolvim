@@ -1,5 +1,4 @@
 use super::*;
-use std::f64::consts::PI;
 
 // The amount of creatures to display in a list in the UI.
 // const LIST_SLOTS: usize = 6;
@@ -31,9 +30,7 @@ pub struct Board {
     _playspeed: usize,
 
     // Fields relevant for temperature
-    temperature: f64,
-    min_temperature: f64,
-    max_temperature: f64,
+    pub climate: Climate,
 
     // Fields relevant for rocks
     rocks: Vec<SoftBody>,
@@ -69,40 +66,37 @@ impl Board {
 
         // Possibly record population history here.
 
-        self.temperature = self.get_current_growth_rate();
-        let temp_change_into_frame = self.temperature - self.get_growth_rate(self.year - time_step);
+        self.climate.update(self.year);
+        let temp_change_into_frame =
+            self.climate.get_temperature() - self.climate.get_growth_rate(self.year - time_step);
         let temp_change_out_of_frame =
-            self.get_growth_rate(self.year + time_step) - self.temperature;
+            self.climate.get_growth_rate(self.year + time_step) - self.climate.get_temperature();
 
         if temp_change_into_frame * temp_change_out_of_frame < 0.0 {
             // Temperature change flipped direction
-            for row in &self.tiles {
-                for _tile in row {
-                    // TODO: fix this!
-                    // tile.update();
+            for row in &mut self.tiles {
+                for tile in row {
+                    tile.update(self.year, &self.climate);
                 }
             }
+        }
+
+        // Update all rocks.
+        for r in &mut self.rocks {
+            r.collide(&self.soft_bodies_in_positions);
         }
 
         // TODO: fix ugly and unidiomatic code.
         // I know I create a mutable pointer here and use an immutable pointer to `self` further on,
         // but it saves me tons of time doing it this way.
-        let rocks_pointer = &mut self.rocks as *mut Vec<SoftBody>;
-        unsafe {
-            for r in (*rocks_pointer).iter_mut() {
-                // This function takes an immutable pointer to `self`.
-                r.collide(self);
-            }
-        }
-
         let creatures_pointer = &mut self.creatures as *mut Vec<SoftBody>;
         unsafe {
             for c in (*creatures_pointer).iter_mut() {
                 // These functions take an immutable pointer to `self`.
-                c.collide(self);
-                c.metabolize(time_step, self);
+                c.collide(&self.soft_bodies_in_positions);
+                c.metabolize(time_step, &self);
 
-                c.use_brain(time_step, !self.user_control);
+                c.use_brain(time_step, !self.user_control, self);
 
                 if self.user_control {
                     // TODO: provide user control over creature.
@@ -117,6 +111,7 @@ impl Board {
         self.maintain_creature_minimum();
 
         // Finish the iteration.
+        let rocks_pointer = &mut self.rocks as *mut Vec<SoftBody>;
         unsafe {
             for r in (*rocks_pointer).iter_mut() {
                 // This function takes a mutable pointer to `self`.
@@ -166,25 +161,15 @@ impl Board {
         }
     }
 
-    pub fn get_growth_over_time_range(&self, last_updated: f64) -> f64 {
-        let temp_range = self.max_temperature - self.min_temperature;
-        let m = self.min_temperature + temp_range * 0.5;
-
-        return (self.year - last_updated) * m
-            + (temp_range / PI / 4.0)
-                * ((PI * 2.0 * last_updated).sin() - (PI * 2.0 * self.year).sin());
+    pub fn get_growth_since(&self, last_updated: f64) -> f64 {
+        return self
+            .climate
+            .get_growth_over_time_range(self.year, last_updated);
     }
 
     /// Returns the current growth rate (temperature) based on the season.
     pub fn get_current_growth_rate(&self) -> f64 {
-        self.get_growth_rate(self.year)
-    }
-
-    /// Returns the growth rate (temperature) for the given time.
-    fn get_growth_rate(&self, time: f64) -> f64 {
-        let temp_range = self.max_temperature - self.min_temperature;
-        return self.min_temperature + temp_range * 0.5
-            - temp_range * 0.5 * ((time % 1.0) * 2.0 * PI).cos();
+        self.climate.get_growth_rate(self.year)
     }
 
     /// Returns the current time, i.e. `self.year`.

@@ -84,12 +84,14 @@ impl Brain {
         Brain {
             // Empty input
             a_1: <MatrixMN<FPN, U1, InputLayerSizePlusBias>>::zeros(),
-            // Initialize random weights
-            theta_1: <MatrixMN<FPN, InputLayerSizePlusBias, HiddenLayerSize>>::new_random(),
+            // Initialize random weights between [-0.5, 0.5].
+            theta_1: <MatrixMN<FPN, InputLayerSizePlusBias, HiddenLayerSize>>::new_random()
+                - <MatrixMN<FPN, InputLayerSizePlusBias, HiddenLayerSize>>::from_element(0.5),
             // Empty hidden layer
             a_2: <MatrixMN<FPN, U1, HiddenLayerSizePlusBias>>::zeros(),
-            // Initilaize random weights
-            theta_2: <MatrixMN<FPN, HiddenLayerSizePlusBias, OutputLayerSize>>::new_random(),
+            // Initilaize random weights between [-0.5, 0.5].
+            theta_2: <MatrixMN<FPN, HiddenLayerSizePlusBias, OutputLayerSize>>::new_random()
+                - <MatrixMN<FPN, HiddenLayerSizePlusBias, OutputLayerSize>>::from_element(0.5),
             // Empty output
             a_3: <MatrixMN<FPN, U1, OutputLayerSize>>::zeros(),
         }
