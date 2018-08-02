@@ -114,7 +114,7 @@ impl Board {
 
     pub fn generate_terrain_perlin(board_size: BoardSize, step_size: f64) -> Vec<Vec<Tile>> {
         let (board_width, board_height) = board_size;
-        let mut noise = noise::Perlin::new();
+        let noise = noise::Perlin::new();
         noise.set_seed(rand::random());
 
         let mut tiles = Vec::with_capacity(board_width);
@@ -124,7 +124,7 @@ impl Board {
         let mut fertility: f64;
         let mut climate_type: f64;
         for x in 0..board_width {
-            tiles[x] = Vec::with_capacity(board_height);
+            tiles.push(Vec::with_capacity(board_height));
             for y in 0..board_height {
                 big_force = (y as f64 / board_height as f64).sqrt();
 
@@ -142,7 +142,7 @@ impl Board {
                 ]) * 1.63 - 0.4;
 
                 climate_type = climate_type.max(0.0);
-                tiles[x][y] = Tile::new(fertility, climate_type);
+                tiles[x].push(Tile::new(fertility, climate_type));
             }
         }
 
