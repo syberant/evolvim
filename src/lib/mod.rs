@@ -2,19 +2,15 @@ pub mod board;
 pub mod brain;
 pub mod climate;
 pub mod constants;
-pub mod creature;
-pub mod rock;
 pub mod sbip;
 pub mod softbody;
 pub mod tile;
 
-pub use board::{Board, BoardSize};
-pub use brain::{Brain, BrainInput, BrainOutput};
+pub use board::*;
+pub use brain::*;
 pub use climate::Climate;
-pub use creature::Creature;
-pub use rock::Rock;
-pub use sbip::{SoftBodiesAt, SoftBodiesInPositions};
-pub use softbody::SoftBody;
+pub use sbip::*;
+pub use softbody::*;
 pub use tile::Tile;
 
 pub trait Drawable {

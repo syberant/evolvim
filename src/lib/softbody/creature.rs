@@ -1,7 +1,6 @@
 extern crate rand;
 
 use super::*;
-use constants::*;
 
 const SWIM_ENERGY: f64 = 0.008;
 const EAT_ENERGY: f64 = 0.05;

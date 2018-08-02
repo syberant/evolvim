@@ -1,6 +1,12 @@
 use super::*;
 use constants::*;
 
+mod creature;
+mod rock;
+
+pub use self::creature::*;
+pub use self::rock::*;
+
 const COLLISION_FORCE: f64 = 0.01;
 const PIECES: usize = 20;
 const AGE_FACTOR: f64 = 1.0;
@@ -211,6 +217,7 @@ impl SoftBody {
         }
     }
 
+    // TODO: improve!
     fn get_input(&self) -> BrainInput {
         let mut input = [0.0; 9];
 
