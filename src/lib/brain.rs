@@ -45,7 +45,7 @@ impl Brain {
         return self.get_output();
     }
 
-    fn load_input(&mut self, input: BrainInput) {
+    pub fn load_input(&mut self, input: BrainInput) {
         // TODO: fix this ugly code.
         self.a_1 = <MatrixMN<FPN, U1, U10>>::from_row_slice(&input).insert_column(0, 0.0);
     }
@@ -55,7 +55,7 @@ impl Brain {
     }
 
     // TODO: see if I can speed this up a little with clever memory management.
-    fn feed_forward(&mut self) {
+    pub fn feed_forward(&mut self) {
         let mut z_2 = self.a_1 * self.theta_1;
         // Perform sigmoid function
         Brain::sigmoid(&mut z_2);

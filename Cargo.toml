@@ -9,6 +9,9 @@ noise = "0.5.1"
 # piston_window = "0.80.0"
 rand = "0.5.4"
 
+[features]
+bench = []
+
 [lib]
 name = "lib_evolvim"
 path = "./src/lib/mod.rs"
