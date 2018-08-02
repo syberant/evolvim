@@ -35,6 +35,10 @@ pub struct Rock {
 }
 
 impl Rock {
+    pub fn new_random() -> Self {
+        unimplemented!();
+    }
+
     /// Takes a new coordinate and changes itself to it without any checking.
     ///
     /// This function is unsafe because we are not checking for moving outside of the board or not,

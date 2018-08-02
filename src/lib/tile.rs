@@ -10,6 +10,18 @@ pub enum Tile {
 }
 
 impl Tile {
+    pub fn new(fertility: f64, food_type: f64) -> Self {
+        if fertility < 1.0 {
+            // Tile is land
+            let t = LandTile::new(fertility, food_type);
+
+            Tile::Land(t)
+        } else {
+            // Tile is water
+            Tile::Water
+        }
+    }
+
     pub fn is_water(&self) -> bool {
         match self {
             Tile::Water => true,
@@ -70,6 +82,19 @@ pub struct LandTile {
 }
 
 impl LandTile {
+    /// Creates a new tile with the given `fertility` and `food_type`.
+    ///
+    /// Begins with `food_level` set to `fertility` and `last_update_time` set to `0`.
+    pub fn new(fertility: f64, food_type: f64) -> Self {
+        LandTile {
+            fertility,
+            food_level: fertility,
+            food_type,
+
+            last_update_time: 0.0,
+        }
+    }
+
     /// Update this tile
     ///
     /// NOTE: code was almost directly copied from carykh's original Processing version and is pretty messy.

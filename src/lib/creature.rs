@@ -1,3 +1,5 @@
+extern crate rand;
+
 use super::*;
 use constants::*;
 
@@ -19,6 +21,20 @@ pub struct Creature {
 }
 
 impl Creature {
+    pub fn new_random(time: f64) -> Self {
+        let base = Rock::new_random();
+        let brain = Brain::new_random();
+        let birth_time = time;
+        let mouth_hue = rand::random();
+
+        Creature {
+            base,
+            birth_time,
+            brain,
+            mouth_hue,
+        }
+    }
+
     /// The `Creature` version of `apply_motions`, this is different to the `Rock` version.
     pub fn apply_motions(&mut self, time_step: f64, board: &mut Board) {
         if self.is_on_water(board) {

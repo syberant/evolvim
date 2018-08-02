@@ -29,8 +29,8 @@ impl SoftBody {
         }
     }
 
-    pub fn new_random_creature() -> SoftBody {
-        unimplemented!();
+    pub fn new_random_creature(time: f64) -> SoftBody {
+        SoftBody::Creature(Creature::new_random(time))
     }
 
     /// Checks if the center is inside of the world, possibly corrects it and returns it.
@@ -44,7 +44,7 @@ impl SoftBody {
     }
 
     /// Updates `SoftBodiesInPositions` and updates itself by calling `update_sbip_variables()`.
-    fn set_sbip(&mut self, sbip: &mut SoftBodiesInPositions, board_size: BoardSize) {
+    pub fn set_sbip(&mut self, sbip: &mut SoftBodiesInPositions, board_size: BoardSize) {
         // TODO: Look for optimizations here by cleaning and filling sbip more intelligently.
 
         self.update_sbip_variables(board_size);

@@ -1,13 +1,18 @@
-use super::*;
+extern crate noise;
+extern crate rand;
 
-// The amount of creatures to display in a list in the UI.
-// const LIST_SLOTS: usize = 6;
+use self::noise::{NoiseFn, Seedable};
+
+use super::*;
+use constants::*;
+
 /// The amount of times a year an object is updated.
+///
+/// TODO: eliminate this variable because it's not needed.
 const OBJECT_TIMESTEPS_PER_YEAR: f64 = 100.0;
 const _POPULATION_HISTORY_LENGTH: usize = 200;
 const _THERMOMETER_MIN: f64 = -2.0;
 const _THERMOMETER_MAX: f64 = 2.0;
-const _DEFAULT_CREATURE_MINIMUM: usize = 60;
 
 pub type BoardSize = (usize, usize);
 
@@ -21,13 +26,11 @@ pub struct Board {
     creature_minimum: usize,
     pub soft_bodies_in_positions: SoftBodiesInPositions,
     creatures: Vec<SoftBody>,
-    _creature_id_up_to: usize,
-    _creature_rank_metric: usize,
+    creature_id_up_to: usize,
+    // _creature_rank_metric: usize,
 
     // Fields relevant for time or history
     year: f64,
-    // _time_step: f64,
-    _playspeed: usize,
 
     // Fields relevant for temperature
     pub climate: Climate,
@@ -40,18 +43,112 @@ pub struct Board {
     selected_creature: Option<*mut Creature>,
 }
 
-impl std::default::Default for Board {
-    fn default() -> Board {
-        unimplemented!();
+impl Default for Board {
+    fn default() -> Self {
+        let board_size = DEFAULT_BOARD_SIZE;
+        let noise_step_size = DEFAULT_NOISE_STEP_SIZE;
+        let creature_minimum = DEFAULT_CREATURE_MINIMUM;
+        let amount_rocks = DEFAULT_ROCK_AMOUNT;
+        let min_temp = DEFAULT_MIN_TEMP;
+        let max_temp = DEFAULT_MAX_TEMP;
+        let user_control = DEFAULT_START_IN_CONTROL;
 
-        // Board {
-        // creature_id_up_to = 0,
-        // creature_rank_metric = 0,
-        // }
+        return Board::new_random(
+            board_size,
+            noise_step_size,
+            creature_minimum,
+            amount_rocks,
+            min_temp,
+            max_temp,
+            user_control,
+        );
     }
 }
 
 impl Board {
+    /// Randomly generates a new `Board`.
+    pub fn new_random(
+        board_size: BoardSize,
+        noise_step_size: f64,
+        creature_minimum: usize,
+        amount_rocks: usize,
+        min_temp: f64,
+        max_temp: f64,
+        user_control: bool,
+    ) -> Self {
+        let creatures = Vec::with_capacity(creature_minimum);
+        let rocks = Vec::with_capacity(amount_rocks);
+
+        // Initialize climate.
+        let mut climate = Climate::new(min_temp, max_temp);
+        climate.update(0.0);
+
+        let mut board = Board {
+            board_width: board_size.0,
+            board_height: board_size.1,
+            tiles: Self::generate_terrain_perlin(board_size, noise_step_size),
+
+            creature_minimum,
+            soft_bodies_in_positions: SoftBodiesInPositions::new_allocated(board_size),
+            creatures,
+            creature_id_up_to: 0,
+
+            year: 0.0,
+
+            climate,
+
+            rocks,
+
+            user_control,
+            selected_creature: None,
+        };
+
+        // Initialize creatures.
+        board.maintain_creature_minimum();
+
+        // Initialize rocks.
+        // TODO
+
+        return board;
+    }
+
+    pub fn generate_terrain_perlin(board_size: BoardSize, step_size: f64) -> Vec<Vec<Tile>> {
+        let (board_width, board_height) = board_size;
+        let mut noise = noise::Perlin::new();
+        noise.set_seed(rand::random());
+
+        let mut tiles = Vec::with_capacity(board_width);
+
+        // allocate these variables
+        let mut big_force: f64;
+        let mut fertility: f64;
+        let mut climate_type: f64;
+        for x in 0..board_width {
+            tiles[x] = Vec::with_capacity(board_height);
+            for y in 0..board_height {
+                big_force = (y as f64 / board_height as f64).sqrt();
+
+                // TODO: understand these formulas.
+                fertility = noise.get([x as f64 * step_size * 3.0, y as f64 * step_size * 3.0])
+                    * (1.0 - big_force)
+                    * 5.0
+                    + noise.get([x as f64 * step_size * 0.5, y as f64 * step_size * 0.5])
+                        * big_force
+                        * 5.0 - 1.5;
+
+                climate_type = noise.get([
+                    x as f64 * step_size * 0.2 + 10000.0,
+                    y as f64 * step_size * 0.2 + 10000.0,
+                ]) * 1.63 - 0.4;
+
+                climate_type = climate_type.max(0.0);
+                tiles[x][y] = Tile::new(fertility, climate_type);
+            }
+        }
+
+        return tiles;
+    }
+
     /// Checks if the given creature was selected and if so, removes it by setting `self.selected_creature` to `None`.
     pub fn unselect_if_dead(&mut self, creature: &mut Creature) {
         let creature_pointer: *mut Creature = creature as *mut Creature;
@@ -133,8 +230,16 @@ impl Board {
     /// Maintains the creature minimum by adding random creatures until there are at least `self.creature_minimum` creatures.
     fn maintain_creature_minimum(&mut self) {
         while self.creatures.len() < self.creature_minimum {
-            let creature = SoftBody::new_random_creature();
+            let board_size = self.get_board_size();
+            let mut creature = SoftBody::new_random_creature(self.year);
+
+            // Initialize in `SoftBodiesInPositions` as well.
+            creature.set_sbip(&mut self.soft_bodies_in_positions, board_size);
+            // Just to set the prevSBIP variables.
+            creature.set_sbip(&mut self.soft_bodies_in_positions, board_size);
+
             self.creatures.push(creature);
+            self.creature_id_up_to += 1;
         }
     }
 

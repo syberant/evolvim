@@ -6,6 +6,20 @@ pub type SoftBodiesAt = std::collections::HashSet<*const SoftBody>;
 pub struct SoftBodiesInPositions(Vec<Vec<SoftBodiesAt>>);
 
 impl SoftBodiesInPositions {
+    pub fn new_allocated(board_size: BoardSize) -> Self {
+        let (board_width, board_height) = board_size;
+
+        let allocated_cell = SoftBodiesAt::with_capacity(2);
+        let allocated_column = std::iter::repeat(allocated_cell)
+            .take(board_height)
+            .collect::<Vec<SoftBodiesAt>>();
+        let allocated_rows = std::iter::repeat(allocated_column)
+            .take(board_width)
+            .collect();
+
+        return SoftBodiesInPositions(allocated_rows);
+    }
+
     pub fn get_soft_bodies_at(&self, x: usize, y: usize) -> &SoftBodiesAt {
         return &self.0[x][y];
     }

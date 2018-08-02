@@ -25,6 +25,14 @@ impl Climate {
     pub fn update(&mut self, time: f64) {
         self.temperature = self.get_growth_rate(time);
     }
+
+    pub fn new(min: f64, max: f64) -> Self {
+        Climate {
+            temperature: 0.0,
+            min_temperature: min,
+            max_temperature: max,
+        }
+    }
 }
 
 // All functions simply returning properties.
