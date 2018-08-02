@@ -8,7 +8,7 @@ mod benches {
     use self::lib_evolvim::{Brain, BrainInput};
     use self::test::Bencher;
 
-    const TEST_INPUT: BrainInput = [1., 2., 3., 4., 5., 6., 7., 8., 9., 10.];
+    const TEST_INPUT: BrainInput = [1., 2., 3., 4., 5., 6., 7., 8., 9.];
 
     #[bench]
     fn bench_new_random(b: &mut Bencher) {

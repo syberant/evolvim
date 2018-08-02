@@ -60,15 +60,18 @@ impl Tile {
     /// This panics for water tiles since you should never try gaining food from them.
     pub fn remove_food(&mut self, food_to_remove: f64) {
         match self {
-            Tile::Water => panic!("You called `remove_food` on a water tile, water tiles don't have any food and should not be eaten."),
+            Tile::Water => if food_to_remove > 0.0 {
+                panic!("You called `remove_food` on a water tile, water tiles don't have any food and should not be eaten.")
+            },
             Tile::Land(t) => t.remove_food(food_to_remove),
         }
     }
 
-    pub fn get_food_multiplier(&self, hue: f64) -> f64 {
+    pub fn get_food_multiplier(&self, hue: f64) -> Option<f64> {
         match self {
-            Tile::Water => panic!("You called `get_food_multiplier` on a water tile, water tiles don't have any food and should not be eaten."),
-            Tile::Land(t) => t.get_food_multiplier(hue),
+            // Tile::Water => panic!("You called `get_food_multiplier` on a water tile, water tiles don't have any food and should not be eaten."),
+            Tile::Water => None,
+            Tile::Land(t) => Some(t.get_food_multiplier(hue)),
         }
     }
 }

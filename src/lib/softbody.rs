@@ -180,8 +180,8 @@ impl SoftBody {
         let time = board.get_time();
 
         if use_output {
-            creature.base.accelerate(output[0], time_step);
-            creature.base.turn(output[1], time_step);
+            creature.base.accelerate(output[1], time_step);
+            creature.base.turn(output[2], time_step);
 
             // TODO: clean this mess.
             unsafe {
@@ -189,7 +189,7 @@ impl SoftBody {
                 let mut tile = creature
                     .base
                     .get_random_covered_tile_mut(board_size, &mut board.tiles);
-                (*unsafe_creature).eat(output[2], time_step, time, &board.climate, &mut tile);
+                (*unsafe_creature).eat(output[3], time_step, time, &board.climate, &mut tile);
             }
 
             // Fight
@@ -201,14 +201,24 @@ impl SoftBody {
                     && (*unsafe_creature).get_age(time) >= MATURE_AGE
                     && creature.base.get_energy() > SAFE_SIZE
                 {
-                    unimplemented!();
+                    // unimplemented!();
                 }
+            }
+
+            unsafe {
+                (*unsafe_creature).set_mouth_hue(output[6]);
             }
         }
     }
 
     fn get_input(&self) -> BrainInput {
-        unimplemented!();
+        let mut input = [0.0; 9];
+
+        let creature = self.get_creature();
+        input[0] = creature.get_energy();
+        input[1] = creature.get_mouth_hue();
+
+        return input;
     }
 
     /// Performs the energy requirement to keep living.

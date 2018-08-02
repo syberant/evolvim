@@ -73,7 +73,7 @@ impl Creature {
             tile.remove_food(food_to_eat);
             tile.update(time, climate);
 
-            let multiplier = tile.get_food_multiplier(self.mouth_hue);
+            let multiplier = tile.get_food_multiplier(self.mouth_hue).unwrap_or(0.0);
             if multiplier < 0.0 {
                 // Poison
                 self.base.lose_energy(food_to_eat * -multiplier);
@@ -100,6 +100,14 @@ impl Creature {
     /// More concretely: this function is equivalent to `time - self.get_birth_time()`.
     pub fn get_age(&self, time: f64) -> f64 {
         return time - self.birth_time;
+    }
+
+    pub fn get_mouth_hue(&self) -> f64 {
+        return self.mouth_hue;
+    }
+
+    pub fn set_mouth_hue(&mut self, value: f64) {
+        self.mouth_hue = value;
     }
 }
 

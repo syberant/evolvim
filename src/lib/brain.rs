@@ -5,7 +5,7 @@ use self::dimension::DimName;
 use self::nalgebra::*;
 
 pub type BrainOutput<'a> = &'a [FPN];
-pub type BrainInput = [FPN; 10];
+pub type BrainInput = [FPN; 9];
 
 type FPN = f64;
 
@@ -46,8 +46,11 @@ impl Brain {
     }
 
     pub fn load_input(&mut self, input: BrainInput) {
+        let memory = self.get_output()[0];
         // TODO: fix this ugly code.
-        self.a_1 = <MatrixMN<FPN, U1, U10>>::from_row_slice(&input).insert_column(0, 0.0);
+        self.a_1 = <MatrixMN<FPN, U1, U9>>::from_row_slice(&input)
+            .insert_column(0, 0.0)
+            .insert_column(1, memory);
     }
 
     fn get_output(&self) -> BrainOutput {

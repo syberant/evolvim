@@ -298,6 +298,13 @@ impl Board {
     pub fn get_board_height(&self) -> usize {
         return self.board_height;
     }
+}
+
+impl Board {
+    /// Gets the size of the current population; i.e. how many creatures are currently alive.
+    pub fn get_population_size(&self) -> usize {
+        return self.creatures.len();
+    }
 
     /// Returns a `String` representing the current season.
     ///
