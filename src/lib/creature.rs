@@ -3,8 +3,6 @@ extern crate rand;
 use super::*;
 use constants::*;
 
-const _MIN_CREATURE_ENERGY: f64 = 1.2;
-const _MAX_CREATURE_ENERGY: f64 = 2.0;
 const SWIM_ENERGY: f64 = 0.008;
 const EAT_ENERGY: f64 = 0.05;
 pub const MINIMUM_SURVIVABLE_SIZE: f64 = 0.06;
@@ -21,11 +19,14 @@ pub struct Creature {
 }
 
 impl Creature {
-    pub fn new_random(time: f64) -> Self {
-        let base = Rock::new_random();
+    pub fn new_random(board_size: BoardSize, time: f64) -> Self {
+        let energy = CREATURE_MIN_ENERGY
+            + rand::random::<f64>() * (CREATURE_MAX_ENERGY - CREATURE_MIN_ENERGY);
+        let base = Rock::new_random(board_size, CREATURE_DENSITY, energy);
         let brain = Brain::new_random();
         let birth_time = time;
         let mouth_hue = rand::random();
+        // TODO: add id
 
         Creature {
             base,

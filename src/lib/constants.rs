@@ -12,6 +12,15 @@ use super::*;
 
 pub const SAFE_SIZE: f64 = 1.25;
 
+/// used by creature.rs
+pub const CREATURE_DENSITY: f64 = 1.0;
+
+/// Used by creature.rs
+pub const CREATURE_MIN_ENERGY: f64 = 1.2;
+
+/// Used by creature.rs
+pub const CREATURE_MAX_ENERGY: f64 = 2.0;
+
 /// The default width when generating a new `Board`.
 pub const DEFAULT_BOARD_WIDTH: usize = 100;
 
@@ -41,7 +50,7 @@ pub const DEFAULT_MAX_TEMP: f64 = 1.0;
 ///
 /// Set to false to immediately let creatures loose in the world,
 /// or set to true to stop creatures from moving and take control of them.
-pub const DEFAULT_START_IN_CONTROL: bool = false;
+pub const START_IN_CONTROL: bool = false;
 
 /// Used for terrain generation.
 pub const DEFAULT_NOISE_STEP_SIZE: f64 = 0.1;

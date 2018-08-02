@@ -51,7 +51,7 @@ impl Default for Board {
         let amount_rocks = DEFAULT_ROCK_AMOUNT;
         let min_temp = DEFAULT_MIN_TEMP;
         let max_temp = DEFAULT_MAX_TEMP;
-        let user_control = DEFAULT_START_IN_CONTROL;
+        let user_control = START_IN_CONTROL;
 
         return Board::new_random(
             board_size,
@@ -231,7 +231,7 @@ impl Board {
     fn maintain_creature_minimum(&mut self) {
         while self.creatures.len() < self.creature_minimum {
             let board_size = self.get_board_size();
-            let mut creature = SoftBody::new_random_creature(self.year);
+            let mut creature = SoftBody::new_random_creature(board_size, self.year);
 
             // Initialize in `SoftBodiesInPositions` as well.
             creature.set_sbip(&mut self.soft_bodies_in_positions, board_size);

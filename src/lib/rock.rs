@@ -1,6 +1,7 @@
 extern crate rand;
 
 use super::*;
+// use constants::*;
 use std::f64::consts::PI;
 
 const ACCELERATION_ENERGY: f64 = 0.18;
@@ -35,8 +36,29 @@ pub struct Rock {
 }
 
 impl Rock {
-    pub fn new_random() -> Self {
-        unimplemented!();
+    pub fn new_random(board_size: BoardSize, density: f64, energy: f64) -> Self {
+        let (board_width, board_height) = board_size;
+        Self {
+            px: rand::random::<f64>() * (board_width - 1) as f64,
+            py: rand::random::<f64>() * (board_height - 1) as f64,
+            rotation: rand::random::<f64>() * 2.0 * PI,
+
+            vx: 0.0,
+            vy: 0.0,
+            vr: 0.0,
+
+            energy,
+            density,
+
+            sbip_min_x: 0,
+            sbip_min_y: 0,
+            sbip_max_x: 0,
+            sbip_max_y: 0,
+            prev_sbip_min_x: 0,
+            prev_sbip_min_y: 0,
+            prev_sbip_max_x: 0,
+            prev_sbip_max_y: 0,
+        }
     }
 
     /// Takes a new coordinate and changes itself to it without any checking.

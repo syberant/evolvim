@@ -29,8 +29,8 @@ impl SoftBody {
         }
     }
 
-    pub fn new_random_creature(time: f64) -> SoftBody {
-        SoftBody::Creature(Creature::new_random(time))
+    pub fn new_random_creature(board_size: BoardSize, time: f64) -> SoftBody {
+        SoftBody::Creature(Creature::new_random(board_size, time))
     }
 
     /// Checks if the center is inside of the world, possibly corrects it and returns it.
