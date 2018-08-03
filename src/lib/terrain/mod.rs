@@ -7,6 +7,9 @@ use self::noise::{NoiseFn, Point2, Seedable};
 use super::*;
 use tile::Tile;
 
+/// Contains the terrain of the world.
+///
+/// TODO: possibly speed up with `nalgebra`.
 pub struct Terrain {
     tiles: Vec<Vec<Tile>>,
 }
@@ -100,22 +103,15 @@ impl Terrain {
                 // TODO: understand these formulas.
                 fertility = ng
                     .get([x as f64 * step_size * 3.0, y as f64 * step_size * 3.0])
-                    .abs()
-                    * (1.0 - big_force)
-                    * 5.0
+                    .abs() * (1.0 - big_force) * 5.0
                     + ng.get([x as f64 * step_size * 0.5, y as f64 * step_size * 0.5])
-                        .abs()
-                        * big_force
-                        * 5.0
-                    - 1.5;
+                        .abs() * big_force * 5.0 - 1.5;
 
-                climate_type = ng
-                    .get([
+                climate_type =
+                    ng.get([
                         x as f64 * step_size * 0.2 + 10000.0,
                         y as f64 * step_size * 0.2 + 10000.0,
-                    ]).abs()
-                    * 1.63
-                    - 0.4;
+                    ]).abs() * 1.63 - 0.4;
 
                 climate_type = climate_type.max(0.0).min(0.8);
                 tiles[x].push(Tile::new(fertility, climate_type));

@@ -269,7 +269,7 @@ impl Board {
     /// Can be either "Winter", "Spring", "Summer" or "Autumn".
     pub fn get_season(&self) -> String {
         const SEASONS: [&str; 4] = ["Winter", "Spring", "Summer", "Autumn"];
-        let season: usize = ((self.year % 1.0) * 4.0).ceil() as usize;
+        let season: usize = ((self.year % 1.0) * 4.0).floor() as usize;
 
         return SEASONS[season].to_string();
     }
