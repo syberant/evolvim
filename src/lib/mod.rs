@@ -10,7 +10,8 @@
 //! - WIP: better documentation
 //! - Performance, [Processing](https://www.processing.org) isn't known for anything resembling speed, at least not when compared to Rust.
 //!
-//! The original version has since also [been converted](https://github.com/evolvio/evolv.io/) to Java. (No, I am not going to provide a link; Java isn't worthy of that)
+//! The original version has since also [been converted](https://github.com/evolvio/evolv.io/) to Java.
+//! (No, I am not going to provide a link; Java isn't worthy of that.)
 //! This version still provides:
 //! - a better language (If you haven't noticed: I hate Java)
 //! - (very probably) better performance plus the option to turn off the graphics
@@ -25,35 +26,41 @@
 //! Please note that this only works in nightly (`rustup default nightly` to use it by default).
 //! Type `rustup toolchain install nightly` to install the latest nightly build; `rustup toolchain uninstall nightly` to uninstall again.
 //!
-//! ## My results
-//! Just an example:
-//! ```norun
-//!      Running target/release/deps/board-5061053384a77075
+//! ## Sudden performance boosts
+//! So, you played around a bit and it's now twice, or even 100 times, as fast?
+//! This is most likely caused by a change to the constants in `constants.rs`,
+//! the benchmarks use `DEFAULT_BOARD_SIZE` for example to test the performance of a `Board` with that size!
+//! This can cause huge performance improvements or, well, a huge decline in performance...
+//! If you're sure you didn't change the scale of calculations but only made them more efficient: please submit a pull request on github!
+//! Performance is a critical part of this application and any improvements are welcome!
 //!
-//! running 2 tests
-//! test benches::bench_new_default ... bench:  10,985,787 ns/iter (+/- 3,969,594)
-//! test benches::bench_update      ... bench:      74,712 ns/iter (+/- 43,579)
-//!
-//! test result: ok. 0 passed; 0 failed; 0 ignored; 2 measured; 0 filtered out
-//!
-//!      Running target/release/deps/brain-428e2aee350f3bc3
-//!
-//! running 4 tests
-//! test benches::bench_feed_forward ... bench:         406 ns/iter (+/- 96)
-//! test benches::bench_load_input   ... bench:          64 ns/iter (+/- 11)
-//! test benches::bench_new_random   ... bench:       4,823 ns/iter (+/- 889)
-//! test benches::bench_run          ... bench:         452 ns/iter (+/- 400)
-//!
-//! test result: ok. 0 passed; 0 failed; 0 ignored; 4 measured; 0 filtered out
-//! ```
+//! ## Multithreading
+//! This is on my list but could be a bit tricky because of my usage of `unsafe` (for information about `safe` and `unsafe` Rust, see [here](https://doc.rust-lang.org/nomicon/safe-unsafe-meaning.html)).
 //!
 //! # Conclusion
 //! As a wise men once said: ["Ceterum censeo Javam delendam esse."](https://en.wikipedia.org/wiki/Carthago_delenda_est)
 //!
-//! I hope the Java programmers can take the joke and not hack me up into bits; also, would you stop passing around so many references?
+//! I hope the Java programmers can take the joke and not hack me up into bits; also, would you stop passing around so many references inside of your classes?
 //! `cargo` was getting hysterical...
 //!
-//! I may have been a bit mean to Java so feel free to [`bash`](https://en.wikipedia.org/wiki/Bash_(Unix_shell)) on Rust. (Not that you're going to find anything to bash on. 😁)
+//! I may have been a bit mean to Java so feel free to [`bash`](https://en.wikipedia.org/wiki/Bash_(Unix_shell)) on Rust.
+//! (Not that you're going to find anything to bash on. 😁)
+//!
+//! For anybody interested in learning [Rust](https://rust-lang.org), [this](https://doc.rust-lang.org/book/2018-edition/index.html) is a great place to start.
+//!
+//! ## Feeling intimidated by Rust?
+//! If you're already a programmer I suggest the following route (maybe it was my route):
+//!
+//! - try [C](https://en.wikipedia.org/wiki/C_%28programming_language%29) or [C++](https://isocpp.org) or another low-level programming language and get frustrated with the many bugs, crashes and segfaults
+//! - come to Rust! Start reading your way through [the book](https://doc.rust-lang.org/book/2018-edition/index.html) and get scared off...
+//! - have a final go with your low-level language of choice and decide that this time, you will get the luxury of proper memory management...
+//! - learn Rust...
+//!
+//! For those who are new to programming: try something like [Python](https://python.org) or [Processing](https://processing.org) first,
+//! they're both newbie-friendly programming languages with a large and active community.
+//!
+//! Also, you don't have to know Rust to tinker with the constants in `constants.rs`;
+//! they can change the way `evolvim` behaves a lot. Feel free to experiment with them!
 
 pub mod board;
 pub mod brain;
