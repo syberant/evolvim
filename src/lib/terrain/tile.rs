@@ -1,3 +1,4 @@
+use super::constants::*;
 use super::*;
 
 const FOOD_GROWTH_RATE: f64 = 1.0;
@@ -34,6 +35,46 @@ impl Tile {
         match self {
             Tile::Water => 0.0,
             Tile::Land(t) => t.food_level,
+        }
+    }
+
+    pub fn get_fertility(&self) -> f64 {
+        match self {
+            Tile::Water => 0.0,
+            Tile::Land(t) => t.fertility,
+        }
+    }
+
+    pub fn get_food_type(&self) -> f64 {
+        match self {
+            Tile::Water => 0.0,
+            Tile::Land(t) => t.food_type,
+        }
+    }
+
+    pub fn get_hsba_color(&self) -> [f32; 4] {
+        match self {
+            Tile::Water => COLOR_WATER,
+            Tile::Land(t) => {
+                let food_color = [t.food_type as f32, 1.0, 1.0];
+
+                if t.food_level < MAX_GROWTH_LEVEL {
+                    let c = inter_color(COLOR_BARREN, COLOR_FERTILE, t.fertility as f32);
+                    return inter_color_fixed_hue(
+                        c,
+                        food_color,
+                        (t.food_level / MAX_GROWTH_LEVEL) as f32,
+                        t.food_type as f32,
+                    );
+                } else {
+                    return inter_color_fixed_hue(
+                        food_color,
+                        COLOR_BLACK,
+                        1.0 - (MAX_GROWTH_LEVEL / t.food_level) as f32,
+                        t.food_type as f32,
+                    );
+                }
+            }
         }
     }
 
@@ -143,4 +184,30 @@ impl LandTile {
     pub fn add_food(&mut self, food_to_add: f64) {
         self.food_level = 0f64.max(self.food_level + food_to_add);
     }
+}
+
+fn inter_color(a: [f32; 3], b: [f32; 3], x: f32) -> [f32; 3] {
+    let hue = linear_interpolation(a[0], b[0], x);
+    let sat = linear_interpolation(a[1], b[1], x);
+    let bri = linear_interpolation(a[2], b[2], x);
+
+    [hue, sat, bri]
+}
+
+fn inter_color_fixed_hue(a: [f32; 3], b: [f32; 3], x: f32, hue: f32) -> [f32; 4] {
+    let b_saturation = if b[2] == 0.0 {
+        // if brightness = 0 then saturation = 1
+        1.0
+    } else {
+        b[1]
+    };
+
+    let sat = linear_interpolation(a[1], b_saturation, x);
+    let bri = linear_interpolation(a[2], b[2], x);
+
+    [hue, sat, bri, 1.0]
+}
+
+fn linear_interpolation(a: f32, b: f32, x: f32) -> f32 {
+    return a + (b - a) * x;
 }

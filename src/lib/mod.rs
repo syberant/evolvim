@@ -66,6 +66,7 @@ pub mod board;
 pub mod brain;
 pub mod climate;
 pub mod constants;
+pub mod graphics;
 pub mod sbip;
 pub mod softbody;
 pub mod terrain;
@@ -76,10 +77,6 @@ pub use climate::Climate;
 pub use sbip::*;
 pub use softbody::*;
 pub use terrain::*;
-
-pub trait Drawable {
-    fn draw(&self);
-}
 
 pub enum Dragging {
     Board,

@@ -6,7 +6,7 @@ version = "0.1.0"
 [dependencies]
 nalgebra = "0.16.0"
 noise = "0.5.1"
-# piston_window = "0.80.0"
+piston_window = "0.80.0"
 rand = "0.5.4"
 
 [features]

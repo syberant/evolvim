@@ -56,3 +56,18 @@ pub const START_IN_CONTROL: bool = false;
 
 /// Used for terrain generation.
 pub const DEFAULT_NOISE_STEP_SIZE: f64 = 0.1;
+
+// ************************* //
+// ******** DRAWING ******** //
+// ************************* //
+
+/// [Hue, Saturation, Brightness, Alpha]
+pub const COLOR_WATER: [f32; 4] = [0.5, 1., 1., 1.];
+
+/// [Hue, Saturation, Brightness]
+pub const COLOR_BARREN: [f32; 3] = [0., 0., 1.];
+
+/// [Hue, Saturation, Brightness]
+pub const COLOR_FERTILE: [f32; 3] = [0., 0., 0.2];
+
+pub const COLOR_BLACK: [f32; 3] = [0., 1., 0.];
