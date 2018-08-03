@@ -15,6 +15,8 @@ pub const SAFE_SIZE: f64 = 1.25;
 /// used by creature.rs
 pub const CREATURE_DENSITY: f64 = 1.0;
 
+pub const ROCK_DENSITY: f64 = 5.0;
+
 /// Used by creature.rs
 pub const CREATURE_MIN_ENERGY: f64 = 1.2;
 

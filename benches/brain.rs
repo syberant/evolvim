@@ -11,12 +11,12 @@ mod benches {
     const TEST_INPUT: BrainInput = [1., 2., 3., 4., 5., 6., 7., 8., 9.];
 
     #[bench]
-    fn bench_new_random(b: &mut Bencher) {
+    fn bench_brain_new_random(b: &mut Bencher) {
         b.iter(|| Brain::new_random());
     }
 
     #[bench]
-    fn bench_run(b: &mut Bencher) {
+    fn bench_brain_run(b: &mut Bencher) {
         let mut brain = Brain::new_random();
 
         b.iter(|| {
@@ -25,14 +25,14 @@ mod benches {
     }
 
     #[bench]
-    fn bench_load_input(b: &mut Bencher) {
+    fn bench_brain_load_input(b: &mut Bencher) {
         let mut brain = Brain::new_random();
 
         b.iter(|| brain.load_input(TEST_INPUT));
     }
 
     #[bench]
-    fn bench_feed_forward(b: &mut Bencher) {
+    fn bench_brain_feed_forward(b: &mut Bencher) {
         let mut brain = Brain::new_random();
         brain.load_input(TEST_INPUT);
 

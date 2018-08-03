@@ -11,12 +11,12 @@ mod benches {
     const FRAME_TIME_STEP: f64 = 0.001;
 
     #[bench]
-    fn bench_new_default(b: &mut Bencher) {
+    fn bench_board_new_default(b: &mut Bencher) {
         b.iter(|| Board::default());
     }
 
     #[bench]
-    fn bench_update(b: &mut Bencher) {
+    fn bench_board_update(b: &mut Bencher) {
         let mut board = Board::default();
 
         b.iter(|| {
