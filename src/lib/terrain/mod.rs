@@ -80,7 +80,7 @@ impl Terrain {
     }
 
     fn generate_terrain_with_noise<N: NoiseFn<Point2<f64>>>(
-        noise_generator: N,
+        ng: N,
         board_size: BoardSize,
         step_size: f64,
     ) -> Self {
@@ -98,22 +98,26 @@ impl Terrain {
                 big_force = (y as f64 / board_height as f64).sqrt();
 
                 // TODO: understand these formulas.
-                fertility = noise_generator
+                fertility = ng
                     .get([x as f64 * step_size * 3.0, y as f64 * step_size * 3.0])
+                    .abs()
                     * (1.0 - big_force)
                     * 5.0
-                    + noise_generator.get([x as f64 * step_size * 0.5, y as f64 * step_size * 0.5])
+                    + ng.get([x as f64 * step_size * 0.5, y as f64 * step_size * 0.5])
+                        .abs()
                         * big_force
                         * 5.0
                     - 1.5;
 
-                climate_type = noise_generator.get([
-                    x as f64 * step_size * 0.2 + 10000.0,
-                    y as f64 * step_size * 0.2 + 10000.0,
-                ]) * 1.63
+                climate_type = ng
+                    .get([
+                        x as f64 * step_size * 0.2 + 10000.0,
+                        y as f64 * step_size * 0.2 + 10000.0,
+                    ]).abs()
+                    * 1.63
                     - 0.4;
 
-                climate_type = climate_type.max(0.0);
+                climate_type = climate_type.max(0.0).min(0.8);
                 tiles[x].push(Tile::new(fertility, climate_type));
             }
         }
