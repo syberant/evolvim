@@ -55,7 +55,7 @@ impl Creature {
         time_step: f64,
         time: f64,
         climate: &Climate,
-        tile: &mut Tile,
+        tile: &mut super::terrain::tile::Tile,
     ) {
         let amount = attempted_amount
             / (1.0 + self.base.get_total_velocity() * EAT_WHILE_MOVING_INEFFICIENCY_MULTIPLIER);

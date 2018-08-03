@@ -161,22 +161,32 @@ impl SoftBody {
         return self.get_creature().get_birth_time();
     }
 
-    pub unsafe fn return_to_earth(&mut self, board: *mut Board, board_size: BoardSize) {
+    /// This function is unsafe! Only mess with it if you know what you're doing!
+    ///
+    /// TODO: description of unsafe behaviour.
+    pub unsafe fn return_to_earth(&mut self, unsafe_board: *mut Board, board_size: BoardSize) {
+        let safe_board = &mut (*unsafe_board);
+        let time = safe_board.get_time();
+
         for _i in 0..PIECES {
             let tile_pos = self.get_random_covered_tile(board_size);
-            let tile = &mut (*board).tiles[tile_pos.0][tile_pos.1];
-            tile.add_food_or_nothing(self.get_energy() / PIECES as f64);
+            safe_board
+                .terrain
+                .add_food_or_nothing_at(tile_pos, self.get_energy() / PIECES as f64);
 
             // TODO: check if this is neccessary and fix this mess!
-            tile.update((*board).get_time(), &(*board).climate);
+            safe_board
+                .terrain
+                .update_at(tile_pos, time, &safe_board.climate);
         }
 
-        self.remove_from_sbip(&mut (*board).soft_bodies_in_positions);
+        self.remove_from_sbip(&mut safe_board.soft_bodies_in_positions);
 
         // Unselect this creature if it was selected.
-        (*board).unselect_if_dead(self.get_creature_mut());
+        safe_board.unselect_if_dead(self.get_creature_mut());
     }
 
+    /// Parts of this function are unsafe. Only mess with them if you know what you're doing!
     pub fn use_brain(&mut self, time_step: f64, use_output: bool, board: &mut Board) {
         let input = self.get_input();
         let unsafe_creature = self.get_creature_mut() as *mut Creature;
@@ -192,10 +202,9 @@ impl SoftBody {
             // TODO: clean this mess.
             unsafe {
                 let board_size = board.get_board_size();
-                let mut tile = creature
-                    .base
-                    .get_random_covered_tile_mut(board_size, &mut board.tiles);
-                (*unsafe_creature).eat(output[3], time_step, time, &board.climate, &mut tile);
+                let tile_pos = creature.base.get_random_covered_tile(board_size);
+                let tile = board.terrain.get_tile_at_mut(tile_pos);
+                (*unsafe_creature).eat(output[3], time_step, time, &board.climate, tile);
             }
 
             // Fight

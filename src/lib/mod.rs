@@ -61,14 +61,14 @@ pub mod climate;
 pub mod constants;
 pub mod sbip;
 pub mod softbody;
-pub mod tile;
+pub mod terrain;
 
 pub use board::*;
 pub use brain::*;
 pub use climate::Climate;
 pub use sbip::*;
 pub use softbody::*;
-pub use tile::Tile;
+pub use terrain::*;
 
 pub trait Drawable {
     fn draw(&self);

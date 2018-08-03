@@ -156,7 +156,7 @@ impl Rock {
             && y < self.prev_sbip_max_y
     }
 
-    pub fn get_random_covered_tile(&self, board_size: BoardSize) -> (usize, usize) {
+    pub fn get_random_covered_tile(&self, board_size: BoardSize) -> BoardCoordinate {
         let radius = self.get_radius();
         let mut choice_x = 0.0;
         let mut choice_y = 0.0;
@@ -171,20 +171,11 @@ impl Rock {
         return (choice_x, choice_y);
     }
 
-    pub fn get_random_covered_tile_mut<'a>(
-        &self,
-        board_size: BoardSize,
-        tiles: &'a mut Vec<Vec<Tile>>,
-    ) -> &'a mut Tile {
-        let pos = self.get_random_covered_tile(board_size);
-        return &mut tiles[pos.0][pos.1];
-    }
-
     /// Returns true if this body is currently on water.
     pub fn is_on_water(&self, board: &Board) -> bool {
         // TODO: determine whether this is desirable and maybe come up with a better system.
         let pos = self.get_random_covered_tile(board.get_board_size());
-        let tile = &board.tiles[pos.0][pos.1];
+        let tile = board.terrain.get_tile_at(pos);
         return tile.is_water();
     }
 }

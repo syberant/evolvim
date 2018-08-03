@@ -1,7 +1,4 @@
-extern crate noise;
 extern crate rand;
-
-use self::noise::{NoiseFn, Seedable};
 
 use super::*;
 use constants::*;
@@ -15,12 +12,14 @@ const _THERMOMETER_MIN: f64 = -2.0;
 const _THERMOMETER_MAX: f64 = 2.0;
 
 pub type BoardSize = (usize, usize);
+pub type BoardCoordinate = (usize, usize);
+pub type BoardPreciseCoordinate = (f64, f64);
 
 pub struct Board {
     // Fields relevant for the board itself.
     board_width: usize,
     board_height: usize,
-    pub tiles: Vec<Vec<Tile>>,
+    pub terrain: Terrain,
 
     // Fields relevant for the creatures.
     creature_minimum: usize,
@@ -86,7 +85,7 @@ impl Board {
         let mut board = Board {
             board_width: board_size.0,
             board_height: board_size.1,
-            tiles: Self::generate_terrain_perlin(board_size, noise_step_size),
+            terrain: Terrain::generate_perlin(board_size, noise_step_size),
 
             creature_minimum,
             soft_bodies_in_positions: SoftBodiesInPositions::new_allocated(board_size),
@@ -112,43 +111,6 @@ impl Board {
         return board;
     }
 
-    pub fn generate_terrain_perlin(board_size: BoardSize, step_size: f64) -> Vec<Vec<Tile>> {
-        let (board_width, board_height) = board_size;
-        let noise = noise::Perlin::new();
-        noise.set_seed(rand::random());
-
-        let mut tiles = Vec::with_capacity(board_width);
-
-        // allocate these variables
-        let mut big_force: f64;
-        let mut fertility: f64;
-        let mut climate_type: f64;
-        for x in 0..board_width {
-            tiles.push(Vec::with_capacity(board_height));
-            for y in 0..board_height {
-                big_force = (y as f64 / board_height as f64).sqrt();
-
-                // TODO: understand these formulas.
-                fertility = noise.get([x as f64 * step_size * 3.0, y as f64 * step_size * 3.0])
-                    * (1.0 - big_force)
-                    * 5.0
-                    + noise.get([x as f64 * step_size * 0.5, y as f64 * step_size * 0.5])
-                        * big_force
-                        * 5.0 - 1.5;
-
-                climate_type = noise.get([
-                    x as f64 * step_size * 0.2 + 10000.0,
-                    y as f64 * step_size * 0.2 + 10000.0,
-                ]) * 1.63 - 0.4;
-
-                climate_type = climate_type.max(0.0);
-                tiles[x].push(Tile::new(fertility, climate_type));
-            }
-        }
-
-        return tiles;
-    }
-
     /// Checks if the given creature was selected and if so, removes it by setting `self.selected_creature` to `None`.
     pub fn unselect_if_dead(&mut self, creature: &mut Creature) {
         let creature_pointer: *mut Creature = creature as *mut Creature;
@@ -171,11 +133,7 @@ impl Board {
 
         if temp_change_into_frame * temp_change_out_of_frame < 0.0 {
             // Temperature change flipped direction
-            for row in &mut self.tiles {
-                for tile in row {
-                    tile.update(self.year, &self.climate);
-                }
-            }
+            self.terrain.update_all(self.year, &self.climate);
         }
 
         // Update all rocks.
