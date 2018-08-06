@@ -12,14 +12,14 @@ pub enum Tile {
 
 impl Tile {
     pub fn new(fertility: f64, food_type: f64) -> Self {
-        if fertility < 1.0 {
+        if fertility > 1.0 {
+            // Tile is water
+            Tile::Water
+        } else {
             // Tile is land
             let t = LandTile::new(fertility, food_type);
 
             Tile::Land(t)
-        } else {
-            // Tile is water
-            Tile::Water
         }
     }
 
@@ -30,7 +30,7 @@ impl Tile {
         }
     }
 
-    /// Get the `food_level` of this tile, returns 0 if it is water.
+    /// Get the `food_level` of this `Tile`, returns 0 if it is water.
     pub fn get_food_level(&self) -> f64 {
         match self {
             Tile::Water => 0.0,
@@ -38,6 +38,7 @@ impl Tile {
         }
     }
 
+    /// Get the `fertility` of this `Tile`, returns 0 if it is water.
     pub fn get_fertility(&self) -> f64 {
         match self {
             Tile::Water => 0.0,
@@ -45,6 +46,7 @@ impl Tile {
         }
     }
 
+    /// Get the `food_type` of this `Tile`, returns 0 if it is water.
     pub fn get_food_type(&self) -> f64 {
         match self {
             Tile::Water => 0.0,
@@ -59,13 +61,17 @@ impl Tile {
                 let food_color = [t.food_type as f32, 1.0, 1.0];
 
                 if t.food_level < MAX_GROWTH_LEVEL {
-                    let c = inter_color(COLOR_BARREN, COLOR_FERTILE, t.fertility as f32);
-                    return inter_color_fixed_hue(
-                        c,
-                        food_color,
-                        (t.food_level / MAX_GROWTH_LEVEL) as f32,
-                        t.food_type as f32,
-                    );
+                    if t.food_level > 0.0 {
+                        let c = inter_color(COLOR_BARREN, COLOR_FERTILE, t.fertility as f32);
+                        return inter_color_fixed_hue(
+                            c,
+                            food_color,
+                            (t.food_level / MAX_GROWTH_LEVEL) as f32,
+                            t.food_type as f32,
+                        );
+                    } else {
+                        return [COLOR_BARREN[0], COLOR_BARREN[1], COLOR_BARREN[2], 1.0];
+                    }
                 } else {
                     return inter_color_fixed_hue(
                         food_color,

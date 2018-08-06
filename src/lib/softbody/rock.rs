@@ -38,9 +38,14 @@ pub struct Rock {
 impl Rock {
     pub fn new_random(board_size: BoardSize, density: f64, energy: f64) -> Self {
         let (board_width, board_height) = board_size;
+
+        // TODO: fix random coordinates, now they are always the same.
+        let px = rand::random::<f64>() * (board_width - 1) as f64;
+        let py = rand::random::<f64>() * (board_height - 1) as f64;
+
         Self {
-            px: rand::random::<f64>() * (board_width - 1) as f64,
-            py: rand::random::<f64>() * (board_height - 1) as f64,
+            px,
+            py,
             rotation: rand::random::<f64>() * 2.0 * PI,
 
             vx: 0.0,
