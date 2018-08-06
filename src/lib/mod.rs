@@ -77,9 +77,3 @@ pub use climate::Climate;
 pub use sbip::*;
 pub use softbody::*;
 pub use terrain::*;
-
-pub enum Dragging {
-    Board,
-    MinTemperature,
-    MaxTemperature,
-}

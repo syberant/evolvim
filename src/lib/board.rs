@@ -185,6 +185,10 @@ impl Board {
         // TODO: implement filesaving.
     }
 
+    pub fn prepare_for_drawing(&mut self) {
+        self.terrain.update_all(self.year, &self.climate);
+    }
+
     /// Maintains the creature minimum by adding random creatures until there are at least `self.creature_minimum` creatures.
     fn maintain_creature_minimum(&mut self) {
         while self.creatures.len() < self.creature_minimum {
@@ -224,6 +228,7 @@ impl Board {
         }
     }
 
+    /// Performs the same function on `self.climate`, filling in `self.year`.
     pub fn get_growth_since(&self, last_updated: f64) -> f64 {
         return self
             .climate
@@ -231,6 +236,8 @@ impl Board {
     }
 
     /// Returns the current growth rate (temperature) based on the season.
+    ///
+    /// Performs the same function on `self.climate`, filling in `self.year`.
     pub fn get_current_growth_rate(&self) -> f64 {
         self.climate.get_growth_rate(self.year)
     }
