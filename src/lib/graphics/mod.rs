@@ -17,17 +17,6 @@ use self::piston_window::{G2d, Transformed};
 // use super::constants::*;
 use super::*;
 
-pub struct MouseCoordinate(f64, f64);
-
-impl MouseCoordinate {
-    pub fn into_board_coordinate(&self, base_x: f64, base_y: f64) -> BoardPreciseCoordinate {
-        let x = base_x + self.0;
-        let y = base_y + self.1;
-
-        return (x, y);
-    }
-}
-
 // pub trait Drawable {
 //     fn draw(&self, context: Context, g2d: &mut G2d);
 // }

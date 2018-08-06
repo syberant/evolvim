@@ -13,7 +13,21 @@ const _THERMOMETER_MAX: f64 = 2.0;
 
 pub type BoardSize = (usize, usize);
 pub type BoardCoordinate = (usize, usize);
-pub type BoardPreciseCoordinate = (f64, f64);
+pub struct BoardPreciseCoordinate(pub f64, pub f64);
+
+impl BoardPreciseCoordinate {
+    pub fn unpack(&self) -> (f64, f64) {
+        return (self.0, self.1);
+    }
+}
+
+impl From<BoardPreciseCoordinate> for BoardCoordinate {
+    fn from(bpc: BoardPreciseCoordinate) -> BoardCoordinate {
+        let (x, y) = bpc.unpack();
+
+        (x.floor() as usize, y.floor() as usize)
+    }
+}
 
 pub struct Board {
     // Fields relevant for the board itself.

@@ -265,7 +265,7 @@ impl SoftBody {
         self.set_sbip(&mut board.soft_bodies_in_positions, board_size);
     }
 
-    fn get_random_covered_tile(&self, board_size: BoardSize) -> (usize, usize) {
+    fn get_random_covered_tile(&self, board_size: BoardSize) -> BoardCoordinate {
         match self {
             SoftBody::Rock(b) => b.get_random_covered_tile(board_size),
             SoftBody::Creature(c) => c.base.get_random_covered_tile(board_size),
