@@ -118,6 +118,17 @@ impl View {
             end: self.get_y() + self.tiles_on_height,
         }
     }
+
+    pub fn prepare_for_drawing(&mut self) {
+        let time = self.board.get_time();
+        // let x_range = self.get_x_range();
+        // let y_range = self.get_y_range();
+
+        // self.board
+        //     .terrain
+        //     .update_all_at(time, &self.board.climate, x_range, y_range);
+        self.board.terrain.update_all(time, &self.board.climate);
+    }
 }
 
 impl View {

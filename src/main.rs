@@ -33,8 +33,7 @@ fn main() {
         window.draw_2d(&event, |context, graphics| {
             clear([1.0; 4], graphics);
 
-            view.board.prepare_for_drawing();
-
+            view.prepare_for_drawing();
             view.draw(context, graphics);
         });
 

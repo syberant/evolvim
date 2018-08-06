@@ -23,6 +23,20 @@ impl Terrain {
         }
     }
 
+    pub fn update_all_at(
+        &mut self,
+        time: f64,
+        climate: &Climate,
+        x_range: std::ops::Range<usize>,
+        y_range: std::ops::Range<usize>,
+    ) {
+        for x in x_range {
+            for y in y_range.clone() {
+                self.tiles[x][y].update(time, climate);
+            }
+        }
+    }
+
     /// Gets a mutable reference to that tile, this function should be used as little as possible.
     pub fn get_tile_at_mut(&mut self, pos: BoardCoordinate) -> &mut Tile {
         let (x, y) = pos;
