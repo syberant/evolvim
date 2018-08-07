@@ -1,3 +1,7 @@
+//! Contains functionality for the intelligence of creatures.
+//!
+//! Uses a neural network implemented with a linear algebra crate to make it efficient.
+
 extern crate nalgebra;
 
 use self::allocator::Allocator;

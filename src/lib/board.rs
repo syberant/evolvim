@@ -1,3 +1,10 @@
+//! The central part of this crate, uses all modules to load and run our world in memory.
+//!
+//! The `Board` struct is technically all you need to start your world but then you wouldn't be able to see it!
+//! Graphics are provided by the [graphics] module; although you could implement your own.
+//!
+//! TODO: documentation.
+
 extern crate rand;
 
 use super::*;

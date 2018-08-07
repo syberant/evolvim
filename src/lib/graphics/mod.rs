@@ -1,5 +1,9 @@
 //! Contains utilities for displaying our awesome world on a screen.
 //!
+//! Note that you can implement the graphics yourself too!
+//! This part of the crate provides a working version and is a good start, but I'm sure somebody can do better!
+//! Just use the rest of this crate and ignore this module; although you could draw some inspiration from it.
+//!
 //! TODO: depend on *graphics* instead of *piston_window*
 
 extern crate piston_window;

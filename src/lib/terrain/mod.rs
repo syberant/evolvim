@@ -1,3 +1,12 @@
+//! Contains structs and functions useful for terrain.
+//!
+//! Here you will find `Terrain`, this struct contains a matrix of `Tile`s and its methods are frequently used.
+//! Speeding them up a little will certainly help performance!
+//!
+//! TODO: drastically improve documentation.
+//!
+//! TODO 2: take a good look at the terrain generation.
+
 extern crate noise;
 extern crate rand;
 

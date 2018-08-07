@@ -1,3 +1,11 @@
+//! Used for collision detection.
+//!
+//! `SoftBodiesInPositions` contains references to all `SoftBody`'s.
+//! It is of critical importance that these are **always** valid!
+//! Seriously, otherwise the application will just crash.
+//!
+//! Please don't mess with this module if you don't understand it: it will save you a lot of frustration!
+
 use super::*;
 
 pub type SoftBodiesAt = std::collections::HashSet<*const SoftBody>;
