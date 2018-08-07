@@ -1,6 +1,11 @@
 use super::*;
 use std::ops::Range;
 
+/// The view part of MVC (Model-View-Controller), currently takes on jobs for the controller too.
+///
+/// TODO: Provide adequate error handling when the mouse leaves the window.
+///
+/// TODO 2: Move the "controller" parts over to another struct.
 pub struct View {
     precise_x: f64,
     precise_y: f64,
@@ -15,6 +20,8 @@ pub struct View {
     tile_width: f64,
 
     pub board: Board,
+
+    pub mouse: MouseCoordinate,
 
     drag: Dragging,
 }
@@ -36,6 +43,8 @@ impl Default for View {
             tile_width: base_tile_width,
 
             board: Board::default(),
+
+            mouse: MouseCoordinate::new(0.0, 0.0),
 
             drag: Dragging::None,
         }
@@ -65,6 +74,10 @@ impl View {
             }
             _ => {}
         }
+    }
+
+    pub fn update_mouse(&mut self, x: f64, y: f64) {
+        self.mouse = MouseCoordinate::new(x, y);
     }
 }
 
@@ -132,7 +145,7 @@ impl View {
 }
 
 impl View {
-    pub fn draw(&self, context: Context, graphics: &mut G2d) {
-        self.board.terrain.draw(context, graphics, &self);
+    pub fn draw(&self, context: Context, graphics: &mut G2d, glyphs: &mut Glyphs) {
+        self.board.terrain.draw(context, graphics, glyphs, &self);
     }
 }

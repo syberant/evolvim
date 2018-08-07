@@ -1,7 +1,7 @@
 extern crate lib_evolvim;
 extern crate piston_window;
 
-use lib_evolvim::graphics::{from_hsba, View};
+use lib_evolvim::graphics::View;
 // use lib_evolvim::Board;
 use piston_window::*;
 
@@ -13,13 +13,15 @@ fn main() {
 
     let mut playspeed = 1;
 
-    assert!([1., 1., 1., 1.] == from_hsba([0., 0., 1., 1.]));
-    assert!([0., 0., 0., 1.] == from_hsba([1., 1., 0., 1.]));
-
     let mut window: PistonWindow = WindowSettings::new("Hello Piston!", [1000, 800])
         .exit_on_esc(true)
         .build()
         .unwrap();
+
+    let byte_font = include_bytes!("assets/default-font.ttf");
+    let factory = window.factory.clone();
+    let text_settings = TextureSettings::new();
+    let mut glyphs = Glyphs::from_bytes(byte_font, factory, text_settings).unwrap();
 
     while let Some(event) = window.next() {
         // Render
@@ -34,11 +36,12 @@ fn main() {
             clear([1.0; 4], graphics);
 
             view.prepare_for_drawing();
-            view.draw(context, graphics);
+            view.draw(context, graphics, &mut glyphs);
         });
 
         // Match some events
         event.mouse_relative(|x, y| view.on_mouse_move(x, y));
+        event.mouse_cursor(|x, y| view.update_mouse(x, y));
 
         // Match some button presses
         if let Some(button) = event.press_args() {
