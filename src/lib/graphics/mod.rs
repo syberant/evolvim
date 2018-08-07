@@ -3,21 +3,19 @@
 //! Note that you can implement the graphics yourself too!
 //! This part of the crate provides a working version and is a good start, but I'm sure somebody can do better!
 //! Just use the rest of this crate and ignore this module; although you could draw some inspiration from it.
-//!
-//! TODO: depend on *graphics* instead of *piston_window*
 
-extern crate piston_window;
+extern crate graphics;
 
 pub mod ui;
 pub mod view;
 pub use self::ui::{Dragging, MouseCoordinate};
 pub use self::view::View;
 
-use self::piston_window::context::Context;
-use self::piston_window::rectangle;
-use self::piston_window::text::Text;
-use self::piston_window::types::Color;
-use self::piston_window::{G2d, Glyphs, Transformed};
+use self::graphics::character::CharacterCache;
+use self::graphics::rectangle;
+use self::graphics::text::Text;
+use self::graphics::types::Color;
+use self::graphics::{Context, Graphics, Transformed};
 
 // use super::constants::*;
 use super::*;
@@ -61,7 +59,12 @@ pub fn from_hsba(hsba: [f32; 4]) -> Color {
 }
 
 impl Terrain {
-    pub fn draw(&self, context: Context, graphics: &mut G2d, glyphs: &mut Glyphs, view: &View) {
+    pub fn draw<C, G>(&self, context: Context, graphics: &mut G, glyphs: &mut C, view: &View)
+    where
+        C: CharacterCache,
+        C::Error: std::fmt::Debug,
+        G: Graphics<Texture = C::Texture>,
+    {
         let size = view.get_tile_size();
         let transform = context
             .transform
@@ -102,7 +105,10 @@ impl Terrain {
 }
 
 impl Creature {
-    pub fn draw(&self, context: Context, graphics: &mut G2d, view: &View) {
+    pub fn draw<G>(&self, context: Context, graphics: &mut G, view: &View)
+    where
+        G: Graphics,
+    {
         unimplemented!();
     }
 }

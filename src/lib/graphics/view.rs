@@ -145,7 +145,12 @@ impl View {
 }
 
 impl View {
-    pub fn draw(&self, context: Context, graphics: &mut G2d, glyphs: &mut Glyphs) {
+    pub fn draw<C, G>(&self, context: Context, graphics: &mut G, glyphs: &mut C)
+    where
+        C: CharacterCache,
+        C::Error: std::fmt::Debug,
+        G: Graphics<Texture = C::Texture>,
+    {
         self.board.terrain.draw(context, graphics, glyphs, &self);
     }
 }

@@ -9,6 +9,10 @@ noise = "0.5.1"
 piston_window = "0.80.0"
 rand = "0.5.4"
 
+[dependencies.piston2d-graphics]
+version = "0.26.0"
+features = ["glyph_cache_rusttype"]
+
 [features]
 bench = []
 
