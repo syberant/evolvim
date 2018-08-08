@@ -28,7 +28,7 @@ pub struct View {
 
 impl Default for View {
     fn default() -> Self {
-        let base_tile_width = 20.0;
+        let base_tile_width = 100.0;
         View {
             precise_x: 0.0,
             precise_y: 0.0,
@@ -36,8 +36,8 @@ impl Default for View {
             max_x: 100,
             max_y: 100,
 
-            tiles_on_height: 50,
-            tiles_on_width: 50,
+            tiles_on_height: 10,
+            tiles_on_width: 10,
 
             base_tile_width,
             tile_width: base_tile_width,
@@ -152,5 +152,15 @@ impl View {
         G: Graphics<Texture = C::Texture>,
     {
         self.board.terrain.draw(context, graphics, glyphs, &self);
+
+        for c in &self.board.creatures {
+            c.get_creature().base.draw(context, graphics, &self);
+        }
+
+        if let Some(c_pointer) = self.board.selected_creature {
+            unsafe {
+                (*c_pointer).brain.draw(context, graphics, glyphs, &self);
+            }
+        }
     }
 }

@@ -217,6 +217,7 @@ impl SoftBody {
                     && creature.base.get_energy() > SAFE_SIZE
                 {
                     // unimplemented!();
+                    println!("Reproducing!");
                 }
             }
 
@@ -345,7 +346,7 @@ impl SoftBody {
         }
     }
 
-    fn get_radius(&self) -> f64 {
+    pub fn get_radius(&self) -> f64 {
         match self {
             SoftBody::Rock(b) => b.get_radius(),
             SoftBody::Creature(c) => c.base.get_radius(),

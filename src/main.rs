@@ -2,7 +2,7 @@ extern crate lib_evolvim;
 extern crate piston_window;
 
 use lib_evolvim::graphics::View;
-// use lib_evolvim::Board;
+use lib_evolvim::*;
 use piston_window::*;
 
 fn main() {
@@ -10,6 +10,9 @@ fn main() {
     let time = view.board.get_time();
     view.board.update(0.001);
     view.board.terrain.update_all(time, &view.board.climate);
+
+    view.board.selected_creature =
+        Some(view.board.creatures[0].get_creature_mut() as *mut Creature);
 
     let mut playspeed = 1;
 

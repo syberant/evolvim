@@ -12,9 +12,9 @@ pub use self::ui::{Dragging, MouseCoordinate};
 pub use self::view::View;
 
 use self::graphics::character::CharacterCache;
-use self::graphics::rectangle;
 use self::graphics::text::Text;
 use self::graphics::types::Color;
+use self::graphics::{ellipse, rectangle};
 use self::graphics::{Context, Graphics, Transformed};
 
 // use super::constants::*;
@@ -104,11 +104,52 @@ impl Terrain {
     }
 }
 
-impl Creature {
+impl Rock {
     pub fn draw<G>(&self, context: Context, graphics: &mut G, view: &View)
     where
         G: Graphics,
     {
-        unimplemented!();
+        let size = view.get_tile_size();
+        let transform = context
+            .transform
+            .trans(-view.get_precise_x() * size, -view.get_precise_y() * size);
+
+        let radius = self.get_radius();
+        // let color = from_hsba([0.0, 1.0, 0.7, 1.0]);
+        let color = [1.0, 0.0, 0.0, 1.0];
+        let rect = [
+            self.get_px() * size,
+            self.get_py() * size,
+            radius * 2.0 * size,
+            radius * 2.0 * size,
+        ];
+
+        let ellipse = ellipse::Ellipse::new(color);
+
+        ellipse.draw(rect, &context.draw_state, transform, graphics);
+    }
+}
+
+impl Brain {
+    pub fn draw<C, G>(&self, context: Context, graphics: &mut G, glyphs: &mut C, view: &View)
+    where
+        C: CharacterCache,
+        C::Error: std::fmt::Debug,
+        G: Graphics<Texture = C::Texture>,
+    {
+        let text = Text::new(18);
+        let output = self.get_output();
+
+        // Draw white background
+        let rect = [0.0, 0.0, 100.0, 20.0 * output.len() as f64];
+        rectangle([1.0, 1.0, 1.0, 1.0], rect, context.transform, graphics);
+
+        for i in 0..output.len() {
+            let info = &format!("{:.3}", output[i]);
+            let transform = context.transform.trans(10.0, 20.0 + i as f64 * 20.0);
+
+            text.draw(info, glyphs, &context.draw_state, transform, graphics)
+                .expect("Your font doesn't seem to be working... Could not draw text.");
+        }
     }
 }

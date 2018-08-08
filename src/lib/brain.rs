@@ -57,7 +57,7 @@ impl Brain {
             .insert_column(1, memory);
     }
 
-    fn get_output(&self) -> BrainOutput {
+    pub fn get_output(&self) -> BrainOutput {
         return self.a_3.as_slice();
     }
 

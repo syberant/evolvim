@@ -45,7 +45,7 @@ pub struct Board {
     // Fields relevant for the creatures.
     creature_minimum: usize,
     pub soft_bodies_in_positions: SoftBodiesInPositions,
-    creatures: Vec<SoftBody>,
+    pub creatures: Vec<SoftBody>,
     creature_id_up_to: usize,
     // _creature_rank_metric: usize,
 
@@ -56,11 +56,11 @@ pub struct Board {
     pub climate: Climate,
 
     // Fields relevant for rocks
-    rocks: Vec<SoftBody>,
+    pub rocks: Vec<SoftBody>,
 
     // Miscelanious
     user_control: bool,
-    selected_creature: Option<*mut Creature>,
+    pub selected_creature: Option<*mut Creature>,
 }
 
 impl Default for Board {
@@ -243,6 +243,8 @@ impl Board {
                     self.creatures[i].return_to_earth(self_ptr, board_size);
                 }
                 self.creatures.remove(i);
+
+                println!("Dead!");
             } else {
                 i += 1;
             }
