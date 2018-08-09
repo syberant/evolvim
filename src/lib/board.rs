@@ -47,7 +47,7 @@ pub struct Board {
     // Fields relevant for the creatures.
     creature_minimum: usize,
     pub soft_bodies_in_positions: SoftBodiesInPositions,
-    pub creatures: Vec<RcSoftBody>,
+    pub creatures: Vec<HLSoftBody>,
     creature_id_up_to: usize,
     // _creature_rank_metric: usize,
 
@@ -58,7 +58,7 @@ pub struct Board {
     pub climate: Climate,
 
     // Fields relevant for rocks
-    pub rocks: Vec<RcSoftBody>,
+    pub rocks: Vec<HLSoftBody>,
 
     // Miscelanious
     user_control: bool,
@@ -160,15 +160,18 @@ impl Board {
         }
 
         // Update all rocks.
-        for r in &mut self.rocks {
-            r.borrow_mut().collide(&self.soft_bodies_in_positions);
+        for r in &self.rocks {
+            // Calls `borrow_mut()` so there should now be no mutable references.
+            r.collide(&self.soft_bodies_in_positions);
         }
 
         // TODO: fix ugly and unidiomatic code.
-        for c in &self.creatures {
-            let mut c = c.borrow_mut();
-            // These functions take an immutable pointer to `self`.
-            c.collide(&self.soft_bodies_in_positions);
+        for c_rc in &self.creatures {
+            // This function calls `borrow_mut()`
+            c_rc.collide(&self.soft_bodies_in_positions);
+
+            let mut c = c_rc.borrow_mut();
+
             c.metabolize(time_step, &self);
 
             let time = self.year;
@@ -207,7 +210,7 @@ impl Board {
                 board_size,
                 &self.terrain,
                 &mut self.soft_bodies_in_positions,
-                Rc::clone(r_rc),
+                r_rc.value_clone(),
             );
         }
 
@@ -221,7 +224,7 @@ impl Board {
                 board_size,
                 &self.terrain,
                 &mut self.soft_bodies_in_positions,
-                Rc::clone(c_rc),
+                c_rc.value_clone(),
             );
 
             // TODO: implement seeing.
@@ -243,20 +246,24 @@ impl Board {
                 board_size, self.year,
             )));
 
-            // Initialize in `SoftBodiesInPositions` as well.
-            creature.borrow_mut().set_sbip(
-                &mut self.soft_bodies_in_positions,
-                board_size,
-                Rc::clone(&creature),
-            );
-            // Just to set the prevSBIP variables.
-            creature.borrow_mut().set_sbip(
-                &mut self.soft_bodies_in_positions,
-                board_size,
-                Rc::clone(&creature),
-            );
+            // Keep the borrow-checker happy.
+            {
+                let mut creature_mut_deref = creature.borrow_mut();
+                // Initialize in `SoftBodiesInPositions` as well.
+                creature_mut_deref.set_sbip(
+                    &mut self.soft_bodies_in_positions,
+                    board_size,
+                    Rc::clone(&creature),
+                );
+                // Just to set the prevSBIP variables.
+                creature_mut_deref.set_sbip(
+                    &mut self.soft_bodies_in_positions,
+                    board_size,
+                    Rc::clone(&creature),
+                );
+            }
 
-            self.creatures.push(creature);
+            self.creatures.push(HLSoftBody::from(creature));
             self.creature_id_up_to += 1;
         }
     }
@@ -278,7 +285,7 @@ impl Board {
                     self.creatures[i].borrow_mut().return_to_earth(
                         &mut (*self_ptr),
                         board_size,
-                        Rc::clone(&self.creatures[i]),
+                        self.creatures[i].value_clone(),
                     );
                 }
                 self.creatures.remove(i);

@@ -6,7 +6,7 @@ mod rock;
 
 pub use self::creature::*;
 pub use self::rock::*;
-use std::cell::RefCell;
+use std::cell::{Ref, RefCell, RefMut};
 use std::rc::Rc;
 
 const COLLISION_FORCE: f64 = 0.01;
@@ -17,6 +17,90 @@ const METABOLISM_ENERGY: f64 = 0.004;
 
 /// Our `safe` saviour! Provides multiple references to a `SoftBody`.
 pub type RcSoftBody = Rc<RefCell<SoftBody>>;
+
+/// Higher-Level SoftBody
+///
+/// This is a wrapper struct providing some useful functions.
+///
+/// TODO: come up with a better name.
+pub struct HLSoftBody(RcSoftBody);
+
+impl From<RcSoftBody> for HLSoftBody {
+    fn from(val: RcSoftBody) -> Self {
+        return HLSoftBody(val);
+    }
+}
+
+impl HLSoftBody {
+    /// Wrapper function
+    pub fn borrow(&self) -> Ref<SoftBody> {
+        return self.0.borrow();
+    }
+
+    /// Wrapper function
+    pub fn borrow_mut(&self) -> RefMut<SoftBody> {
+        return self.0.borrow_mut();
+    }
+
+    pub fn can_borrow_mut(&self) -> bool {
+        return self.0.try_borrow_mut().is_ok();
+    }
+
+    /// Get a clone of the internal `RcSoftBody`
+    pub fn value_clone(&self) -> RcSoftBody {
+        return Rc::clone(&self.0);
+    }
+
+    // TODO: clean up the many uses of `borrow()`
+    pub fn collide(&self, sbip: &SoftBodiesInPositions) {
+        let mut colliders: SoftBodiesAt = Vec::new();
+
+        // Copy all possible colliders into `colliders`.
+        // NOTE: possibly tries to add one collider multiple times and this DOES matter since `Vec<T>` can contain duplicate entries.
+        for x in self.borrow().current_x_range() {
+            for y in self.borrow().current_y_range() {
+                for i in sbip.get_soft_bodies_at(x, y) {
+                    colliders.add_softbody(Rc::clone(i));
+                }
+            }
+        }
+
+        // Remove self
+        colliders.remove_softbody(Rc::clone(&self.0));
+
+        let self_px = self.borrow().get_px();
+        let self_py = self.borrow().get_py();
+
+        for collider_rc in colliders {
+            let collider = collider_rc.borrow();
+
+            let (collider_px, collider_py) = (collider.get_px(), collider.get_py());
+            let distance = SoftBody::distance(self_px, self_py, collider_px, collider_py);
+
+            let combined_radius = self.borrow().get_radius() + collider.get_radius();
+
+            if distance < combined_radius {
+                let force = combined_radius * COLLISION_FORCE;
+
+                let add_vx = ((self.borrow().get_px() - collider_px) / distance)
+                    * force
+                    * self.borrow().get_mass();
+                let add_vy = ((self.borrow().get_py() - collider_py) / distance)
+                    * force
+                    * self.borrow().get_mass();
+
+                let mut self_mut_deref = self.borrow_mut();
+                self_mut_deref.add_vx(add_vx);
+                self_mut_deref.add_vy(add_vy);
+
+                eprintln!("Mutable borrow succeeded!");
+            }
+        }
+
+        // TODO: translate this from Processing to Rust
+        // fight_level = 0;
+    }
+}
 
 pub enum SoftBody {
     Rock(Rock),
@@ -102,48 +186,6 @@ impl SoftBody {
     /// Uses the Pythagorean theorem: A^2 + B^2 = C^2.
     pub fn distance(x1: f64, y1: f64, x2: f64, y2: f64) -> f64 {
         ((x1 - x2).powi(2) + (y1 - y2).powi(2)).sqrt()
-    }
-
-    pub fn collide(&mut self, sbip: &SoftBodiesInPositions) {
-        let mut colliders: SoftBodiesAt = Vec::new();
-
-        // Copy all possible colliders into `colliders`.
-        // NOTE: possibly tries to add one collider multiple times and this DOES matter since `Vec<T>` can contain duplicate entries.
-        // URGENT: fix this!
-        for x in self.current_x_range() {
-            for y in self.current_y_range() {
-                for i in sbip.get_soft_bodies_at(x, y) {
-                    colliders.push(Rc::clone(i));
-                }
-            }
-        }
-
-        // Remove self
-        // URGENT: fix this!
-        // colliders.remove(&(self as *const SoftBody));
-
-        for collider in colliders {
-            let collider = collider.borrow();
-
-            let (collider_px, collider_py) = (collider.get_px(), collider.get_py());
-            let distance =
-                SoftBody::distance(self.get_px(), self.get_py(), collider_px, collider_py);
-
-            let combined_radius = self.get_radius() + collider.get_radius();
-
-            if distance < combined_radius {
-                let force = combined_radius * COLLISION_FORCE;
-
-                let add_vx = ((self.get_px() - collider_px) / distance) * force * self.get_mass();
-                let add_vy = ((self.get_py() - collider_py) / distance) * force * self.get_mass();
-
-                self.add_vx(add_vx);
-                self.add_vy(add_vy);
-            }
-        }
-
-        // TODO: translate this from Processing to Rust
-        // fight_level = 0;
     }
 }
 
