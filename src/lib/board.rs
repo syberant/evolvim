@@ -244,7 +244,7 @@ impl Board {
                 }
                 self.creatures.remove(i);
 
-                println!("Dead!");
+            // println!("Dead!");
             } else {
                 i += 1;
             }

@@ -17,7 +17,7 @@ use self::graphics::types::Color;
 use self::graphics::{ellipse, rectangle};
 use self::graphics::{Context, Graphics, Transformed};
 
-// use super::constants::*;
+use super::constants::*;
 use super::*;
 
 // pub trait Drawable {

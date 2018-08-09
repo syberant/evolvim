@@ -71,3 +71,12 @@ pub const COLOR_BARREN: [f32; 3] = [0., 0., 1.];
 pub const COLOR_FERTILE: [f32; 3] = [0., 0., 0.2];
 
 pub const COLOR_BLACK: [f32; 3] = [0., 1., 0.];
+
+// ******************** //
+// ******** UI ******** //
+// ******************** //
+
+/// Determines how fast dragging works.
+///
+/// The bigger, the slower.
+pub const MOUSE_SPEED: f64 = 10.0;
