@@ -1,5 +1,6 @@
 extern crate rand;
 
+use self::rand::Rng;
 use super::*;
 // use constants::*;
 use std::f64::consts::PI;
@@ -39,9 +40,9 @@ impl Rock {
     pub fn new_random(board_size: BoardSize, density: f64, energy: f64) -> Self {
         let (board_width, board_height) = board_size;
 
-        // TODO: fix random coordinates, now they are always the same.
-        let px = rand::random::<f64>() * (board_width - 1) as f64;
-        let py = rand::random::<f64>() * (board_height - 1) as f64;
+        let mut thread_rng = rand::thread_rng();
+        let px = thread_rng.gen::<f64>() * (board_width - 1) as f64;
+        let py = thread_rng.gen::<f64>() * (board_height - 1) as f64;
 
         Self {
             px,
@@ -246,7 +247,7 @@ impl Rock {
     /// I.e. it also takes the radius of this body into account.
     pub fn set_body_y(&mut self, new_y: f64, board_height: usize) {
         let radius = self.get_radius();
-        self.px = new_y.max(radius).min((board_height - 1) as f64 - radius);
+        self.py = new_y.max(radius).min((board_height - 1) as f64 - radius);
     }
 
     pub fn add_vx(&mut self, value_to_add: f64) {

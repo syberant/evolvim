@@ -1,7 +1,7 @@
 extern crate lib_evolvim;
 
 use lib_evolvim::graphics::*;
-use lib_evolvim::*;
+// use lib_evolvim::*;
 
 #[test]
 fn test_graphics_from_hsba() {

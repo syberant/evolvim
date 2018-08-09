@@ -16,7 +16,7 @@ pub struct View {
     tiles_on_height: usize,
     tiles_on_width: usize,
 
-    base_tile_width: f64,
+    _base_tile_width: f64,
     tile_width: f64,
 
     pub board: Board,
@@ -28,7 +28,7 @@ pub struct View {
 
 impl Default for View {
     fn default() -> Self {
-        let base_tile_width = 100.0;
+        let base_tile_width = 10.0;
         View {
             precise_x: 0.0,
             precise_y: 0.0,
@@ -36,10 +36,10 @@ impl Default for View {
             max_x: 100,
             max_y: 100,
 
-            tiles_on_height: 10,
-            tiles_on_width: 10,
+            tiles_on_height: 100,
+            tiles_on_width: 100,
 
-            base_tile_width,
+            _base_tile_width: base_tile_width,
             tile_width: base_tile_width,
 
             board: Board::default(),
