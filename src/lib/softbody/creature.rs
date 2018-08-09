@@ -36,13 +36,13 @@ impl Creature {
     }
 
     /// The `Creature` version of `apply_motions`, this is different to the `Rock` version.
-    pub fn apply_motions(&mut self, time_step: f64, board: &mut Board) {
-        if self.is_on_water(board) {
+    pub fn apply_motions(&mut self, time_step: f64, terrain: &Terrain, board_size: BoardSize) {
+        if self.is_on_water(terrain, board_size) {
             let energy_to_lose = time_step * SWIM_ENERGY * self.get_energy();
             self.lose_energy(energy_to_lose);
         }
 
-        self.base.apply_motions(time_step, board.get_board_size());
+        self.base.apply_motions(time_step, board_size);
     }
 
     pub fn should_die(&self) -> bool {
@@ -112,8 +112,8 @@ impl Creature {
 
 // Functions calling themselves for `self.base`
 impl Creature {
-    pub fn is_on_water(&self, board: &Board) -> bool {
-        return self.base.is_on_water(board);
+    pub fn is_on_water(&self, terrain: &Terrain, board_size: BoardSize) -> bool {
+        return self.base.is_on_water(terrain, board_size);
     }
 
     pub fn get_energy(&self) -> f64 {

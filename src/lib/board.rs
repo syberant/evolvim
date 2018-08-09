@@ -9,6 +9,8 @@ extern crate rand;
 
 use super::*;
 use constants::*;
+use std::cell::RefCell;
+use std::rc::Rc;
 
 /// The amount of times a year an object is updated.
 ///
@@ -45,7 +47,7 @@ pub struct Board {
     // Fields relevant for the creatures.
     creature_minimum: usize,
     pub soft_bodies_in_positions: SoftBodiesInPositions,
-    pub creatures: Vec<SoftBody>,
+    pub creatures: Vec<RcSoftBody>,
     creature_id_up_to: usize,
     // _creature_rank_metric: usize,
 
@@ -56,7 +58,7 @@ pub struct Board {
     pub climate: Climate,
 
     // Fields relevant for rocks
-    pub rocks: Vec<SoftBody>,
+    pub rocks: Vec<RcSoftBody>,
 
     // Miscelanious
     user_control: bool,
@@ -159,24 +161,32 @@ impl Board {
 
         // Update all rocks.
         for r in &mut self.rocks {
-            r.collide(&self.soft_bodies_in_positions);
+            r.borrow_mut().collide(&self.soft_bodies_in_positions);
         }
 
         // TODO: fix ugly and unidiomatic code.
-        // I know I create a mutable pointer here and use an immutable pointer to `self` further on,
-        // but it saves me tons of time doing it this way.
-        let creatures_pointer = &mut self.creatures as *mut Vec<SoftBody>;
-        unsafe {
-            for c in (*creatures_pointer).iter_mut() {
-                // These functions take an immutable pointer to `self`.
-                c.collide(&self.soft_bodies_in_positions);
-                c.metabolize(time_step, &self);
+        for c in &self.creatures {
+            let mut c = c.borrow_mut();
+            // These functions take an immutable pointer to `self`.
+            c.collide(&self.soft_bodies_in_positions);
+            c.metabolize(time_step, &self);
 
-                c.use_brain(time_step, !self.user_control, self);
+            let time = self.year;
+            let board_size = self.get_board_size();
+            let terrain = &mut self.terrain;
+            let climate = &self.climate;
 
-                if self.user_control {
-                    // TODO: provide user control over creature.
-                }
+            c.use_brain(
+                time_step,
+                !self.user_control,
+                time,
+                board_size,
+                terrain,
+                climate,
+            );
+
+            if self.user_control {
+                // TODO: provide user control over creature.
             }
         }
 
@@ -187,20 +197,35 @@ impl Board {
         self.maintain_creature_minimum();
 
         // Finish the iteration.
-        let rocks_pointer = &mut self.rocks as *mut Vec<SoftBody>;
-        unsafe {
-            for r in (*rocks_pointer).iter_mut() {
-                // This function takes a mutable pointer to `self`.
-                r.apply_motions(time_step * OBJECT_TIMESTEPS_PER_YEAR, self);
-            }
+        for r_rc in &self.rocks {
+            let mut r = r_rc.borrow_mut();
 
-            for c in (*creatures_pointer).iter_mut() {
-                // This function takes a mutable pointer to `self`.
-                c.apply_motions(time_step * OBJECT_TIMESTEPS_PER_YEAR, self);
+            let board_size = self.get_board_size();
+            // This function takes a mutable pointer to `self`.
+            r.apply_motions(
+                time_step * OBJECT_TIMESTEPS_PER_YEAR,
+                board_size,
+                &self.terrain,
+                &mut self.soft_bodies_in_positions,
+                Rc::clone(r_rc),
+            );
+        }
 
-                // TODO: implement seeing.
-                // c.see();
-            }
+        for c_rc in &self.creatures {
+            let mut c = c_rc.borrow_mut();
+
+            let board_size = self.get_board_size();
+            // This function takes a mutable pointer to `self`.
+            c.apply_motions(
+                time_step * OBJECT_TIMESTEPS_PER_YEAR,
+                board_size,
+                &self.terrain,
+                &mut self.soft_bodies_in_positions,
+                Rc::clone(c_rc),
+            );
+
+            // TODO: implement seeing.
+            // c.see();
         }
 
         // TODO: implement filesaving.
@@ -214,12 +239,22 @@ impl Board {
     fn maintain_creature_minimum(&mut self) {
         while self.creatures.len() < self.creature_minimum {
             let board_size = self.get_board_size();
-            let mut creature = SoftBody::new_random_creature(board_size, self.year);
+            let creature = Rc::new(RefCell::new(SoftBody::new_random_creature(
+                board_size, self.year,
+            )));
 
             // Initialize in `SoftBodiesInPositions` as well.
-            creature.set_sbip(&mut self.soft_bodies_in_positions, board_size);
+            creature.borrow_mut().set_sbip(
+                &mut self.soft_bodies_in_positions,
+                board_size,
+                Rc::clone(&creature),
+            );
             // Just to set the prevSBIP variables.
-            creature.set_sbip(&mut self.soft_bodies_in_positions, board_size);
+            creature.borrow_mut().set_sbip(
+                &mut self.soft_bodies_in_positions,
+                board_size,
+                Rc::clone(&creature),
+            );
 
             self.creatures.push(creature);
             self.creature_id_up_to += 1;
@@ -237,10 +272,14 @@ impl Board {
         let mut i = 0;
         while i < self.creatures.len() {
             // let creature = &mut self.creatures[i];
-            if self.creatures[i].should_die() {
+            if self.creatures[i].borrow().should_die() {
                 unsafe {
                     // Infallable
-                    self.creatures[i].return_to_earth(self_ptr, board_size);
+                    self.creatures[i].borrow_mut().return_to_earth(
+                        self_ptr,
+                        board_size,
+                        Rc::clone(&self.creatures[i]),
+                    );
                 }
                 self.creatures.remove(i);
 

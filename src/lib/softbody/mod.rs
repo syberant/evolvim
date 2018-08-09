@@ -6,12 +6,17 @@ mod rock;
 
 pub use self::creature::*;
 pub use self::rock::*;
+use std::cell::RefCell;
+use std::rc::Rc;
 
 const COLLISION_FORCE: f64 = 0.01;
 const PIECES: usize = 20;
 const AGE_FACTOR: f64 = 1.0;
 const MATURE_AGE: f64 = 0.01;
 const METABOLISM_ENERGY: f64 = 0.004;
+
+/// Our `safe` saviour! Provides multiple references to a `SoftBody`.
+pub type RcSoftBody = Rc<RefCell<SoftBody>>;
 
 pub enum SoftBody {
     Rock(Rock),
@@ -50,7 +55,12 @@ impl SoftBody {
     }
 
     /// Updates `SoftBodiesInPositions` and updates itself by calling `update_sbip_variables()`.
-    pub fn set_sbip(&mut self, sbip: &mut SoftBodiesInPositions, board_size: BoardSize) {
+    pub fn set_sbip(
+        &mut self,
+        sbip: &mut SoftBodiesInPositions,
+        board_size: BoardSize,
+        self_ref: RcSoftBody,
+    ) {
         // TODO: Look for optimizations here by cleaning and filling sbip more intelligently.
 
         self.update_sbip_variables(board_size);
@@ -60,7 +70,7 @@ impl SoftBody {
                 for y in self.previous_y_range() {
                     // Prevents deleting tiles we are currently in.
                     if !self.is_in_tile(x, y) {
-                        sbip.remove_soft_body_at(x, y, &self);
+                        sbip.remove_soft_body_at(x, y, Rc::clone(&self_ref));
                     }
                 }
             }
@@ -69,11 +79,8 @@ impl SoftBody {
                 for y in self.current_y_range() {
                     // Prevents duplicate entries.
                     if !self.was_in_tile(x, y) {
-                        sbip.add_soft_body_at(x, y, &self);
+                        sbip.add_soft_body_at(x, y, Rc::clone(&self_ref));
                     }
-
-                    // // Just tries to add it, even when it has already been added.
-                    // sbip.add_soft_body_at(x, y, &self);
                 }
             }
         }
@@ -82,10 +89,10 @@ impl SoftBody {
     /// Completely removes this `SoftBody` from `sbip`.
     ///
     /// NOTE: `SoftBody` is added again when `set_sbip` is called.
-    pub fn remove_from_sbip(&mut self, sbip: &mut SoftBodiesInPositions) {
+    pub fn remove_from_sbip(&mut self, sbip: &mut SoftBodiesInPositions, self_ref: RcSoftBody) {
         for x in self.current_x_range() {
             for y in self.current_y_range() {
-                sbip.remove_soft_body_at(x, y, self);
+                sbip.remove_soft_body_at(x, y, Rc::clone(&self_ref));
             }
         }
     }
@@ -98,41 +105,40 @@ impl SoftBody {
     }
 
     pub fn collide(&mut self, sbip: &SoftBodiesInPositions) {
-        let mut colliders: SoftBodiesAt = std::collections::HashSet::new();
+        let mut colliders: SoftBodiesAt = Vec::new();
 
         // Copy all possible colliders into `colliders`.
-        // NOTE: possibly tries to add one collider multiple times but this doesn't matter since `HashSet<T>` can only contain unique entries.
+        // NOTE: possibly tries to add one collider multiple times and this DOES matter since `Vec<T>` can contain duplicate entries.
+        // URGENT: fix this!
         for x in self.current_x_range() {
             for y in self.current_y_range() {
                 for i in sbip.get_soft_bodies_at(x, y) {
-                    colliders.insert(*i);
+                    colliders.push(Rc::clone(i));
                 }
             }
         }
 
         // Remove self
-        colliders.remove(&(self as *const SoftBody));
+        // URGENT: fix this!
+        // colliders.remove(&(self as *const SoftBody));
 
         for collider in colliders {
-            // Unsafe here is fine (and needed) as long as the references in `sbip` are okay.
-            unsafe {
-                let (collider_px, collider_py) = ((*collider).get_px(), (*collider).get_py());
-                let distance =
-                    SoftBody::distance(self.get_px(), self.get_py(), collider_px, collider_py);
+            let collider = collider.borrow();
 
-                let combined_radius = self.get_radius() + (*collider).get_radius();
+            let (collider_px, collider_py) = (collider.get_px(), collider.get_py());
+            let distance =
+                SoftBody::distance(self.get_px(), self.get_py(), collider_px, collider_py);
 
-                if distance < combined_radius {
-                    let force = combined_radius * COLLISION_FORCE;
+            let combined_radius = self.get_radius() + collider.get_radius();
 
-                    let add_vx =
-                        ((self.get_px() - collider_px) / distance) * force * self.get_mass();
-                    let add_vy =
-                        ((self.get_py() - collider_py) / distance) * force * self.get_mass();
+            if distance < combined_radius {
+                let force = combined_radius * COLLISION_FORCE;
 
-                    self.add_vx(add_vx);
-                    self.add_vy(add_vy);
-                }
+                let add_vx = ((self.get_px() - collider_px) / distance) * force * self.get_mass();
+                let add_vy = ((self.get_py() - collider_py) / distance) * force * self.get_mass();
+
+                self.add_vx(add_vx);
+                self.add_vy(add_vy);
             }
         }
 
@@ -164,7 +170,12 @@ impl SoftBody {
     /// This function is unsafe! Only mess with it if you know what you're doing!
     ///
     /// TODO: description of unsafe behaviour.
-    pub unsafe fn return_to_earth(&mut self, unsafe_board: *mut Board, board_size: BoardSize) {
+    pub unsafe fn return_to_earth(
+        &mut self,
+        unsafe_board: *mut Board,
+        board_size: BoardSize,
+        self_ref: RcSoftBody,
+    ) {
         let safe_board = &mut (*unsafe_board);
         let time = safe_board.get_time();
 
@@ -180,31 +191,37 @@ impl SoftBody {
                 .update_at(tile_pos, time, &safe_board.climate);
         }
 
-        self.remove_from_sbip(&mut safe_board.soft_bodies_in_positions);
+        self.remove_from_sbip(&mut safe_board.soft_bodies_in_positions, self_ref);
 
         // Unselect this creature if it was selected.
         safe_board.unselect_if_dead(self.get_creature_mut());
     }
 
     /// Parts of this function are unsafe. Only mess with them if you know what you're doing!
-    pub fn use_brain(&mut self, time_step: f64, use_output: bool, board: &mut Board) {
+    pub fn use_brain(
+        &mut self,
+        time_step: f64,
+        use_output: bool,
+        // The following are parts of a `Board`.
+        time: f64,
+        board_size: BoardSize,
+        terrain: &mut Terrain,
+        climate: &Climate,
+    ) {
         let input = self.get_input();
         let unsafe_creature = self.get_creature_mut() as *mut Creature;
         let creature = self.get_creature_mut();
         let output = creature.brain.run(input);
-
-        let time = board.get_time();
 
         if use_output {
             creature.base.accelerate(output[1], time_step);
             creature.base.turn(output[2], time_step);
 
             // TODO: clean this mess.
+            let tile_pos = creature.base.get_random_covered_tile(board_size);
+            let tile = terrain.get_tile_at_mut(tile_pos);
             unsafe {
-                let board_size = board.get_board_size();
-                let tile_pos = creature.base.get_random_covered_tile(board_size);
-                let tile = board.terrain.get_tile_at_mut(tile_pos);
-                (*unsafe_creature).eat(output[3], time_step, time, &board.climate, tile);
+                (*unsafe_creature).eat(output[3], time_step, time, climate, tile);
             }
 
             // Fight
@@ -257,13 +274,20 @@ impl SoftBody {
 // Here are all the functions which merely call the same function on the underlying types.
 impl SoftBody {
     /// Calls the same function on all types and updates `SoftBodiesInPositions` by calling `set_sbip`.
-    pub fn apply_motions(&mut self, time_step: f64, board: &mut Board) {
+    pub fn apply_motions(
+        &mut self,
+        time_step: f64,
+        board_size: BoardSize,
+        terrain: &Terrain,
+        sbip: &mut SoftBodiesInPositions,
+        self_ref: RcSoftBody,
+    ) {
         match self {
-            SoftBody::Rock(b) => b.apply_motions(time_step, board.get_board_size()),
-            SoftBody::Creature(c) => c.apply_motions(time_step, board),
+            SoftBody::Rock(b) => b.apply_motions(time_step, board_size),
+            SoftBody::Creature(c) => c.apply_motions(time_step, terrain, board_size),
         };
-        let board_size = board.get_board_size();
-        self.set_sbip(&mut board.soft_bodies_in_positions, board_size);
+
+        self.set_sbip(sbip, board_size, self_ref);
     }
 
     fn get_random_covered_tile(&self, board_size: BoardSize) -> BoardCoordinate {

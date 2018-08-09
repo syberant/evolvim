@@ -64,6 +64,7 @@ mod benches {
                     gfx_device_gl::CommandBuffer,
                 >| {
                     view.board.creatures[0]
+                        .borrow()
                         .get_creature()
                         .base
                         .draw(context, graphics, &view);

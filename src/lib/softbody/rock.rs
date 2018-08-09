@@ -178,10 +178,10 @@ impl Rock {
     }
 
     /// Returns true if this body is currently on water.
-    pub fn is_on_water(&self, board: &Board) -> bool {
+    pub fn is_on_water(&self, terrain: &Terrain, board_size: BoardSize) -> bool {
         // TODO: determine whether this is desirable and maybe come up with a better system.
-        let pos = self.get_random_covered_tile(board.get_board_size());
-        let tile = board.terrain.get_tile_at(pos);
+        let pos = self.get_random_covered_tile(board_size);
+        let tile = terrain.get_tile_at(pos);
         return tile.is_water();
     }
 }

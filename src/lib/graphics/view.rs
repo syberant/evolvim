@@ -168,7 +168,10 @@ impl View {
             self.board.terrain.draw(context, graphics, glyphs, &self);
 
             for c in &self.board.creatures {
-                c.get_creature().base.draw(context, graphics, &self);
+                c.borrow()
+                    .get_creature()
+                    .base
+                    .draw(context, graphics, &self);
             }
 
             if let Some(c_pointer) = self.board.selected_creature {

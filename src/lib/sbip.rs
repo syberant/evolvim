@@ -7,8 +7,9 @@
 //! Please don't mess with this module if you don't understand it: it will save you a lot of frustration!
 
 use super::*;
+use std::rc::Rc;
 
-pub type SoftBodiesAt = std::collections::HashSet<*const SoftBody>;
+pub type SoftBodiesAt = Vec<RcSoftBody>;
 
 /// Contains a list of every `SoftBody` in a given coordinate.
 pub struct SoftBodiesInPositions(Vec<Vec<SoftBodiesAt>>);
@@ -32,11 +33,19 @@ impl SoftBodiesInPositions {
         return &self.0[x][y];
     }
 
-    pub fn add_soft_body_at(&mut self, x: usize, y: usize, body: &SoftBody) {
-        self.0[x][y].insert(body as *const SoftBody);
+    pub fn add_soft_body_at(&mut self, x: usize, y: usize, body: RcSoftBody) {
+        self.0[x][y].push(body);
     }
 
-    pub fn remove_soft_body_at(&mut self, x: usize, y: usize, body: &SoftBody) {
-        self.0[x][y].remove(&(body as *const SoftBody));
+    /// NOTE: only removes one instance of `body`.
+    pub fn remove_soft_body_at(&mut self, x: usize, y: usize, body: RcSoftBody) {
+        let temp = &mut self.0[x][y];
+
+        for i in 0..temp.len() {
+            if Rc::ptr_eq(&temp[i], &body) {
+                temp.remove(i);
+                break;
+            }
+        }
     }
 }
