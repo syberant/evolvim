@@ -66,6 +66,9 @@ fn main() {
                         playspeed = 0;
                     }
                 }
+                Keyboard(Key::D) => {
+                    view.switch_display_mode();
+                }
                 _ => (),
             }
         }

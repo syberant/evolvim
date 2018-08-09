@@ -24,6 +24,7 @@ pub struct View {
     pub mouse: MouseCoordinate,
 
     drag: Dragging,
+    mode: DisplayMode,
 }
 
 impl Default for View {
@@ -47,6 +48,7 @@ impl Default for View {
             mouse: MouseCoordinate::new(0.0, 0.0),
 
             drag: Dragging::None,
+            mode: DisplayMode::default(),
         }
     }
 }
@@ -78,6 +80,15 @@ impl View {
 
     pub fn update_mouse(&mut self, x: f64, y: f64) {
         self.mouse = MouseCoordinate::new(x, y);
+    }
+
+    pub fn switch_display_mode(&mut self) {
+        use self::DisplayMode::*;
+
+        self.mode = match self.mode {
+            Normal => None,
+            None => Normal,
+        };
     }
 }
 
@@ -133,14 +144,16 @@ impl View {
     }
 
     pub fn prepare_for_drawing(&mut self) {
-        let time = self.board.get_time();
-        // let x_range = self.get_x_range();
-        // let y_range = self.get_y_range();
+        if self.mode == DisplayMode::Normal {
+            let time = self.board.get_time();
+            // let x_range = self.get_x_range();
+            // let y_range = self.get_y_range();
 
-        // self.board
-        //     .terrain
-        //     .update_all_at(time, &self.board.climate, x_range, y_range);
-        self.board.terrain.update_all(time, &self.board.climate);
+            // self.board
+            //     .terrain
+            //     .update_all_at(time, &self.board.climate, x_range, y_range);
+            self.board.terrain.update_all(time, &self.board.climate);
+        }
     }
 }
 
@@ -151,16 +164,32 @@ impl View {
         C::Error: std::fmt::Debug,
         G: Graphics<Texture = C::Texture>,
     {
-        self.board.terrain.draw(context, graphics, glyphs, &self);
+        if self.mode == DisplayMode::Normal {
+            self.board.terrain.draw(context, graphics, glyphs, &self);
 
-        for c in &self.board.creatures {
-            c.get_creature().base.draw(context, graphics, &self);
-        }
+            for c in &self.board.creatures {
+                c.get_creature().base.draw(context, graphics, &self);
+            }
 
-        if let Some(c_pointer) = self.board.selected_creature {
-            unsafe {
-                (*c_pointer).brain.draw(context, graphics, glyphs, &self);
+            if let Some(c_pointer) = self.board.selected_creature {
+                unsafe {
+                    (*c_pointer).brain.draw(context, graphics, glyphs, &self);
+                }
             }
         }
+    }
+}
+
+#[derive(PartialEq)]
+pub enum DisplayMode {
+    /// Normal display mode, like evolv.io had.
+    Normal,
+    /// Doesn't display anything, lets the simulation go faster because there is no rendering.
+    None,
+}
+
+impl Default for DisplayMode {
+    fn default() -> Self {
+        DisplayMode::Normal
     }
 }
