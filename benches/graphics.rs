@@ -30,6 +30,7 @@ mod benches {
     //     let mut glyphs = Glyphs::from_bytes(byte_font, factory, text_settings).unwrap();
     // }
 
+    #[allow(unused_variables, unreachable_code)]
     #[bench]
     fn bench_graphics_complete_draw(b: &mut Bencher) {
         let opengl = OpenGL::V3_2;
