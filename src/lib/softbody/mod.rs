@@ -92,8 +92,6 @@ impl HLSoftBody {
                 let mut self_mut_deref = self.borrow_mut();
                 self_mut_deref.add_vx(add_vx);
                 self_mut_deref.add_vy(add_vy);
-
-                eprintln!("Mutable borrow succeeded!");
             }
         }
 
