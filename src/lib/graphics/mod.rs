@@ -131,7 +131,7 @@ impl Rock {
 }
 
 impl Brain {
-    pub fn draw<C, G>(&self, context: Context, graphics: &mut G, glyphs: &mut C, view: &View)
+    pub fn draw<C, G>(&self, context: Context, graphics: &mut G, glyphs: &mut C, _view: &View)
     where
         C: CharacterCache,
         C::Error: std::fmt::Debug,

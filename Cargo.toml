@@ -8,6 +8,10 @@ nalgebra = "0.16.0"
 noise = "0.5.1"
 piston_window = "0.80.0"
 rand = "0.5.4"
+piston2d-gfx_graphics = "0.51.0"
+gfx_device_gl = "0.15.3"
+shader_version = "0.3.0"
+gfx = "0.17.1"
 
 [dependencies.piston2d-graphics]
 version = "0.26.0"
