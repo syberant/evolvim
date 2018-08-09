@@ -9,7 +9,36 @@
 use super::*;
 use std::rc::Rc;
 
+pub trait SoftBodyBucket {
+    fn remove_softbody(&mut self, body: RcSoftBody);
+
+    fn add_softbody(&mut self, body: RcSoftBody);
+}
+
 pub type SoftBodiesAt = Vec<RcSoftBody>;
+
+impl SoftBodyBucket for SoftBodiesAt {
+    fn remove_softbody(&mut self, body: RcSoftBody) {
+        // WARNING: Only removes one instance
+        for i in 0..self.len() {
+            if Rc::ptr_eq(&self[i], &body) {
+                self.remove(i);
+                break;
+            }
+        }
+    }
+
+    /// Adds the given `RcSoftBody`, prevents duplicates.
+    fn add_softbody(&mut self, body: RcSoftBody) {
+        for i in 0..self.len() {
+            if Rc::ptr_eq(&self[i], &body) {
+                return;
+            }
+        }
+
+        self.push(body);
+    }
+}
 
 /// Contains a list of every `SoftBody` in a given coordinate.
 pub struct SoftBodiesInPositions(Vec<Vec<SoftBodiesAt>>);
@@ -39,13 +68,6 @@ impl SoftBodiesInPositions {
 
     /// NOTE: only removes one instance of `body`.
     pub fn remove_soft_body_at(&mut self, x: usize, y: usize, body: RcSoftBody) {
-        let temp = &mut self.0[x][y];
-
-        for i in 0..temp.len() {
-            if Rc::ptr_eq(&temp[i], &body) {
-                temp.remove(i);
-                break;
-            }
-        }
+        self.0[x][y].remove_softbody(body);
     }
 }
