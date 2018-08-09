@@ -167,31 +167,31 @@ impl SoftBody {
         return self.get_creature().get_birth_time();
     }
 
-    /// This function is unsafe! Only mess with it if you know what you're doing!
-    ///
-    /// TODO: description of unsafe behaviour.
-    pub unsafe fn return_to_earth(
+    /// This function requires a reference to a `Board`.
+    /// This is usually impossible so you'll have to turn to `unsafe`.
+    pub fn return_to_earth(
         &mut self,
-        unsafe_board: *mut Board,
+        safe_board: &mut Board,
         board_size: BoardSize,
         self_ref: RcSoftBody,
     ) {
-        let safe_board = &mut (*unsafe_board);
         let time = safe_board.get_time();
 
-        for _i in 0..PIECES {
-            let tile_pos = self.get_random_covered_tile(board_size);
-            safe_board
-                .terrain
-                .add_food_or_nothing_at(tile_pos, self.get_energy() / PIECES as f64);
+        // To make the borrow-checker happy.
+        {
+            let terrain = &mut safe_board.terrain;
+            let sbip = &mut safe_board.soft_bodies_in_positions;
 
-            // TODO: check if this is neccessary and fix this mess!
-            safe_board
-                .terrain
-                .update_at(tile_pos, time, &safe_board.climate);
+            for _i in 0..PIECES {
+                let tile_pos = self.get_random_covered_tile(board_size);
+                terrain.add_food_or_nothing_at(tile_pos, self.get_energy() / PIECES as f64);
+
+                // TODO: check if this is neccessary and fix this mess!
+                terrain.update_at(tile_pos, time, &safe_board.climate);
+            }
+
+            self.remove_from_sbip(sbip, self_ref);
         }
-
-        self.remove_from_sbip(&mut safe_board.soft_bodies_in_positions, self_ref);
 
         // Unselect this creature if it was selected.
         safe_board.unselect_if_dead(self.get_creature_mut());

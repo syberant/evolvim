@@ -276,7 +276,7 @@ impl Board {
                 unsafe {
                     // Infallable
                     self.creatures[i].borrow_mut().return_to_earth(
-                        self_ptr,
+                        &mut (*self_ptr),
                         board_size,
                         Rc::clone(&self.creatures[i]),
                     );
