@@ -288,7 +288,7 @@ impl SoftBody {
                     && creature.base.get_energy() > SAFE_SIZE
                 {
                     // unimplemented!();
-                    println!("Reproducing!");
+                    // println!("Reproducing!");
                 }
             }
 

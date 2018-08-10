@@ -86,7 +86,8 @@ impl View {
         use self::DisplayMode::*;
 
         self.mode = match self.mode {
-            Normal => None,
+            Normal => Tiles,
+            Tiles => None,
             None => Normal,
         };
     }
@@ -142,43 +143,51 @@ impl View {
             end: self.get_y() + self.tiles_on_height,
         }
     }
-
-    pub fn prepare_for_drawing(&mut self) {
-        if self.mode == DisplayMode::Normal {
-            let time = self.board.get_time();
-            // let x_range = self.get_x_range();
-            // let y_range = self.get_y_range();
-
-            // self.board
-            //     .terrain
-            //     .update_all_at(time, &self.board.climate, x_range, y_range);
-            self.board.terrain.update_all(time, &self.board.climate);
-        }
-    }
 }
 
 impl View {
+    pub fn prepare_for_drawing(&mut self) {
+        if self.mode == DisplayMode::Normal || self.mode == DisplayMode::Tiles {
+            let time = self.board.get_time();
+            let x_range = self.get_x_range();
+            let y_range = self.get_y_range();
+
+            self.board
+                .terrain
+                .update_all_at(time, &self.board.climate, x_range, y_range);
+            // self.board.terrain.update_all(time, &self.board.climate);
+        }
+    }
+
     pub fn draw<C, G>(&self, context: Context, graphics: &mut G, glyphs: &mut C)
     where
         C: CharacterCache,
         C::Error: std::fmt::Debug,
         G: Graphics<Texture = C::Texture>,
     {
-        if self.mode == DisplayMode::Normal {
-            self.board.terrain.draw(context, graphics, glyphs, &self);
+        use self::DisplayMode::*;
 
-            for c in &self.board.creatures {
-                c.borrow()
-                    .get_creature()
-                    .base
-                    .draw(context, graphics, &self);
-            }
+        match self.mode {
+            Normal => {
+                self.board.terrain.draw(context, graphics, glyphs, &self);
 
-            if let Some(c_pointer) = self.board.selected_creature {
-                unsafe {
-                    (*c_pointer).brain.draw(context, graphics, glyphs, &self);
+                for c in &self.board.creatures {
+                    c.borrow()
+                        .get_creature()
+                        .base
+                        .draw(context, graphics, &self);
+                }
+
+                if let Some(c_pointer) = self.board.selected_creature {
+                    unsafe {
+                        (*c_pointer).brain.draw(context, graphics, glyphs, &self);
+                    }
                 }
             }
+            Tiles => {
+                self.board.terrain.draw(context, graphics, glyphs, &self);
+            }
+            None => {}
         }
     }
 }
@@ -187,6 +196,8 @@ impl View {
 pub enum DisplayMode {
     /// Normal display mode, like evolv.io had.
     Normal,
+    /// Only display tiles.
+    Tiles,
     /// Doesn't display anything, lets the simulation go faster because there is no rendering.
     None,
 }

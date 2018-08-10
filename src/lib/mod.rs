@@ -20,6 +20,11 @@
 //!
 //! # Performance
 //!
+//! # Graphics
+//! At the time of writing, my implementation is ABSOLUTELY TERRIBLE.
+//! Please do use the option to turn the graphics off.
+//! That will show the speed of the internal logic of `evolvim`, which is pretty good (and can improve even more with multithreading).
+//!
 //! ## Running benchmarks
 //! I have written some benchmarks to assess the performance of this crate.
 //! You can run them with `cargo bench --features=bench`.
@@ -36,6 +41,7 @@
 //!
 //! ## Multithreading
 //! This is on my list but could be a bit tricky because of my usage of `unsafe` (for information about `safe` and `unsafe` [Rust], see [here](https://doc.rust-lang.org/nomicon/safe-unsafe-meaning.html)).
+//! I'm working on removing any use of `unsafe` which will significantly ease the process of converting to multithreaded code.
 //!
 //! # Conclusion
 //! As a wise men once said: ["Ceterum censeo Javam delendam esse."](https://en.wikipedia.org/wiki/Carthago_delenda_est)
