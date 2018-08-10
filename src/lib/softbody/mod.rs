@@ -31,6 +31,12 @@ impl From<RcSoftBody> for HLSoftBody {
     }
 }
 
+impl Into<RcSoftBody> for HLSoftBody {
+    fn into(self) -> RcSoftBody {
+        return self.0;
+    }
+}
+
 impl HLSoftBody {
     /// Wrapper function
     pub fn borrow(&self) -> Ref<SoftBody> {
@@ -42,6 +48,7 @@ impl HLSoftBody {
         return self.0.borrow_mut();
     }
 
+    /// Returns a boolean indicating whether this `HLSoftBody` is currently borrowed.
     pub fn can_borrow_mut(&self) -> bool {
         return self.0.try_borrow_mut().is_ok();
     }
@@ -51,7 +58,9 @@ impl HLSoftBody {
         return Rc::clone(&self.0);
     }
 
-    // TODO: clean up the many uses of `borrow()`
+    /// Checks for collision and adjusts velocity if that's the case.
+    ///
+    /// TODO: clean up the many uses of `borrow()`
     pub fn collide(&self, sbip: &SoftBodiesInPositions) {
         let mut colliders: SoftBodiesAt = Vec::new();
 
@@ -60,6 +69,7 @@ impl HLSoftBody {
         for x in self.borrow().current_x_range() {
             for y in self.borrow().current_y_range() {
                 for i in sbip.get_soft_bodies_at(x, y) {
+                    // This function should check whether this softbody is already in there.
                     colliders.add_softbody(Rc::clone(i));
                 }
             }
@@ -109,8 +119,8 @@ impl SoftBody {
     /// Returns true if this `SoftBody` is a creature and false otherwise.
     pub fn is_creature(&self) -> bool {
         match self {
-            SoftBody::Rock(_) => false,
             SoftBody::Creature(_) => true,
+            _ => false,
         }
     }
 
@@ -118,10 +128,11 @@ impl SoftBody {
     pub fn is_rock(&self) -> bool {
         match self {
             SoftBody::Rock(_) => true,
-            SoftBody::Creature(_) => false,
+            _ => false,
         }
     }
 
+    /// Wrapper function.
     pub fn new_random_creature(board_size: BoardSize, time: f64) -> SoftBody {
         SoftBody::Creature(Creature::new_random(board_size, time))
     }
@@ -189,6 +200,7 @@ impl SoftBody {
 
 // Here are all the functions only applicable to `Creature`s.
 impl SoftBody {
+    /// Returns a reference to the `Creature` that was hidden in this `SoftBody` or `panic!`s.
     pub fn get_creature(&self) -> &Creature {
         match self {
             SoftBody::Creature(c) => c,
@@ -196,6 +208,7 @@ impl SoftBody {
         }
     }
 
+    /// Returns a mutable reference to the `Creature` that was hidden in this `SoftBody` or `panic!`s.
     pub fn get_creature_mut(&mut self) -> &mut Creature {
         match self {
             SoftBody::Creature(c) => c,
@@ -203,6 +216,7 @@ impl SoftBody {
         }
     }
 
+    /// Wrapper function.
     pub fn get_birth_time(&self) -> f64 {
         return self.get_creature().get_birth_time();
     }
@@ -284,7 +298,9 @@ impl SoftBody {
         }
     }
 
-    // TODO: improve!
+    /// Gets the input for the brain of the creature.
+    ///
+    /// TODO: improve!
     fn get_input(&self) -> BrainInput {
         let mut input = [0.0; 9];
 
@@ -306,6 +322,7 @@ impl SoftBody {
         // Creature should die if it doesn't have enough energy, this is done by `Board`.
     }
 
+    /// Wrapper function
     pub fn should_die(&self) -> bool {
         return self.get_creature().should_die();
     }
@@ -340,6 +357,8 @@ impl SoftBody {
     /// Returns `true` if this `SoftBody` has moved between tiles since the last update.
     ///
     /// Used to determine if `SoftBodiesInPosisitions` should be updated and `set_sbip` should be called.
+    ///
+    /// Wrapper function.
     fn moved_between_tiles(&self) -> bool {
         match self {
             SoftBody::Rock(b) => b.moved_between_tiles(),
@@ -347,6 +366,7 @@ impl SoftBody {
         }
     }
 
+    /// Wrapper function.
     fn is_in_tile(&self, x: usize, y: usize) -> bool {
         match self {
             SoftBody::Rock(b) => b.is_in_tile(x, y),
@@ -354,6 +374,7 @@ impl SoftBody {
         }
     }
 
+    /// Wrapper function.
     fn was_in_tile(&self, x: usize, y: usize) -> bool {
         match self {
             SoftBody::Rock(b) => b.was_in_tile(x, y),
@@ -361,6 +382,7 @@ impl SoftBody {
         }
     }
 
+    /// Wrapper function.
     fn previous_x_range(&self) -> std::ops::RangeInclusive<usize> {
         match self {
             SoftBody::Rock(b) => b.previous_x_range(),
@@ -368,6 +390,7 @@ impl SoftBody {
         }
     }
 
+    /// Wrapper function.
     fn previous_y_range(&self) -> std::ops::RangeInclusive<usize> {
         match self {
             SoftBody::Rock(b) => b.previous_y_range(),
@@ -375,6 +398,7 @@ impl SoftBody {
         }
     }
 
+    /// Wrapper function.
     fn current_x_range(&self) -> std::ops::RangeInclusive<usize> {
         match self {
             SoftBody::Rock(b) => b.current_x_range(),
@@ -382,6 +406,7 @@ impl SoftBody {
         }
     }
 
+    /// Wrapper function.
     fn current_y_range(&self) -> std::ops::RangeInclusive<usize> {
         match self {
             SoftBody::Rock(b) => b.current_y_range(),
@@ -389,6 +414,7 @@ impl SoftBody {
         }
     }
 
+    /// Wrapper function.
     fn update_sbip_variables(&mut self, board_size: BoardSize) {
         match self {
             SoftBody::Rock(b) => b.update_sbip_variables(board_size),
@@ -396,6 +422,7 @@ impl SoftBody {
         };
     }
 
+    /// Wrapper function.
     fn get_px(&self) -> f64 {
         match self {
             SoftBody::Rock(b) => b.get_px(),
@@ -403,6 +430,7 @@ impl SoftBody {
         }
     }
 
+    /// Wrapper function.
     fn get_py(&self) -> f64 {
         match self {
             SoftBody::Rock(b) => b.get_py(),
@@ -410,6 +438,7 @@ impl SoftBody {
         }
     }
 
+    /// Wrapper function.
     pub fn get_radius(&self) -> f64 {
         match self {
             SoftBody::Rock(b) => b.get_radius(),
@@ -417,6 +446,7 @@ impl SoftBody {
         }
     }
 
+    /// Wrapper function.
     fn get_mass(&self) -> f64 {
         match self {
             SoftBody::Rock(b) => b.get_mass(),
@@ -424,6 +454,7 @@ impl SoftBody {
         }
     }
 
+    /// Wrapper function.
     fn get_energy(&self) -> f64 {
         match self {
             SoftBody::Rock(b) => b.get_energy(),
@@ -431,6 +462,7 @@ impl SoftBody {
         }
     }
 
+    /// Wrapper function.
     fn add_vx(&mut self, value_to_add: f64) {
         match self {
             SoftBody::Rock(b) => b.add_vx(value_to_add),
@@ -438,6 +470,7 @@ impl SoftBody {
         }
     }
 
+    /// Wrapper function.
     fn add_vy(&mut self, value_to_add: f64) {
         match self {
             SoftBody::Rock(b) => b.add_vy(value_to_add),
