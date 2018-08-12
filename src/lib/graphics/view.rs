@@ -178,10 +178,15 @@ impl View {
                         .draw(context, graphics, &self);
                 }
 
-                if let Some(c_pointer) = self.board.selected_creature {
-                    unsafe {
-                        (*c_pointer).brain.draw(context, graphics, glyphs, &self);
-                    }
+                if let Some(creature) = &self.board.selected_creature {
+                    // unsafe {
+                    //     (*c_pointer).brain.draw(context, graphics, glyphs, &self);
+                    // }
+                    creature
+                        .borrow()
+                        .get_creature()
+                        .brain
+                        .draw(context, graphics, glyphs, &self);
                 }
             }
             Tiles => {

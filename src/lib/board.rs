@@ -62,7 +62,7 @@ pub struct Board {
 
     // Miscelanious
     user_control: bool,
-    pub selected_creature: Option<*mut Creature>,
+    pub selected_creature: Option<HLSoftBody>,
 }
 
 impl Default for Board {
@@ -135,11 +135,18 @@ impl Board {
     }
 
     /// Checks if the given creature was selected and if so, removes it by setting `self.selected_creature` to `None`.
-    pub fn unselect_if_dead(&mut self, creature: &mut Creature) {
-        let creature_pointer: *mut Creature = creature as *mut Creature;
-        if Some(creature_pointer) == self.selected_creature {
-            self.selected_creature = None;
+    pub fn unselect_if_dead(&mut self, creature: RcSoftBody) {
+        if let Some(sel_creature) = &self.selected_creature {
+            // If `creature` isn't the same as `self.selected_creature`.
+            if !Rc::ptr_eq(&creature, sel_creature.value_ref()) {
+                // Then don't change to `None`.
+                return;
+            }
+
+            // Else go on
         }
+
+        self.selected_creature = None;
     }
 
     pub fn update(&mut self, time_step: f64) {
@@ -282,11 +289,7 @@ impl Board {
             if self.creatures[i].borrow().should_die() {
                 unsafe {
                     // Infallable
-                    self.creatures[i].borrow_mut().return_to_earth(
-                        &mut (*self_ptr),
-                        board_size,
-                        self.creatures[i].value_clone(),
-                    );
+                    self.creatures[i].return_to_earth(&mut (*self_ptr), board_size);
                 }
                 self.creatures.remove(i);
 

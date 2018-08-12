@@ -53,6 +53,11 @@ impl HLSoftBody {
         return self.0.try_borrow_mut().is_ok();
     }
 
+    /// Returns a reference to the underlying `RcSoftBody`
+    pub fn value_ref(&self) -> &RcSoftBody {
+        return &self.0;
+    }
+
     /// Get a clone of the internal `RcSoftBody`
     pub fn value_clone(&self) -> RcSoftBody {
         return Rc::clone(&self.0);
@@ -107,6 +112,33 @@ impl HLSoftBody {
 
         // TODO: translate this from Processing to Rust
         // fight_level = 0;
+    }
+
+    /// This function requires a reference to a `Board`.
+    /// This is usually impossible so you'll have to turn to `unsafe`.
+    pub fn return_to_earth(&mut self, board: &mut Board, board_size: BoardSize) {
+        let time = board.get_time();
+
+        // To make the borrow-checker happy.
+        {
+            let terrain = &mut board.terrain;
+            let sbip = &mut board.soft_bodies_in_positions;
+
+            let mut self_deref = self.borrow_mut();
+
+            for _i in 0..PIECES {
+                let tile_pos = self_deref.get_random_covered_tile(board_size);
+                terrain.add_food_or_nothing_at(tile_pos, self_deref.get_energy() / PIECES as f64);
+
+                // TODO: check if this is neccessary and fix this mess!
+                terrain.update_at(tile_pos, time, &board.climate);
+            }
+
+            self_deref.remove_from_sbip(sbip, self.value_clone());
+        }
+
+        // Unselect this creature if it was selected.
+        board.unselect_if_dead(self.value_clone());
     }
 }
 
@@ -219,36 +251,6 @@ impl SoftBody {
     /// Wrapper function.
     pub fn get_birth_time(&self) -> f64 {
         return self.get_creature().get_birth_time();
-    }
-
-    /// This function requires a reference to a `Board`.
-    /// This is usually impossible so you'll have to turn to `unsafe`.
-    pub fn return_to_earth(
-        &mut self,
-        safe_board: &mut Board,
-        board_size: BoardSize,
-        self_ref: RcSoftBody,
-    ) {
-        let time = safe_board.get_time();
-
-        // To make the borrow-checker happy.
-        {
-            let terrain = &mut safe_board.terrain;
-            let sbip = &mut safe_board.soft_bodies_in_positions;
-
-            for _i in 0..PIECES {
-                let tile_pos = self.get_random_covered_tile(board_size);
-                terrain.add_food_or_nothing_at(tile_pos, self.get_energy() / PIECES as f64);
-
-                // TODO: check if this is neccessary and fix this mess!
-                terrain.update_at(tile_pos, time, &safe_board.climate);
-            }
-
-            self.remove_from_sbip(sbip, self_ref);
-        }
-
-        // Unselect this creature if it was selected.
-        safe_board.unselect_if_dead(self.get_creature_mut());
     }
 
     /// Parts of this function are unsafe. Only mess with them if you know what you're doing!
