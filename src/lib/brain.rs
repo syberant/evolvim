@@ -69,9 +69,10 @@ impl Brain {
         // Add bias.
         self.a_2 = z_2.insert_column(0, 0.0);
 
-        let mut z_3 = self.a_2 * self.theta_2;
-        // Perform sigmoid function
-        Brain::sigmoid(&mut z_3);
+        let z_3 = self.a_2 * self.theta_2;
+        // // Perform sigmoid function, wasn't done in original Processing code.
+        // Brain::sigmoid(&mut z_3);
+
         // Don't need to add bias here.
         self.a_3 = z_3;
     }
