@@ -37,6 +37,18 @@ impl Into<RcSoftBody> for HLSoftBody {
     }
 }
 
+impl PartialEq<HLSoftBody> for HLSoftBody {
+    fn eq(&self, rhs: &HLSoftBody) -> bool {
+        Rc::ptr_eq(self.value_ref(), rhs.value_ref())
+    }
+}
+
+impl PartialEq<RcSoftBody> for HLSoftBody {
+    fn eq(&self, rhs: &RcSoftBody) -> bool {
+        Rc::ptr_eq(self.value_ref(), rhs)
+    }
+}
+
 impl HLSoftBody {
     /// Wrapper function
     pub fn borrow(&self) -> Ref<SoftBody> {
@@ -138,7 +150,7 @@ impl HLSoftBody {
         }
 
         // Unselect this creature if it was selected.
-        board.unselect_if_dead(self.value_clone());
+        board.unselect_if_dead(self.value_ref());
     }
 }
 

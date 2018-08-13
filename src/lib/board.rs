@@ -135,10 +135,10 @@ impl Board {
     }
 
     /// Checks if the given creature was selected and if so, removes it by setting `self.selected_creature` to `None`.
-    pub fn unselect_if_dead(&mut self, creature: RcSoftBody) {
+    pub fn unselect_if_dead(&mut self, creature: &RcSoftBody) {
         if let Some(sel_creature) = &self.selected_creature {
             // If `creature` isn't the same as `self.selected_creature`.
-            if !Rc::ptr_eq(&creature, sel_creature.value_ref()) {
+            if sel_creature != creature {
                 // Then don't change to `None`.
                 return;
             }
