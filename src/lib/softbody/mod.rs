@@ -290,12 +290,10 @@ impl SoftBody {
             let tile = terrain.get_tile_at_mut(tile_pos);
             unsafe {
                 (*unsafe_creature).eat(output[3], time_step, time, climate, tile);
-            }
 
-            // Fight
-            // unimplemented!();
+                // Fight
+                // unimplemented!();
 
-            unsafe {
                 // Reproduce
                 if output[5] > 0.0
                     && (*unsafe_creature).get_age(time) >= MATURE_AGE
@@ -304,9 +302,7 @@ impl SoftBody {
                     // unimplemented!();
                     // println!("Reproducing!");
                 }
-            }
 
-            unsafe {
                 (*unsafe_creature).set_mouth_hue(output[6]);
             }
         }
