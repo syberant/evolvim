@@ -3,10 +3,13 @@
 //! Uses a neural network implemented with a linear algebra crate to make it efficient.
 
 extern crate nalgebra;
+extern crate rand;
 
 use self::allocator::Allocator;
 use self::dimension::DimName;
 use self::nalgebra::*;
+use self::rand::Rng;
+use std::f64::consts::PI;
 
 pub type BrainOutput<'a> = &'a [FPN];
 pub type BrainInput = [FPN; 9];
@@ -91,21 +94,82 @@ impl Brain {
     pub fn new_random() -> Self {
         Brain {
             // Empty input
-            a_1: <MatrixMN<FPN, U1, InputLayerSizePlusBias>>::zeros(),
+            a_1: <RowVectorN<FPN, InputLayerSizePlusBias>>::zeros(),
             // Initialize random weights between [-0.5, 0.5].
             theta_1: <MatrixMN<FPN, InputLayerSizePlusBias, HiddenLayerSize>>::new_random()
                 - <MatrixMN<FPN, InputLayerSizePlusBias, HiddenLayerSize>>::from_element(0.5),
             // Empty hidden layer
-            a_2: <MatrixMN<FPN, U1, HiddenLayerSizePlusBias>>::zeros(),
-            // Initilaize random weights between [-0.5, 0.5].
+            a_2: <RowVectorN<FPN, HiddenLayerSizePlusBias>>::zeros(),
+            // Initialize random weights between [-0.5, 0.5].
             theta_2: <MatrixMN<FPN, HiddenLayerSizePlusBias, OutputLayerSize>>::new_random()
                 - <MatrixMN<FPN, HiddenLayerSizePlusBias, OutputLayerSize>>::from_element(0.5),
             // Empty output
-            a_3: <MatrixMN<FPN, U1, OutputLayerSize>>::zeros(),
+            a_3: <RowVectorN<FPN, OutputLayerSize>>::zeros(),
         }
     }
 
-    pub fn evolve() -> Self {
-        unimplemented!();
+    /// Equivalent to the Processing function, also includes the mutateAxon function.
+    ///
+    /// TODO: improve performance via vectorization.
+    /// TODO: understand formulae and improve them or come up with my own
+    pub fn evolve(parents: Vec<&Brain>) -> Self {
+        let a_1 = <RowVectorN<FPN, InputLayerSizePlusBias>>::zeros();
+        let a_2 = <RowVectorN<FPN, HiddenLayerSizePlusBias>>::zeros();
+        let a_3 = <RowVectorN<FPN, OutputLayerSize>>::zeros();
+
+        let mut theta_1 = <MatrixMN<FPN, InputLayerSizePlusBias, HiddenLayerSize>>::zeros();
+        let mut theta_2 = <MatrixMN<FPN, HiddenLayerSizePlusBias, OutputLayerSize>>::zeros();
+
+        let mut rng = rand::thread_rng();
+        let random_rotation: f64 = rng.gen();
+        let amount_parents = parents.len() as f64;
+
+        for y in 0..theta_1.nrows() {
+            for z in 0..theta_1.ncols() {
+                // BRAIN_HEIGHT = 11; x = 0; BRAIN_WIDTH = 3;
+                let axon_angle =
+                    PI + (((y + z) as f64 - 11.0) / 2.0).atan2(0.0 - 3.0 / 2.0) / (2.0 * PI);
+
+                let parent_id =
+                    (((axon_angle + random_rotation) % 1.0) * amount_parents).floor() as usize;
+
+                assert!(parent_id < amount_parents as usize);
+
+                let r = (rng.gen::<f64>() * 2.0 - 1.0).powi(9);
+                let mutate_multi = rng.gen::<f64>().powi(9);
+                let mutability = rng.gen::<f64>().powi(14);
+
+                theta_1[(y, z)] =
+                    parents[parent_id].theta_1[(y, z)] + r * mutability / mutate_multi;
+            }
+        }
+
+        for y in 0..theta_2.nrows() {
+            for z in 0..theta_2.ncols() {
+                // BRAIN_HEIGHT = 11; x = 1; BRAIN_WIDTH = 3;
+                let axon_angle =
+                    PI + (((y + z) as f64 - 11.0) / 2.0).atan2(1.0 - 3.0 / 2.0) / (2.0 * PI);
+
+                let parent_id =
+                    (((axon_angle + random_rotation) % 1.0) * amount_parents).floor() as usize;
+
+                assert!(parent_id < amount_parents as usize);
+
+                let r = (rng.gen::<f64>() * 2.0 - 1.0).powi(9);
+                let mutate_multi = rng.gen::<f64>().powi(9);
+                let mutability = rng.gen::<f64>().powi(14);
+
+                theta_2[(y, z)] =
+                    parents[parent_id].theta_2[(y, z)] + r * mutability / mutate_multi;
+            }
+        }
+
+        Brain {
+            a_1,
+            theta_1,
+            a_2,
+            theta_2,
+            a_3,
+        }
     }
 }
