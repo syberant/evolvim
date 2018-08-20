@@ -42,6 +42,8 @@ pub fn from_hsba(hsba: [f32; 4]) -> Color {
         h = 1.0;
     }
 
+    assert!(hue <= 1.0, "Hue can't be larger than 1.");
+
     let (r, g, b): (f32, f32, f32) = match h.ceil() as usize {
         1 => (c, x, 0.0),
         2 => (x, c, 0.0),
@@ -50,7 +52,7 @@ pub fn from_hsba(hsba: [f32; 4]) -> Color {
         5 => (x, 0.0, c),
         6 => (c, 0.0, x),
         // Value should not be larger than 6 --> hue should not be larger than 1
-        _ => panic!(),
+        _ => unreachable!(),
     };
 
     let m = bri - c;

@@ -31,7 +31,7 @@ mod benches {
     // }
 
     #[allow(unused_variables, unreachable_code)]
-    #[bench]
+    // #[bench]
     fn bench_graphics_complete_draw(b: &mut Bencher) {
         let opengl = OpenGL::V3_2;
         let (device, mut factory) = gfx_device_gl::create(|_s| unimplemented!());
@@ -72,5 +72,12 @@ mod benches {
                 },
             );
         });
+    }
+
+    #[bench]
+    fn bench_graphics_from_hsba(b: &mut Bencher) {
+        let test_color = [1.0, 0.5, 0.3, 0.98];
+
+        b.iter(|| from_hsba(test_color));
     }
 }
