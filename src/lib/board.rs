@@ -17,8 +17,6 @@ use std::rc::Rc;
 /// TODO: eliminate this variable because it's not needed.
 const OBJECT_TIMESTEPS_PER_YEAR: f64 = 100.0;
 const _POPULATION_HISTORY_LENGTH: usize = 200;
-const _THERMOMETER_MIN: f64 = -2.0;
-const _THERMOMETER_MAX: f64 = 2.0;
 
 pub type BoardSize = (usize, usize);
 pub type BoardCoordinate = (usize, usize);

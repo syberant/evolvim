@@ -5,9 +5,6 @@ use super::*;
 // use constants::*;
 use std::f64::consts::PI;
 
-const ACCELERATION_ENERGY: f64 = 0.18;
-const ACCELERATION_BACK_ENERGY: f64 = 0.24;
-const TURN_ENERGY: f64 = 0.06;
 const FRICTION: f64 = 0.004;
 const ENERGY_DENSITY: f64 = 1.0
     / (super::creature::MINIMUM_SURVIVABLE_SIZE * super::creature::MINIMUM_SURVIVABLE_SIZE * PI);

@@ -80,3 +80,24 @@ pub const COLOR_BLACK: [f32; 3] = [0., 1., 0.];
 ///
 /// The bigger, the slower.
 pub const MOUSE_SPEED: f64 = 10.0;
+
+// ********************** //
+// ******* ENERGY ******* //
+// ********************** //
+
+pub const ACCELERATION_ENERGY: f64 = 0.18;
+pub const ACCELERATION_BACK_ENERGY: f64 = 0.24;
+pub const TURN_ENERGY: f64 = 0.06;
+
+pub const METABOLISM_ENERGY: f64 = 0.004;
+
+pub const SWIM_ENERGY: f64 = 0.008;
+pub const EAT_ENERGY: f64 = 0.05;
+
+// ********************* //
+// ******* FOOD ******** //
+// ********************* //
+
+pub const FOOD_GROWTH_RATE: f64 = 1.0;
+pub const MAX_GROWTH_LEVEL: f64 = 3.0;
+pub const FOOD_SENSITIVITY: f64 = 0.3;

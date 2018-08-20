@@ -2,13 +2,9 @@ extern crate rand;
 
 use super::*;
 
-const SWIM_ENERGY: f64 = 0.008;
-const EAT_ENERGY: f64 = 0.05;
 pub const MINIMUM_SURVIVABLE_SIZE: f64 = 0.06;
 const EAT_WHILE_MOVING_INEFFICIENCY_MULTIPLIER: f64 = 2.0;
 const EAT_SPEED: f64 = 0.5;
-// Used for drawing the creature.
-// const CREATURE_STROKE_WEIGHT: f64 = 0.6;
 
 pub struct Creature {
     pub base: Rock,

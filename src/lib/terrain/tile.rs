@@ -1,10 +1,6 @@
 use super::constants::*;
 use super::*;
 
-const FOOD_GROWTH_RATE: f64 = 1.0;
-const MAX_GROWTH_LEVEL: f64 = 3.0;
-const FOOD_SENSITIVITY: f64 = 0.3;
-
 pub enum Tile {
     Water,
     Land(LandTile),

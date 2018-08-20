@@ -13,7 +13,6 @@ const COLLISION_FORCE: f64 = 0.01;
 const PIECES: usize = 20;
 const AGE_FACTOR: f64 = 1.0;
 const MATURE_AGE: f64 = 0.01;
-const METABOLISM_ENERGY: f64 = 0.004;
 
 /// Our `safe` saviour! Provides multiple references to a `SoftBody`.
 pub type RcSoftBody = Rc<RefCell<SoftBody>>;
