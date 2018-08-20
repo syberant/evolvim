@@ -78,24 +78,17 @@ impl HLSoftBody {
     ///
     /// TODO: clean up the many uses of `borrow()`
     pub fn collide(&self, sbip: &SoftBodiesInPositions) {
-        let mut colliders: SoftBodiesAt = Vec::new();
-
-        // Copy all possible colliders into `colliders`.
-        // NOTE: possibly tries to add one collider multiple times and this DOES matter since `Vec<T>` can contain duplicate entries.
-        for x in self.borrow().current_x_range() {
-            for y in self.borrow().current_y_range() {
-                for i in sbip.get_soft_bodies_at(x, y) {
-                    // This function should check whether this softbody is already in there.
-                    colliders.add_softbody(Rc::clone(i));
-                }
-            }
-        }
+        let x_range = self.borrow().current_x_range();
+        let y_range = self.borrow().current_y_range();
+        let mut colliders = sbip.get_soft_bodies_in(x_range, y_range);
 
         // Remove self
-        colliders.remove_softbody(Rc::clone(&self.0));
+        colliders.remove_softbody(self.value_clone());
 
         let self_px = self.borrow().get_px();
         let self_py = self.borrow().get_py();
+        let self_radius = self.borrow().get_radius();
+        let self_mass = self.borrow().get_mass();
 
         for collider_rc in colliders {
             let collider = collider_rc.borrow();
@@ -103,17 +96,13 @@ impl HLSoftBody {
             let (collider_px, collider_py) = (collider.get_px(), collider.get_py());
             let distance = SoftBody::distance(self_px, self_py, collider_px, collider_py);
 
-            let combined_radius = self.borrow().get_radius() + collider.get_radius();
+            let combined_radius = self_radius + collider.get_radius();
 
             if distance < combined_radius {
                 let force = combined_radius * COLLISION_FORCE;
 
-                let add_vx = ((self.borrow().get_px() - collider_px) / distance)
-                    * force
-                    * self.borrow().get_mass();
-                let add_vy = ((self.borrow().get_py() - collider_py) / distance)
-                    * force
-                    * self.borrow().get_mass();
+                let add_vx = ((self_px - collider_px) / distance) * force * self_mass;
+                let add_vy = ((self_py - collider_py) / distance) * force * self_mass;
 
                 let mut self_mut_deref = self.borrow_mut();
                 self_mut_deref.add_vx(add_vx);
