@@ -4,6 +4,7 @@ use self::rand::Rng;
 use super::*;
 // use constants::*;
 use std::f64::consts::PI;
+use std::ops::Range;
 
 const FRICTION: f64 = 0.004;
 const ENERGY_DENSITY: f64 = 1.0
@@ -204,20 +205,20 @@ impl Rock {
         self.sbip_max_y = SoftBody::check_center_y((py + radius).floor() as usize, board_height);
     }
 
-    pub fn previous_x_range(&self) -> std::ops::RangeInclusive<usize> {
-        self.prev_sbip_min_x..=self.prev_sbip_max_x
+    pub fn previous_x_range(&self) -> Range<usize> {
+        self.prev_sbip_min_x..self.prev_sbip_max_x + 1
     }
 
-    pub fn previous_y_range(&self) -> std::ops::RangeInclusive<usize> {
-        self.prev_sbip_min_y..=self.prev_sbip_max_y
+    pub fn previous_y_range(&self) -> Range<usize> {
+        self.prev_sbip_min_y..self.prev_sbip_max_y + 1
     }
 
-    pub fn current_x_range(&self) -> std::ops::RangeInclusive<usize> {
-        self.sbip_min_x..=self.sbip_max_x
+    pub fn current_x_range(&self) -> Range<usize> {
+        self.sbip_min_x..self.sbip_max_x + 1
     }
 
-    pub fn current_y_range(&self) -> std::ops::RangeInclusive<usize> {
-        self.sbip_min_y..=self.sbip_max_y
+    pub fn current_y_range(&self) -> Range<usize> {
+        self.sbip_min_y..self.sbip_max_y + 1
     }
 }
 

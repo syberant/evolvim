@@ -7,7 +7,7 @@
 //! Please don't mess with this module if you don't understand it: it will save you a lot of frustration!
 
 use super::*;
-use std::ops::RangeInclusive;
+use std::ops::Range;
 use std::rc::Rc;
 
 pub trait SoftBodyBucket {
@@ -72,11 +72,7 @@ impl SoftBodiesInPositions {
         self.0[x][y].remove_softbody(body);
     }
 
-    pub fn get_soft_bodies_in(
-        &self,
-        x_range: RangeInclusive<usize>,
-        y_range: RangeInclusive<usize>,
-    ) -> SoftBodiesAt {
+    pub fn get_soft_bodies_in(&self, x_range: Range<usize>, y_range: Range<usize>) -> SoftBodiesAt {
         let mut soft_body_bucket = Vec::new();
 
         for x in x_range {

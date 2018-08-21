@@ -7,6 +7,7 @@ mod rock;
 pub use self::creature::*;
 pub use self::rock::*;
 use std::cell::{Ref, RefCell, RefMut};
+use std::ops::Range;
 use std::rc::Rc;
 
 const COLLISION_FORCE: f64 = 0.01;
@@ -381,7 +382,7 @@ impl SoftBody {
     }
 
     /// Wrapper function.
-    fn previous_x_range(&self) -> std::ops::RangeInclusive<usize> {
+    fn previous_x_range(&self) -> Range<usize> {
         match self {
             SoftBody::Rock(b) => b.previous_x_range(),
             SoftBody::Creature(c) => c.base.previous_x_range(),
@@ -389,7 +390,7 @@ impl SoftBody {
     }
 
     /// Wrapper function.
-    fn previous_y_range(&self) -> std::ops::RangeInclusive<usize> {
+    fn previous_y_range(&self) -> Range<usize> {
         match self {
             SoftBody::Rock(b) => b.previous_y_range(),
             SoftBody::Creature(c) => c.base.previous_y_range(),
@@ -397,7 +398,7 @@ impl SoftBody {
     }
 
     /// Wrapper function.
-    fn current_x_range(&self) -> std::ops::RangeInclusive<usize> {
+    fn current_x_range(&self) -> Range<usize> {
         match self {
             SoftBody::Rock(b) => b.current_x_range(),
             SoftBody::Creature(c) => c.base.current_x_range(),
@@ -405,7 +406,7 @@ impl SoftBody {
     }
 
     /// Wrapper function.
-    fn current_y_range(&self) -> std::ops::RangeInclusive<usize> {
+    fn current_y_range(&self) -> Range<usize> {
         match self {
             SoftBody::Rock(b) => b.current_y_range(),
             SoftBody::Creature(c) => c.base.current_y_range(),
