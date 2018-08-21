@@ -129,19 +129,13 @@ impl View {
     pub fn get_x_range(&self) -> Range<usize> {
         assert!(self.get_x() + self.tiles_on_width <= self.max_x);
 
-        Range {
-            start: self.get_x(),
-            end: self.get_x() + self.tiles_on_width,
-        }
+        self.get_x()..self.get_x() + self.tiles_on_width
     }
 
     pub fn get_y_range(&self) -> Range<usize> {
         assert!(self.get_y() + self.tiles_on_height <= self.max_y);
 
-        Range {
-            start: self.get_y(),
-            end: self.get_y() + self.tiles_on_height,
-        }
+        self.get_y()..self.get_y() + self.tiles_on_height
     }
 }
 
@@ -171,7 +165,14 @@ impl View {
             Normal => {
                 self.board.terrain.draw(context, graphics, glyphs, &self);
 
-                for c in &self.board.creatures {
+                let y_range = self.get_y_range();
+                let x_range = self.get_x_range();
+
+                for c in self
+                    .board
+                    .soft_bodies_in_positions
+                    .get_soft_bodies_in(x_range, y_range)
+                {
                     c.borrow()
                         .get_creature()
                         .base
