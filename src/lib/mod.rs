@@ -73,6 +73,9 @@
 //! [Processing]: https://processing.org
 //! [Python]: https://python.org
 
+// TODO: ensure documentation for everything, use this to generate warnings
+// #![warn(missing_docs)]
+
 pub mod board;
 pub mod brain;
 pub mod climate;

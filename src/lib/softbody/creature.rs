@@ -31,7 +31,7 @@ impl Creature {
         }
     }
 
-    /// The `Creature` version of `apply_motions`, this is different to the `Rock` version.
+    // The `Creature` version of `apply_motions`, this is different to the `Rock` version.
     pub fn apply_motions(&mut self, time_step: f64, terrain: &Terrain, board_size: BoardSize) {
         if self.is_on_water(terrain, board_size) {
             let energy_to_lose = time_step * SWIM_ENERGY * self.get_energy();

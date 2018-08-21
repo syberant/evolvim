@@ -126,9 +126,7 @@ impl HLSoftBody {
     ///
     /// TODO: clean up the many uses of `borrow()`
     pub fn collide(&self, sbip: &SoftBodiesInPositions) {
-        let x_range = self.borrow().current_x_range();
-        let y_range = self.borrow().current_y_range();
-        let mut colliders = sbip.get_soft_bodies_in(x_range, y_range);
+        let mut colliders = self.borrow().get_colliders(sbip);
 
         // Remove self
         colliders.remove_softbody(self.value_clone());
@@ -408,6 +406,14 @@ impl SoftBody {
         match self {
             SoftBody::Rock(b) => b.current_y_range(),
             SoftBody::Creature(c) => c.base.current_y_range(),
+        }
+    }
+
+    /// Wrapper function.
+    fn get_colliders(&self, sbip: &SoftBodiesInPositions) -> SoftBodiesAt {
+        match self {
+            SoftBody::Rock(b) => b.get_colliders(sbip),
+            SoftBody::Creature(c) => c.base.get_colliders(sbip),
         }
     }
 
