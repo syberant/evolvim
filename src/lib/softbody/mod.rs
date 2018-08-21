@@ -75,6 +75,53 @@ impl HLSoftBody {
         return Rc::clone(&self.0);
     }
 
+    /// Calls the same function on all types and updates `SoftBodiesInPositions` by calling `set_sbip`.
+    pub fn apply_motions(
+        &self,
+        time_step: f64,
+        board_size: BoardSize,
+        terrain: &Terrain,
+        sbip: &mut SoftBodiesInPositions,
+    ) {
+        use std::ops::DerefMut;
+
+        match self.borrow_mut().deref_mut() {
+            SoftBody::Rock(b) => b.apply_motions(time_step, board_size),
+            SoftBody::Creature(c) => c.apply_motions(time_step, terrain, board_size),
+        };
+
+        self.set_sbip(sbip, board_size);
+    }
+
+    /// Updates `SoftBodiesInPositions` and updates itself by calling `update_sbip_variables()`.
+    pub fn set_sbip(&self, sbip: &mut SoftBodiesInPositions, board_size: BoardSize) {
+        // TODO: Look for optimizations here by cleaning and filling sbip more intelligently.
+
+        let mut self_borrow = self.borrow_mut();
+
+        self_borrow.update_sbip_variables(board_size);
+
+        if self_borrow.moved_between_tiles() {
+            for x in self_borrow.previous_x_range() {
+                for y in self_borrow.previous_y_range() {
+                    // Prevents deleting tiles we are currently in.
+                    if !self_borrow.is_in_tile(x, y) {
+                        sbip.remove_soft_body_at(x, y, self.value_clone());
+                    }
+                }
+            }
+
+            for x in self_borrow.current_x_range() {
+                for y in self_borrow.current_y_range() {
+                    // Prevents duplicate entries.
+                    if !self_borrow.was_in_tile(x, y) {
+                        sbip.add_soft_body_at(x, y, self.value_clone());
+                    }
+                }
+            }
+        }
+    }
+
     /// Checks for collision and adjusts velocity if that's the case.
     ///
     /// TODO: clean up the many uses of `borrow()`
@@ -178,38 +225,6 @@ impl SoftBody {
     /// Checks if the center is inside of the world, possibly corrects it and returns it.
     pub fn check_center_y(y: usize, board_height: usize) -> usize {
         return y.max(0).min(board_height - 1);
-    }
-
-    /// Updates `SoftBodiesInPositions` and updates itself by calling `update_sbip_variables()`.
-    pub fn set_sbip(
-        &mut self,
-        sbip: &mut SoftBodiesInPositions,
-        board_size: BoardSize,
-        self_ref: RcSoftBody,
-    ) {
-        // TODO: Look for optimizations here by cleaning and filling sbip more intelligently.
-
-        self.update_sbip_variables(board_size);
-
-        if self.moved_between_tiles() {
-            for x in self.previous_x_range() {
-                for y in self.previous_y_range() {
-                    // Prevents deleting tiles we are currently in.
-                    if !self.is_in_tile(x, y) {
-                        sbip.remove_soft_body_at(x, y, Rc::clone(&self_ref));
-                    }
-                }
-            }
-
-            for x in self.current_x_range() {
-                for y in self.current_y_range() {
-                    // Prevents duplicate entries.
-                    if !self.was_in_tile(x, y) {
-                        sbip.add_soft_body_at(x, y, Rc::clone(&self_ref));
-                    }
-                }
-            }
-        }
     }
 
     /// Completely removes this `SoftBody` from `sbip`.
@@ -329,23 +344,6 @@ impl SoftBody {
 
 // Here are all the functions which merely call the same function on the underlying types.
 impl SoftBody {
-    /// Calls the same function on all types and updates `SoftBodiesInPositions` by calling `set_sbip`.
-    pub fn apply_motions(
-        &mut self,
-        time_step: f64,
-        board_size: BoardSize,
-        terrain: &Terrain,
-        sbip: &mut SoftBodiesInPositions,
-        self_ref: RcSoftBody,
-    ) {
-        match self {
-            SoftBody::Rock(b) => b.apply_motions(time_step, board_size),
-            SoftBody::Creature(c) => c.apply_motions(time_step, terrain, board_size),
-        };
-
-        self.set_sbip(sbip, board_size, self_ref);
-    }
-
     fn get_random_covered_tile(&self, board_size: BoardSize) -> BoardCoordinate {
         match self {
             SoftBody::Rock(b) => b.get_random_covered_tile(board_size),

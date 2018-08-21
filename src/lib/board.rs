@@ -205,9 +205,7 @@ impl Board {
         self.maintain_creature_minimum();
 
         // Finish the iteration.
-        for r_rc in &self.rocks {
-            let mut r = r_rc.borrow_mut();
-
+        for r in &self.rocks {
             let board_size = self.get_board_size();
             // This function takes a mutable pointer to `self`.
             r.apply_motions(
@@ -215,13 +213,10 @@ impl Board {
                 board_size,
                 &self.terrain,
                 &mut self.soft_bodies_in_positions,
-                r_rc.value_clone(),
             );
         }
 
-        for c_rc in &self.creatures {
-            let mut c = c_rc.borrow_mut();
-
+        for c in &self.creatures {
             let board_size = self.get_board_size();
             // This function takes a mutable pointer to `self`.
             c.apply_motions(
@@ -229,7 +224,6 @@ impl Board {
                 board_size,
                 &self.terrain,
                 &mut self.soft_bodies_in_positions,
-                c_rc.value_clone(),
             );
 
             // TODO: implement seeing.
@@ -247,28 +241,16 @@ impl Board {
     fn maintain_creature_minimum(&mut self) {
         while self.creatures.len() < self.creature_minimum {
             let board_size = self.get_board_size();
-            let creature = Rc::new(RefCell::new(SoftBody::new_random_creature(
+            let creature = HLSoftBody::from(Rc::new(RefCell::new(SoftBody::new_random_creature(
                 board_size, self.year,
-            )));
+            ))));
 
-            // Keep the borrow-checker happy.
-            {
-                let mut creature_mut_deref = creature.borrow_mut();
-                // Initialize in `SoftBodiesInPositions` as well.
-                creature_mut_deref.set_sbip(
-                    &mut self.soft_bodies_in_positions,
-                    board_size,
-                    Rc::clone(&creature),
-                );
-                // Just to set the prevSBIP variables.
-                creature_mut_deref.set_sbip(
-                    &mut self.soft_bodies_in_positions,
-                    board_size,
-                    Rc::clone(&creature),
-                );
-            }
+            // Initialize in `SoftBodiesInPositions` as well.
+            creature.set_sbip(&mut self.soft_bodies_in_positions, board_size);
+            // Just to set the prevSBIP variables.
+            creature.set_sbip(&mut self.soft_bodies_in_positions, board_size);
 
-            self.creatures.push(HLSoftBody::from(creature));
+            self.creatures.push(creature);
             self.creature_id_up_to += 1;
         }
     }
