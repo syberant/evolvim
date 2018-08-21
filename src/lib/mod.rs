@@ -20,7 +20,7 @@
 //!
 //! # Performance
 //!
-//! # Graphics
+//! ## Graphics
 //! At the time of writing, my implementation is ABSOLUTELY TERRIBLE.
 //! Please do use the option to turn the graphics off.
 //! That will show the speed of the internal logic of `evolvim`, which is pretty good (and can improve even more with multithreading).
