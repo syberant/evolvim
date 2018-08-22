@@ -143,8 +143,9 @@ impl Creature {
         let color = from_hsba([self.get_mouth_hue() as f32, 1.0, 1.0, 1.0]);
 
         let rect = [
-            self.base.get_px() * size,
-            self.base.get_py() * size,
+            // This gives the upper-left corner of the circle so subtract the radius.
+            (self.base.get_px() - radius) * size,
+            (self.base.get_py() - radius) * size,
             radius * 2.0 * size,
             radius * 2.0 * size,
         ];

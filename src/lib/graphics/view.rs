@@ -1,5 +1,6 @@
 use super::*;
 use std::ops::Range;
+use std::rc::Rc;
 
 /// The view part of MVC (Model-View-Controller), currently takes on jobs for the controller too.
 ///
@@ -58,6 +59,29 @@ impl View {
         use self::Dragging::*;
 
         self.drag = None;
+
+        let exact_pos = self.mouse.into_board_precise_coordinate(
+            self.get_precise_x(),
+            self.get_precise_y(),
+            self.get_tile_size(),
+        );
+        let (x, y) = BoardCoordinate::from(exact_pos.clone());
+        let soft_bodies = self.board.soft_bodies_in_positions.get_soft_bodies_at(x, y);
+
+        for c_ref in soft_bodies {
+            let c = c_ref.borrow();
+
+            let px = c.get_px();
+            let py = c.get_py();
+            let radius = c.get_radius();
+
+            let dist = SoftBody::distance(exact_pos.0, exact_pos.1, px, py);
+
+            if dist < radius {
+                self.board.selected_creature = Some(HLSoftBody::from(Rc::clone(c_ref)));
+                break;
+            }
+        }
     }
 
     pub fn on_mouse_press(&mut self) {

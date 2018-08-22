@@ -525,7 +525,7 @@ impl SoftBody {
     }
 
     /// Wrapper function.
-    fn get_px(&self) -> f64 {
+    pub fn get_px(&self) -> f64 {
         match self {
             SoftBody::Rock(b) => b.get_px(),
             SoftBody::Creature(c) => c.base.get_px(),
@@ -533,7 +533,7 @@ impl SoftBody {
     }
 
     /// Wrapper function.
-    fn get_py(&self) -> f64 {
+    pub fn get_py(&self) -> f64 {
         match self {
             SoftBody::Rock(b) => b.get_py(),
             SoftBody::Creature(c) => c.base.get_py(),

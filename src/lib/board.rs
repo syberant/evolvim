@@ -20,6 +20,7 @@ const _POPULATION_HISTORY_LENGTH: usize = 200;
 
 pub type BoardSize = (usize, usize);
 pub type BoardCoordinate = (usize, usize);
+#[derive(Clone)]
 pub struct BoardPreciseCoordinate(pub f64, pub f64);
 
 impl BoardPreciseCoordinate {
