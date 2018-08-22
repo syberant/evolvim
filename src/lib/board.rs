@@ -201,6 +201,9 @@ impl Board {
         // Kill weak creatures.
         self.remove_dead_creatures();
 
+        // Let creatures reproduce
+        self.creatures_reproduce();
+
         // Experimental: this was moved from above to always keep the creature minimum.
         self.maintain_creature_minimum();
 
@@ -253,6 +256,28 @@ impl Board {
             self.creatures.push(creature);
             self.creature_id_up_to += 1;
         }
+    }
+
+    fn creatures_reproduce(&mut self) {
+        let mut babies = Vec::new();
+
+        // Keep the borrow checker happy
+        {
+            let time = self.get_time();
+            let board_size = self.get_board_size();
+            let sbip = &mut self.soft_bodies_in_positions;
+
+            for c in &mut self.creatures {
+                let maybe_baby = c.try_reproduce(time, sbip, board_size);
+                if let Some(baby) = maybe_baby {
+                    println!("Hooray! A baby!");
+
+                    babies.push(baby);
+                }
+            }
+        }
+
+        babies.into_iter().for_each(|c| self.creatures.push(c));
     }
 
     /// Checks for all creatures whether they are fit enough to live and kills them off if they're not.

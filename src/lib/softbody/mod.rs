@@ -215,76 +215,77 @@ impl HLSoftBody {
         sbip: &mut SoftBodiesInPositions,
         board_size: BoardSize,
     ) -> Option<HLSoftBody> {
-        let self_bor = self.borrow();
-        let self_deref = self_bor.get_creature();
-
-        if !(self_deref.base.get_energy() > SAFE_SIZE
-            && self_deref.brain.wants_birth() > 0.0
-            && self_deref.get_age(time) > MATURE_AGE)
+        if self.borrow().get_creature().get_energy() > SAFE_SIZE
+            && self.borrow().get_creature().brain.wants_birth() > 0.0
+            && self.borrow().get_creature().get_age(time) > MATURE_AGE
         {
-            // This creature can't give birth.
-            return None;
-        }
+            use std::ops::Deref;
 
-        use std::ops::Deref;
+            let self_px = self.borrow().get_px();
+            let self_py = self.borrow().get_py();
+            let self_radius = self.borrow().get_radius();
 
-        let possible_parents = self.borrow().get_colliders(sbip);
+            let mut parents: Vec<HLSoftBody> = self
+                .borrow()
+                .get_colliders(sbip)
+                .into_iter()
+                .filter(|rc_soft| {
+                    match rc_soft.borrow().deref() {
+                        SoftBody::Creature(c) => {
+                            let dist = SoftBody::distance(
+                                self_px,
+                                self_py,
+                                c.base.get_px(),
+                                c.base.get_py(),
+                            );
+                            let combined_radius = self_radius * FIGHT_RANGE + c.base.get_radius();
 
-        let self_px = self.borrow().get_px();
-        let self_py = self.borrow().get_py();
-        let self_radius = self.borrow().get_radius();
-
-        let mut parents: Vec<HLSoftBody> = possible_parents
-            .into_iter()
-            .filter(|rc_soft| {
-                match rc_soft.borrow().deref() {
-                    SoftBody::Creature(c) => {
-                        let dist =
-                            SoftBody::distance(self_px, self_py, c.base.get_px(), c.base.get_py());
-                        let combined_radius = self_radius * FIGHT_RANGE + c.base.get_radius();
-
-                        c.brain.wants_birth() > -1.0 // must be a willing creature
+                            c.brain.wants_birth() > -1.0 // must be a willing creature
                             && dist < combined_radius // must be close enough
 
-                        // TODO: find out if this addition to the Processing code works
-                        // && c.get_age(time) >= MATURE_AGE // creature must be old enough
-                        // && c.base.get_energy() > SAFE_SIZE
+                            // TODO: find out if this addition to the Processing code works
+                            // && c.get_age(time) >= MATURE_AGE // creature must be old enough
+                            // && c.base.get_energy() > SAFE_SIZE
+                        }
+                        // Only creatures can be parents
+                        _ => false,
                     }
-                    // Only creatures can be parents
-                    _ => false,
-                }
-            })
-            .map(|rc_soft| HLSoftBody::from(Rc::clone(&rc_soft)))
-            .collect();
+                })
+                .map(|rc_soft| HLSoftBody::from(Rc::clone(&rc_soft)))
+                .collect();
 
-        let available_energy = parents.iter().fold(0.0, |acc, c| {
-            acc + c.borrow().get_creature().get_baby_energy()
-        });
-
-        if available_energy > BABY_SIZE {
-            let energy = BABY_SIZE;
-
-            // Giving birth costs energy
-            parents.iter_mut().for_each(|c| {
-                let mut c_ref_mut = c.borrow_mut();
-                let c = c_ref_mut.get_creature_mut();
-
-                let energy_to_lose = energy * (c.get_baby_energy() / available_energy);
-                c.lose_energy(energy_to_lose);
+            let available_energy = parents.iter().fold(0.0, |acc, c| {
+                acc + c.borrow().get_creature().get_baby_energy()
             });
 
-            let sb = HLSoftBody::from(SoftBody::Creature(Creature::new_baby(
-                parents, energy, time,
-            )));
+            if available_energy > BABY_SIZE {
+                let energy = BABY_SIZE;
 
-            sb.set_sbip(sbip, board_size);
-            sb.set_sbip(sbip, board_size);
+                // Giving birth costs energy
+                parents.iter_mut().for_each(|c| {
+                    let mut c_ref_mut = c.borrow_mut();
+                    let c = c_ref_mut.get_creature_mut();
 
-            // Hooray! Return the little baby!
-            Some(sb)
+                    let energy_to_lose = energy * (c.get_baby_energy() / available_energy);
+                    c.lose_energy(energy_to_lose);
+                });
+
+                let sb = HLSoftBody::from(SoftBody::Creature(Creature::new_baby(
+                    parents, energy, time,
+                )));
+
+                sb.set_sbip(sbip, board_size);
+                sb.set_sbip(sbip, board_size);
+
+                // Hooray! Return the little baby!
+                Some(sb)
+            } else {
+                // There isn't enough energy available
+                None
+            }
         } else {
-            // There isn't enough energy available
-            None
+            // This creature can't give birth because of age, energy or because it doesn't want to.
+            return None;
         }
     }
 }
