@@ -101,3 +101,8 @@ pub const EAT_ENERGY: f64 = 0.05;
 pub const FOOD_GROWTH_RATE: f64 = 1.0;
 pub const MAX_GROWTH_LEVEL: f64 = 3.0;
 pub const FOOD_SENSITIVITY: f64 = 0.3;
+
+// ********************** //
+// **** REPRODUCTION **** //
+// ********************** //
+pub const BABY_SIZE: f64 = SAFE_SIZE;

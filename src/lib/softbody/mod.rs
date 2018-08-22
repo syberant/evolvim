@@ -37,6 +37,26 @@ impl Into<RcSoftBody> for HLSoftBody {
     }
 }
 
+impl From<SoftBody> for HLSoftBody {
+    fn from(sb: SoftBody) -> HLSoftBody {
+        HLSoftBody::from(Rc::new(RefCell::new(sb)))
+    }
+}
+
+// impl Deref for HLSoftBody {
+//     type Target = SoftBody;
+
+//     fn deref(&self) -> &SoftBody {
+//         self.0.borrow().deref()
+//     }
+// }
+
+// impl DerefMut for HLSoftBody {
+//     fn deref_mut(&mut self) -> &mut SoftBody {
+//         self.0.borrow_mut().deref_mut()
+//     }
+// }
+
 impl PartialEq<HLSoftBody> for HLSoftBody {
     fn eq(&self, rhs: &HLSoftBody) -> bool {
         Rc::ptr_eq(self.value_ref(), rhs.value_ref())
@@ -186,6 +206,87 @@ impl HLSoftBody {
         // Unselect this creature if it was selected.
         board.unselect_if_dead(self.value_ref());
     }
+
+    /// Returns a new creature if there's a birth, otherwise returns `None`
+    // TODO: cleanup
+    pub fn try_reproduce(
+        &mut self,
+        time: f64,
+        sbip: &mut SoftBodiesInPositions,
+        board_size: BoardSize,
+    ) -> Option<HLSoftBody> {
+        let self_bor = self.borrow();
+        let self_deref = self_bor.get_creature();
+
+        if !(self_deref.base.get_energy() > SAFE_SIZE
+            && self_deref.brain.wants_birth() > 0.0
+            && self_deref.get_age(time) > MATURE_AGE)
+        {
+            // This creature can't give birth.
+            return None;
+        }
+
+        use std::ops::Deref;
+
+        let possible_parents = self.borrow().get_colliders(sbip);
+
+        let self_px = self.borrow().get_px();
+        let self_py = self.borrow().get_py();
+        let self_radius = self.borrow().get_radius();
+
+        let mut parents: Vec<HLSoftBody> = possible_parents
+            .into_iter()
+            .filter(|rc_soft| {
+                match rc_soft.borrow().deref() {
+                    SoftBody::Creature(c) => {
+                        let dist =
+                            SoftBody::distance(self_px, self_py, c.base.get_px(), c.base.get_py());
+                        let combined_radius = self_radius * FIGHT_RANGE + c.base.get_radius();
+
+                        c.brain.wants_birth() > -1.0 // must be a willing creature
+                            && dist < combined_radius // must be close enough
+
+                        // TODO: find out if this addition to the Processing code works
+                        // && c.get_age(time) >= MATURE_AGE // creature must be old enough
+                        // && c.base.get_energy() > SAFE_SIZE
+                    }
+                    // Only creatures can be parents
+                    _ => false,
+                }
+            })
+            .map(|rc_soft| HLSoftBody::from(Rc::clone(&rc_soft)))
+            .collect();
+
+        let available_energy = parents.iter().fold(0.0, |acc, c| {
+            acc + c.borrow().get_creature().get_baby_energy()
+        });
+
+        if available_energy > BABY_SIZE {
+            let energy = BABY_SIZE;
+
+            // Giving birth costs energy
+            parents.iter_mut().for_each(|c| {
+                let mut c_ref_mut = c.borrow_mut();
+                let c = c_ref_mut.get_creature_mut();
+
+                let energy_to_lose = energy * (c.get_baby_energy() / available_energy);
+                c.lose_energy(energy_to_lose);
+            });
+
+            let sb = HLSoftBody::from(SoftBody::Creature(Creature::new_baby(
+                parents, energy, time,
+            )));
+
+            sb.set_sbip(sbip, board_size);
+            sb.set_sbip(sbip, board_size);
+
+            // Hooray! Return the little baby!
+            Some(sb)
+        } else {
+            // There isn't enough energy available
+            None
+        }
+    }
 }
 
 pub enum SoftBody {
@@ -296,14 +397,7 @@ impl SoftBody {
                 // Fight
                 // unimplemented!();
 
-                // Reproduce
-                if output[5] > 0.0
-                    && (*unsafe_creature).get_age(time) >= MATURE_AGE
-                    && creature.base.get_energy() > SAFE_SIZE
-                {
-                    // unimplemented!();
-                    // println!("Reproducing!");
-                }
+                // Reproducing is done elsewhere
 
                 (*unsafe_creature).set_mouth_hue(output[6]);
             }

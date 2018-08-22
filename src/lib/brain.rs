@@ -9,6 +9,7 @@ use self::allocator::Allocator;
 use self::dimension::DimName;
 use self::nalgebra::*;
 use self::rand::Rng;
+use super::*;
 use std::f64::consts::PI;
 
 pub type BrainOutput<'a> = &'a [FPN];
@@ -112,7 +113,7 @@ impl Brain {
     ///
     /// TODO: improve performance via vectorization.
     /// TODO: understand formulae and improve them or come up with my own
-    pub fn evolve(parents: Vec<&Brain>) -> Self {
+    pub fn evolve(parents: &Vec<HLSoftBody>) -> Self {
         let a_1 = <RowVectorN<FPN, InputLayerSizePlusBias>>::zeros();
         let a_2 = <RowVectorN<FPN, HiddenLayerSizePlusBias>>::zeros();
         let a_3 = <RowVectorN<FPN, OutputLayerSize>>::zeros();
@@ -139,8 +140,8 @@ impl Brain {
                 let mutate_multi = rng.gen::<f64>().powi(9);
                 let mutability = rng.gen::<f64>().powi(14);
 
-                theta_1[(y, z)] =
-                    parents[parent_id].theta_1[(y, z)] + r * mutability / mutate_multi;
+                theta_1[(y, z)] = parents[parent_id].borrow().get_creature().brain.theta_1[(y, z)]
+                    + r * mutability / mutate_multi;
             }
         }
 
@@ -159,8 +160,8 @@ impl Brain {
                 let mutate_multi = rng.gen::<f64>().powi(9);
                 let mutability = rng.gen::<f64>().powi(14);
 
-                theta_2[(y, z)] =
-                    parents[parent_id].theta_2[(y, z)] + r * mutability / mutate_multi;
+                theta_2[(y, z)] = parents[parent_id].borrow().get_creature().brain.theta_2[(y, z)]
+                    + r * mutability / mutate_multi;
             }
         }
 
@@ -171,5 +172,12 @@ impl Brain {
             theta_2,
             a_3,
         }
+    }
+}
+
+// All functions to retrieve intentions
+impl Brain {
+    pub fn wants_birth(&self) -> f64 {
+        self.get_output()[5]
     }
 }

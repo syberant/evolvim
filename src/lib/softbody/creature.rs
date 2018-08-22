@@ -81,6 +81,33 @@ impl Creature {
                 .lose_energy(attempted_amount * EAT_ENERGY * time_step);
         }
     }
+
+    // Create a new baby, it isn't in `SoftBodiesInPositions` so please fix that.
+    // While you're at it, also add it to `Board.creatures`.
+    pub fn new_baby(parents: Vec<HLSoftBody>, energy: f64, time: f64) -> Creature {
+        let parent_amount = parents.len();
+
+        let brain = Brain::evolve(&parents);
+        let base = Rock::new_from_parents(&parents, energy);
+
+        // The current time
+        let birth_time = time;
+        // The hue is the mean of all parent hues
+        let mouth_hue = parents.iter().fold(0.0, |acc, parent| {
+            acc + parent.borrow().get_creature().mouth_hue / parent_amount as f64
+        });
+
+        Creature {
+            base,
+            birth_time,
+            brain,
+            mouth_hue,
+        }
+    }
+
+    pub fn get_baby_energy(&self) -> f64 {
+        self.base.get_energy() - SAFE_SIZE
+    }
 }
 
 // Functions returning properties.

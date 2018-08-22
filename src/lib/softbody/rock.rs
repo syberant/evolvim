@@ -9,7 +9,7 @@ use std::ops::Range;
 const FRICTION: f64 = 0.004;
 const ENERGY_DENSITY: f64 = 1.0
     / (super::creature::MINIMUM_SURVIVABLE_SIZE * super::creature::MINIMUM_SURVIVABLE_SIZE * PI);
-const FIGHT_RANGE: f64 = 2.0;
+pub const FIGHT_RANGE: f64 = 2.0;
 
 pub struct Rock {
     // Position
@@ -46,6 +46,45 @@ impl Rock {
             px,
             py,
             rotation: rand::random::<f64>() * 2.0 * PI,
+
+            vx: 0.0,
+            vy: 0.0,
+            vr: 0.0,
+
+            energy,
+            density,
+
+            sbip_min_x: 0,
+            sbip_min_y: 0,
+            sbip_max_x: 0,
+            sbip_max_y: 0,
+            prev_sbip_min_x: 0,
+            prev_sbip_min_y: 0,
+            prev_sbip_max_x: 0,
+            prev_sbip_max_y: 0,
+        }
+    }
+
+    /// TODO: prevent px and py from being directly on top of the parent.
+    pub fn new_from_parents(parents: &Vec<HLSoftBody>, energy: f64) -> Rock {
+        let parent_amount = parents.len();
+
+        let px = parents.iter().fold(0.0, |acc, parent| {
+            acc + parent.borrow().get_creature().base.px / parent_amount as f64
+        });
+        let py = parents.iter().fold(0.0, |acc, parent| {
+            acc + parent.borrow().get_creature().base.py / parent_amount as f64
+        });
+        let rotation = parents.iter().fold(0.0, |acc, parent| {
+            acc + parent.borrow().get_creature().base.rotation / parent_amount as f64
+        });
+
+        let density = parents[0].borrow().get_creature().base.density;
+
+        Rock {
+            px,
+            py,
+            rotation,
 
             vx: 0.0,
             vy: 0.0,
