@@ -129,7 +129,7 @@ impl Creature {
     }
 
     pub fn set_mouth_hue(&mut self, value: f64) {
-        self.mouth_hue = value;
+        self.mouth_hue = value.min(1.0).max(0.0);
     }
 }
 

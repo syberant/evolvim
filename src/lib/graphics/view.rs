@@ -173,10 +173,7 @@ impl View {
                     .soft_bodies_in_positions
                     .get_soft_bodies_in(x_range, y_range)
                 {
-                    c.borrow()
-                        .get_creature()
-                        .base
-                        .draw(context, graphics, &self);
+                    c.borrow().get_creature().draw(context, graphics, &self);
                 }
 
                 if let Some(creature) = &self.board.selected_creature {

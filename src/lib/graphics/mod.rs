@@ -118,10 +118,33 @@ impl Rock {
 
         let radius = self.get_radius();
         // let color = from_hsba([0.0, 1.0, 0.7, 1.0]);
-        let color = [1.0, 0.0, 0.0, 1.0];
+        let color = [0.5, 0.5, 0.5, 1.0];
         let rect = [
             self.get_px() * size,
             self.get_py() * size,
+            radius * 2.0 * size,
+            radius * 2.0 * size,
+        ];
+
+        let ellipse = ellipse::Ellipse::new(color);
+
+        ellipse.draw(rect, &context.draw_state, transform, graphics);
+    }
+}
+
+impl Creature {
+    pub fn draw<G: Graphics>(&self, context: Context, graphics: &mut G, view: &View) {
+        let size = view.get_tile_size();
+        let transform = context
+            .transform
+            .trans(-view.get_precise_x() * size, -view.get_precise_y() * size);
+
+        let radius = self.base.get_radius();
+        let color = from_hsba([self.get_mouth_hue() as f32, 1.0, 1.0, 1.0]);
+
+        let rect = [
+            self.base.get_px() * size,
+            self.base.get_py() * size,
             radius * 2.0 * size,
             radius * 2.0 * size,
         ];
