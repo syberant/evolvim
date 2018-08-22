@@ -42,7 +42,7 @@ impl Creature {
     }
 
     pub fn should_die(&self) -> bool {
-        return self.get_energy() > SAFE_SIZE;
+        return self.get_energy() < SAFE_SIZE;
     }
 
     pub fn eat(
