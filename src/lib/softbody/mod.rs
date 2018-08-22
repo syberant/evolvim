@@ -380,27 +380,31 @@ impl SoftBody {
         climate: &Climate,
     ) {
         let input = self.get_input();
-        let unsafe_creature = self.get_creature_mut() as *mut Creature;
         let creature = self.get_creature_mut();
-        let output = creature.brain.run(input);
+        creature.brain.run(input);
 
         if use_output {
-            creature.base.accelerate(output[1], time_step);
-            creature.base.turn(output[2], time_step);
+            creature
+                .base
+                .accelerate(creature.brain.wants_acceleration(), time_step);
+            creature
+                .base
+                .turn(creature.brain.wants_turning(), time_step);
 
             // TODO: clean this mess.
             let tile_pos = creature.base.get_random_covered_tile(board_size);
             let tile = terrain.get_tile_at_mut(tile_pos);
-            unsafe {
-                (*unsafe_creature).eat(output[3], time_step, time, climate, tile);
 
-                // Fight
-                // unimplemented!();
+            let eat_amount = creature.brain.wants_to_eat();
+            creature.eat(eat_amount, time_step, time, climate, tile);
 
-                // Reproducing is done elsewhere
+            // Fight
+            // unimplemented!();
 
-                (*unsafe_creature).set_mouth_hue(output[6]);
-            }
+            // Reproducing is done elsewhere
+
+            let mouth_hue = creature.brain.wants_mouth_hue();
+            creature.set_mouth_hue(mouth_hue);
         }
     }
 

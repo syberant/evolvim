@@ -180,4 +180,20 @@ impl Brain {
     pub fn wants_birth(&self) -> f64 {
         self.get_output()[5]
     }
+
+    pub fn wants_to_eat(&self) -> f64 {
+        self.get_output()[3]
+    }
+
+    pub fn wants_mouth_hue(&self) -> f64 {
+        self.get_output()[6]
+    }
+
+    pub fn wants_acceleration(&self) -> f64 {
+        self.get_output()[1]
+    }
+
+    pub fn wants_turning(&self) -> f64 {
+        self.get_output()[2]
+    }
 }
