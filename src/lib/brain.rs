@@ -42,27 +42,32 @@ pub struct Brain {
 }
 
 impl Brain {
-    pub fn run(&mut self, input: BrainInput) -> BrainOutput {
+    pub fn run(&mut self, input: BrainInput) {
         // Load the input into the net.
         self.load_input(input);
 
         // Perform feed-forwarding.
         self.feed_forward();
-
-        // Return the output.
-        return self.get_output();
     }
 
     pub fn load_input(&mut self, input: BrainInput) {
-        let memory = self.get_output()[0];
+        let memory = self.get_memory();
         // TODO: fix this ugly code.
         self.a_1 = <MatrixMN<FPN, U1, U9>>::from_row_slice(&input)
-            .insert_column(0, 0.0)
+            .insert_column(0, 1.0)
             .insert_column(1, memory);
     }
 
     pub fn get_output(&self) -> BrainOutput {
         return self.a_3.as_slice();
+    }
+
+    pub fn get_hidden_layer(&self) -> &[FPN] {
+        self.a_2.as_slice()
+    }
+
+    pub fn get_input_layer(&self) -> &[FPN] {
+        self.a_1.as_slice()
     }
 
     // TODO: see if I can speed this up a little with clever memory management.
@@ -71,7 +76,7 @@ impl Brain {
         // Perform sigmoid function
         Brain::sigmoid(&mut z_2);
         // Add bias.
-        self.a_2 = z_2.insert_column(0, 0.0);
+        self.a_2 = z_2.insert_column(0, 1.0);
 
         let z_3 = self.a_2 * self.theta_2;
         // // Perform sigmoid function, wasn't done in original Processing code.
@@ -173,20 +178,26 @@ impl Brain {
             a_3,
         }
     }
+
+    pub fn intentions(&self) -> Vec<String> {
+        let info = vec![
+            "Memory",
+            "Acceleration",
+            "Turning",
+            "Eating",
+            "Birth",
+            "Mouth hue",
+        ];
+
+        // Turn it into `String`s
+        info.into_iter().map(|val| String::from(val)).collect()
+    }
 }
 
 // All functions to retrieve intentions
 impl Brain {
-    pub fn wants_birth(&self) -> f64 {
-        self.get_output()[5]
-    }
-
-    pub fn wants_to_eat(&self) -> f64 {
-        self.get_output()[3]
-    }
-
-    pub fn wants_mouth_hue(&self) -> f64 {
-        self.get_output()[6]
+    pub fn get_memory(&self) -> f64 {
+        self.get_output()[0]
     }
 
     pub fn wants_acceleration(&self) -> f64 {
@@ -195,5 +206,17 @@ impl Brain {
 
     pub fn wants_turning(&self) -> f64 {
         self.get_output()[2]
+    }
+
+    pub fn wants_to_eat(&self) -> f64 {
+        self.get_output()[3]
+    }
+
+    pub fn wants_birth(&self) -> f64 {
+        self.get_output()[4]
+    }
+
+    pub fn wants_mouth_hue(&self) -> f64 {
+        self.get_output()[5]
     }
 }

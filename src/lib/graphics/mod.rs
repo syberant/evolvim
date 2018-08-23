@@ -239,10 +239,50 @@ impl Brain {
         G: Graphics<Texture = C::Texture>,
     {
         let text = Text::new(18);
-        let output = self.get_output();
+        let output = self
+            .get_output()
+            .iter()
+            .map(|value| format!("{:.3}", value))
+            .collect();
+        let hidden = self
+            .get_hidden_layer()
+            .iter()
+            .map(|val| format!("{:.3}", val))
+            .collect();
+        let input = self
+            .get_input_layer()
+            .iter()
+            .map(|val| format!("{:.3}", val))
+            .collect();
+        let info = self.intentions();
 
-        let info = output.iter().map(|value| format!("{:.3}", value)).collect();
-
-        draw_lines(info, 20.0, 100.0, context, text, glyphs, graphics);
+        draw_lines(input, 20.0, 100.0, context, text, glyphs, graphics);
+        draw_lines(
+            hidden,
+            20.0,
+            100.0,
+            context.trans(120.0, 0.0),
+            text,
+            glyphs,
+            graphics,
+        );
+        draw_lines(
+            output,
+            20.0,
+            100.0,
+            context.trans(240.0, 0.0),
+            text,
+            glyphs,
+            graphics,
+        );
+        draw_lines(
+            info,
+            20.0,
+            100.0,
+            context.trans(360.0, 0.0),
+            text,
+            glyphs,
+            graphics,
+        );
     }
 }

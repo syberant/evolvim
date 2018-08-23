@@ -380,7 +380,7 @@ impl SoftBody {
         terrain: &mut Terrain,
         climate: &Climate,
     ) {
-        let input = self.get_input();
+        let input = self.get_input(terrain);
         let creature = self.get_creature_mut();
         creature.brain.run(input);
 
@@ -412,12 +412,18 @@ impl SoftBody {
     /// Gets the input for the brain of the creature.
     ///
     /// TODO: improve!
-    fn get_input(&self) -> BrainInput {
+    fn get_input(&self, terrain: &Terrain) -> BrainInput {
         let mut input = [0.0; 9];
 
         let creature = self.get_creature();
         input[0] = creature.get_energy();
         input[1] = creature.get_mouth_hue();
+        let pos = BoardPreciseCoordinate(self.get_px(), self.get_py()).into();
+        let tile = terrain.get_tile_at(pos);
+        let c = tile.get_hsba_color();
+        input[2] = c[0] as f64;
+        input[3] = c[1] as f64;
+        input[4] = c[2] as f64;
 
         return input;
     }
