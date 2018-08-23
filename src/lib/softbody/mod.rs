@@ -43,6 +43,12 @@ impl From<SoftBody> for HLSoftBody {
     }
 }
 
+impl Clone for HLSoftBody {
+    fn clone(&self) -> Self {
+        HLSoftBody(self.value_clone())
+    }
+}
+
 // impl Deref for HLSoftBody {
 //     type Target = SoftBody;
 

@@ -68,6 +68,9 @@ fn main() {
                 Keyboard(Key::D) => {
                     view.switch_display_mode();
                 }
+                Keyboard(Key::O) => {
+                    view.board.select_oldest();
+                }
                 _ => (),
             }
         }

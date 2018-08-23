@@ -148,6 +148,20 @@ impl Board {
         self.selected_creature = None;
     }
 
+    pub fn select_oldest(&mut self) {
+        let oldest = self.creatures.iter().fold(&self.creatures[0], |c_old, c| {
+            if c.borrow().get_creature().get_birth_time()
+                < c_old.borrow().get_creature().get_birth_time()
+            {
+                &c
+            } else {
+                c_old
+            }
+        });
+
+        self.selected_creature = Some(oldest.clone());
+    }
+
     pub fn update(&mut self, time_step: f64) {
         // let previous_year = self.year;
         self.year += time_step;
