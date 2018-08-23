@@ -10,20 +10,18 @@
 //! - WIP: better documentation
 //! - Performance, [Processing] isn't known for anything resembling speed, at least not when compared to [Rust].
 //!
-//! The original version has since also [been converted](https://github.com/evolvio/evolv.io/) to Java.
-//! (No, I am not going to provide a link; Java isn't worthy of that.)
+//! The original version has since also [been converted](https://github.com/evolvio/evolv.io/) to Java
+//! (No, I am not going to provide a link; Java isn't worthy of that).
 //! This version still provides:
 //! - a (subjectively) better language (if you haven't noticed: I hate Java)
-//! - (very probably) better performance plus the option to turn off the graphics
-//! - (hopefully) less weird bugs because of [Rust]'s capability of safe memory management
-//! - maybe more but I AM NOT LOOKING AT JAVA CODE TO COMPARE ANY LONGER
+//! - (hopefully) less bugs because of [Rust]'s guarantees
+//! - (probably) better performance
+//! - maybe more but I AM NOT LOOKING AT JAVA CODE ANY LONGER TO COMPARE
 //!
 //! # Performance
 //!
 //! ## Graphics
-//! At the time of writing, my implementation is ABSOLUTELY TERRIBLE.
-//! Please do use the option to turn the graphics off.
-//! That will show the speed of the internal logic of `evolvim`, which is pretty good (and can improve even more with multithreading).
+//! At the time of writing, my implementation is reasonably efficient, but turning the graphics off will still help.
 //!
 //! ## Running benchmarks
 //! I have written some benchmarks to assess the performance of this crate.
@@ -42,6 +40,7 @@
 //! ## Multithreading
 //! This is on my list but could be a bit tricky because of my usage of `unsafe` (for information about `safe` and `unsafe` [Rust], see [here](https://doc.rust-lang.org/nomicon/safe-unsafe-meaning.html)).
 //! I'm working on removing any use of `unsafe` which will significantly ease the process of converting to multithreaded code.
+//! Also, it remains to be seen how much it will help.
 //!
 //! # Conclusion
 //! As a wise men once said: ["Ceterum censeo Javam delendam esse."](https://en.wikipedia.org/wiki/Carthago_delenda_est)
@@ -52,15 +51,15 @@
 //! I may have been a bit mean to Java so feel free to [bash] on Rust.
 //! (Not that you're going to find anything to [bash] on. 😁)
 //!
-//! For anybody interested in learning [Rust], [this](https://doc.rust-lang.org/book/2018-edition/index.html) is a great place to start.
+//! For anybody interested in learning [Rust], ["the book"] is a great place to start.
 //!
 //! ## Feeling intimidated by Rust?
 //! If you're already a programmer I suggest the following route (maybe it was my route):
 //!
-//! - try [C](https://en.wikipedia.org/wiki/C_%28programming_language%29) or [C++](https://isocpp.org) or another low-level programming language and get frustrated with the many bugs, crashes and segfaults...
-//! - come to [Rust]! Start reading your way through [the book](https://doc.rust-lang.org/book/2018-edition/index.html) and get scared off...
-//! - have a final go with your low-level language of choice and decide that this time, you will get the luxury of proper memory management...
-//! - learn [Rust].
+//! 1. try [C](https://en.wikipedia.org/wiki/C_%28programming_language%29) or [C++](https://isocpp.org) or another low-level programming language and get frustrated with the many bugs, crashes and segfaults...
+//! 2. come to [Rust]! Start reading your way through ["the book"] and get scared off...
+//! 3. have a final go with your low-level language of choice and decide that this time, you **will** get the luxury of proper memory management...
+//! 4. learn [Rust]!
 //!
 //! For those who are new to programming: try something like [Python] or [Processing] first,
 //! they're both newbie-friendly programming languages with a large and active community.
@@ -69,12 +68,15 @@
 //! they can change the way `evolvim` behaves a lot. Feel free to experiment with them!
 //!
 //! [Rust]: https://rust-lang.org
+//! ["the book"]: https://doc.rust-lang.org/book/2018-edition/index.html
 //! [bash]: https://en.wikipedia.org/wiki/Bash_(Unix_shell)
 //! [Processing]: https://processing.org
 //! [Python]: https://python.org
 
 // TODO: ensure documentation for everything, use this to generate warnings
 // #![warn(missing_docs)]
+// Use this to generate errors
+// #![deny(missing_docs)]
 
 pub mod board;
 pub mod brain;
