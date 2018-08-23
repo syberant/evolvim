@@ -13,7 +13,7 @@ impl Tile {
             Tile::Water
         } else {
             // Tile is land
-            let t = LandTile::new(fertility, food_type);
+            let t = LandTile::new(fertility.max(0.0), food_type);
 
             Tile::Land(t)
         }

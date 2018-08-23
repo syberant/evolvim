@@ -32,6 +32,11 @@ use super::*;
 pub fn from_hsba(hsba: [f32; 4]) -> Color {
     let [hue, sat, bri, alpha] = hsba;
 
+    assert!(hue <= 1.0, "Hue can't be larger than 1.");
+    assert!(sat <= 1.0);
+    assert!(bri <= 1.0);
+    assert!(alpha <= 1.0);
+
     // Chroma
     let c = bri * sat;
     // H' = hue * 360 / 60 = hue * 6
@@ -41,8 +46,6 @@ pub fn from_hsba(hsba: [f32; 4]) -> Color {
     if h == 0.0 {
         h = 1.0;
     }
-
-    assert!(hue <= 1.0, "Hue can't be larger than 1.");
 
     let (r, g, b): (f32, f32, f32) = match h.ceil() as usize {
         1 => (c, x, 0.0),
