@@ -225,8 +225,6 @@ impl View {
                     let creature = c.borrow();
                     let creature = creature.get_creature();
 
-                    creature.brain.draw(context, graphics, glyphs, &self);
-
                     creature.draw_details(context, graphics, glyphs, &self);
                 }
             }

@@ -223,16 +223,22 @@ impl Creature {
             self.base.get_py()
         ));
 
-        let mut context = context;
+        draw_lines(
+            text_to_draw,
+            20.0,
+            200.0,
+            context.trans(0.0, 300.0),
+            text,
+            glyphs,
+            graphics,
+        );
 
-        context.transform = context.transform.trans(0.0, 300.0);
-
-        draw_lines(text_to_draw, 20.0, 200.0, context, text, glyphs, graphics);
+        self.brain.draw(context, graphics, glyphs);
     }
 }
 
 impl Brain {
-    pub fn draw<C, G>(&self, context: Context, graphics: &mut G, glyphs: &mut C, _view: &View)
+    pub fn draw<C, G>(&self, context: Context, graphics: &mut G, glyphs: &mut C)
     where
         C: CharacterCache,
         C::Error: std::fmt::Debug,
