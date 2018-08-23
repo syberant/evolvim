@@ -138,16 +138,22 @@ impl View {
         return self.precise_y;
     }
 
+    fn set_precise_x(&mut self, val: f64) {
+        self.precise_x = val.max(0.0).min((self.max_x - self.tiles_on_width) as f64);
+    }
+
+    fn set_precise_y(&mut self, val: f64) {
+        self.precise_y = val.max(0.0).min((self.max_y - self.tiles_on_height) as f64);
+    }
+
     fn change_precise_x(&mut self, change: f64) {
-        self.precise_x = (self.precise_x + change)
-            .max(0.0)
-            .min((self.max_x - self.tiles_on_width) as f64);
+        let val = self.precise_x + change;
+        self.set_precise_x(val);
     }
 
     fn change_precise_y(&mut self, change: f64) {
-        self.precise_y = (self.precise_y + change)
-            .max(0.0)
-            .min((self.max_y - self.tiles_on_height) as f64);
+        let val = self.precise_y + change;
+        self.set_precise_y(val);
     }
 
     pub fn get_x_range(&self) -> Range<usize> {
@@ -174,6 +180,21 @@ impl View {
                 .terrain
                 .update_all_at(time, &self.board.climate, x_range, y_range);
             // self.board.terrain.update_all(time, &self.board.climate);
+
+            if self.board.selected_creature.is_some() {
+                let pos = {
+                    let c = &self.board.selected_creature.as_ref().unwrap();
+                    let c = c.borrow();
+
+                    c.get_position()
+                };
+
+                let tw = self.tiles_on_width;
+                let th = self.tiles_on_height;
+
+                self.set_precise_x(pos.0 - tw as f64 * 0.5);
+                self.set_precise_y(pos.1 - th as f64 * 0.5);
+            }
         }
     }
 

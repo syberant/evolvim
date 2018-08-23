@@ -552,6 +552,10 @@ impl SoftBody {
         }
     }
 
+    pub fn get_position(&self) -> BoardPreciseCoordinate {
+        BoardPreciseCoordinate(self.get_px(), self.get_py())
+    }
+
     /// Wrapper function.
     pub fn get_radius(&self) -> f64 {
         match self {
