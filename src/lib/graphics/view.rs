@@ -200,12 +200,13 @@ impl View {
                     c.borrow().get_creature().draw(context, graphics, &self);
                 }
 
-                if let Some(creature) = &self.board.selected_creature {
-                    creature
-                        .borrow()
-                        .get_creature()
-                        .brain
-                        .draw(context, graphics, glyphs, &self);
+                if let Some(c) = &self.board.selected_creature {
+                    let creature = c.borrow();
+                    let creature = creature.get_creature();
+
+                    creature.brain.draw(context, graphics, glyphs, &self);
+
+                    creature.draw_details(context, graphics, glyphs, &self);
                 }
             }
             Tiles => {

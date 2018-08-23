@@ -271,8 +271,6 @@ impl Board {
             for c in &mut self.creatures {
                 let maybe_baby = c.try_reproduce(time, sbip, board_size);
                 if let Some(baby) = maybe_baby {
-                    println!("Hooray! A baby!");
-
                     babies.push(baby);
                 }
             }

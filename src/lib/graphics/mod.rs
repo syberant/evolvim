@@ -60,6 +60,44 @@ pub fn from_hsba(hsba: [f32; 4]) -> Color {
     return [r + m, g + m, b + m, alpha];
 }
 
+pub fn draw_lines<G, C>(
+    text_to_draw: Vec<String>,
+    line_heigth: f64,
+    line_width: f64,
+    context: Context,
+    text: Text,
+    glyphs: &mut C,
+    graphics: &mut G,
+) where
+    G: Graphics<Texture = C::Texture>,
+    C: CharacterCache,
+    C::Error: std::fmt::Debug,
+{
+    let buffer = 10.0;
+    let mut transform = context.transform.trans(buffer, buffer);
+
+    // Draw white background
+    let rect = [
+        0.0,
+        0.0,
+        line_width + 2.0 * buffer,
+        line_heigth * text_to_draw.len() as f64 + 2.0 * buffer,
+    ];
+    rectangle([1.0, 1.0, 1.0, 0.8], rect, context.transform, graphics);
+
+    for i in 0..text_to_draw.len() {
+        transform = transform.trans(0.0, line_heigth);
+
+        text.draw(
+            &text_to_draw[i],
+            glyphs,
+            &context.draw_state,
+            transform,
+            graphics,
+        ).expect("Your font doesn't seem to be working... Could not draw text.");
+    }
+}
+
 impl Terrain {
     pub fn draw<C, G>(&self, context: Context, graphics: &mut G, glyphs: &mut C, view: &View)
     where
@@ -72,15 +110,17 @@ impl Terrain {
             .transform
             .trans(-view.get_precise_x() * size, -view.get_precise_y() * size);
 
+        let mut shape = rectangle::Rectangle::new([1., 1., 1., 1.]);
+
         for x in view.get_x_range() {
             for y in view.get_y_range() {
                 let tile = self.get_tile_at((x, y));
 
                 let rect = [x as f64 * size, y as f64 * size, size, size];
 
-                let color = from_hsba(tile.get_hsba_color());
+                shape = shape.color(from_hsba(tile.get_hsba_color()));
 
-                rectangle(color, rect, transform, graphics);
+                shape.draw(rect, &context.draw_state, transform, graphics);
             }
         }
 
@@ -99,7 +139,10 @@ impl Terrain {
                 text,
                 glyphs,
                 &context.draw_state,
-                transform.trans(tile_pos.0 as f64 * size, tile_pos.1 as f64 * size),
+                transform.trans(
+                    tile_pos.0 as f64 * size + 0.5 * size,
+                    tile_pos.1 as f64 * size + 0.5 * size,
+                ),
                 graphics,
             )
             .expect("Your font doesn't seem to be working... Could not draw text.");
@@ -154,6 +197,35 @@ impl Creature {
 
         ellipse.draw(rect, &context.draw_state, transform, graphics);
     }
+
+    pub fn draw_details<C, G>(
+        &self,
+        context: Context,
+        graphics: &mut G,
+        glyphs: &mut C,
+        view: &View,
+    ) where
+        C: CharacterCache,
+        C::Error: std::fmt::Debug,
+        G: Graphics<Texture = C::Texture>,
+    {
+        let text = Text::new(18);
+        let mut text_to_draw = Vec::new();
+
+        text_to_draw.push(format!("Energy: {:.3}", self.get_energy()));
+        text_to_draw.push(format!("Age: {:.3}", self.get_age(view.board.get_time())));
+        text_to_draw.push(format!(
+            "Pos: ({:.1}, {:.1})",
+            self.base.get_px(),
+            self.base.get_py()
+        ));
+
+        let mut context = context;
+
+        context.transform = context.transform.trans(0.0, 300.0);
+
+        draw_lines(text_to_draw, 20.0, 200.0, context, text, glyphs, graphics);
+    }
 }
 
 impl Brain {
@@ -166,16 +238,8 @@ impl Brain {
         let text = Text::new(18);
         let output = self.get_output();
 
-        // Draw white background
-        let rect = [0.0, 0.0, 100.0, 20.0 * output.len() as f64];
-        rectangle([1.0, 1.0, 1.0, 1.0], rect, context.transform, graphics);
+        let info = output.iter().map(|value| format!("{:.3}", value)).collect();
 
-        for i in 0..output.len() {
-            let info = &format!("{:.3}", output[i]);
-            let transform = context.transform.trans(10.0, 20.0 + i as f64 * 20.0);
-
-            text.draw(info, glyphs, &context.draw_state, transform, graphics)
-                .expect("Your font doesn't seem to be working... Could not draw text.");
-        }
+        draw_lines(info, 20.0, 100.0, context, text, glyphs, graphics);
     }
 }
