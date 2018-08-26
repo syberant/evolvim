@@ -159,11 +159,11 @@ impl View {
     }
 
     pub fn get_x_range(&self) -> Range<usize> {
-        self.get_x()..(self.get_x() + self.tiles_on_width).min(self.max_x)
+        self.get_x()..(self.get_x() + self.tiles_on_width + 1).min(self.max_x)
     }
 
     pub fn get_y_range(&self) -> Range<usize> {
-        self.get_y()..(self.get_y() + self.tiles_on_height).min(self.max_y)
+        self.get_y()..(self.get_y() + self.tiles_on_height + 1).min(self.max_y)
     }
 }
 
