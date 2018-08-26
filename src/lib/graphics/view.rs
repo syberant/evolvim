@@ -30,13 +30,15 @@ pub struct View {
 
 impl Default for View {
     fn default() -> Self {
+        let board = Board::default();
         let base_tile_width = 100.0;
+
         View {
             precise_x: 0.0,
             precise_y: 0.0,
 
-            max_x: 100,
-            max_y: 100,
+            max_x: board.get_board_width(),
+            max_y: board.get_board_height(),
 
             tiles_on_height: 10,
             tiles_on_width: 10,
@@ -44,7 +46,7 @@ impl Default for View {
             _base_tile_width: base_tile_width,
             tile_width: base_tile_width,
 
-            board: Board::default(),
+            board,
 
             mouse: MouseCoordinate::new(0.0, 0.0),
 
@@ -123,11 +125,11 @@ impl View {
     }
 
     pub fn get_x(&self) -> usize {
-        return self.precise_x.floor() as usize;
+        return self.precise_x.floor().max(0.0) as usize;
     }
 
     pub fn get_y(&self) -> usize {
-        return self.precise_y.floor() as usize;
+        return self.precise_y.floor().max(0.0) as usize;
     }
 
     pub fn get_precise_x(&self) -> f64 {
@@ -157,15 +159,11 @@ impl View {
     }
 
     pub fn get_x_range(&self) -> Range<usize> {
-        assert!(self.get_x() + self.tiles_on_width <= self.max_x);
-
-        self.get_x()..self.get_x() + self.tiles_on_width
+        self.get_x()..(self.get_x() + self.tiles_on_width).min(self.max_x)
     }
 
     pub fn get_y_range(&self) -> Range<usize> {
-        assert!(self.get_y() + self.tiles_on_height <= self.max_y);
-
-        self.get_y()..self.get_y() + self.tiles_on_height
+        self.get_y()..(self.get_y() + self.tiles_on_height).min(self.max_y)
     }
 }
 
