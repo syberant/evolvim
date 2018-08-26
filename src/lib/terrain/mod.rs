@@ -114,27 +114,25 @@ impl Terrain {
 
         let mut tiles = Vec::with_capacity(board_width);
 
-        // allocate these variables
-        let mut big_force: f64;
-        let mut fertility: f64;
-        let mut climate_type: f64;
         for x in 0..board_width {
             tiles.push(Vec::with_capacity(board_height));
             for y in 0..board_height {
-                big_force = (y as f64 / board_height as f64).sqrt();
+                let big_force = (y as f64 / board_height as f64).sqrt();
 
                 // TODO: understand these formulas.
-                fertility = ng
-                    .get([x as f64 * step_size * 3.0, y as f64 * step_size * 3.0])
-                    .abs() * (1.0 - big_force) * 5.0
-                    + ng.get([x as f64 * step_size * 0.5, y as f64 * step_size * 0.5])
-                        .abs() * big_force * 5.0 - 1.5;
+                let fertility =
+                    get_noise(&ng, x as f64 * step_size * 3.0, y as f64 * step_size * 3.0)
+                        * (1.0 - big_force)
+                        * 4.0
+                        + get_noise(&ng, x as f64 * step_size * 0.5, y as f64 * step_size * 0.5)
+                            * big_force
+                            * 4.0 - 1.5;
 
-                climate_type =
-                    ng.get([
-                        x as f64 * step_size * 0.2 + 10000.0,
-                        y as f64 * step_size * 0.2 + 10000.0,
-                    ]).abs() * 1.63 - 0.4;
+                let mut climate_type = get_noise(
+                    &ng,
+                    x as f64 * step_size * 0.2 + 10000.0,
+                    y as f64 * step_size * 0.2 + 10000.0,
+                ) * 1.63 - 0.4;
 
                 climate_type = climate_type.max(0.0).min(0.8);
                 tiles[x].push(Tile::new(fertility, climate_type));
@@ -152,4 +150,8 @@ impl Terrain {
     pub fn get_height(&self) -> usize {
         return self.tiles[0].len();
     }
+}
+
+fn get_noise<N: NoiseFn<Point2<f64>>>(ng: N, x: f64, y: f64) -> f64 {
+    (ng.get([x, y]) + 1.0) / 2.0
 }
