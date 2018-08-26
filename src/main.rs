@@ -13,7 +13,7 @@ fn main() {
 
     let mut playspeed = 1;
 
-    let mut window: PistonWindow = WindowSettings::new("Hello Piston!", [1000, 800])
+    let mut window: PistonWindow = WindowSettings::new("Hello Piston!", [1000, 900])
         .exit_on_esc(true)
         .build()
         .unwrap();

@@ -40,7 +40,7 @@ impl Default for View {
             max_x: board.get_board_width(),
             max_y: board.get_board_height(),
 
-            tiles_on_height: 10,
+            tiles_on_height: 9,
             tiles_on_width: 10,
 
             _base_tile_width: base_tile_width,
