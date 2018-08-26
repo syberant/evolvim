@@ -280,7 +280,7 @@ impl Rock {
     /// I.e. it also takes the radius of this body into account.
     pub fn set_body_x(&mut self, new_x: f64, board_width: usize) {
         let radius = self.get_radius();
-        self.px = new_x.max(radius).min((board_width - 1) as f64 - radius);
+        self.px = new_x.max(radius).min(board_width as f64 - radius);
     }
 
     /// Sets the center of this `SoftBody` and makes sure the entire body stays inside of the world.
@@ -288,7 +288,7 @@ impl Rock {
     /// I.e. it also takes the radius of this body into account.
     pub fn set_body_y(&mut self, new_y: f64, board_height: usize) {
         let radius = self.get_radius();
-        self.py = new_y.max(radius).min((board_height - 1) as f64 - radius);
+        self.py = new_y.max(radius).min(board_height as f64 - radius);
     }
 
     pub fn add_vx(&mut self, value_to_add: f64) {
