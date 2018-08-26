@@ -192,6 +192,8 @@ impl Board {
 
             let mut c = c_rc.borrow_mut();
 
+            c.get_creature_mut().base.record_energy();
+
             c.metabolize(time_step, &self);
 
             let time = self.year;

@@ -216,6 +216,11 @@ impl Creature {
         let mut text_to_draw = Vec::new();
 
         text_to_draw.push(format!("Energy: {:.3}", self.get_energy()));
+        let time_step = 0.001;
+        text_to_draw.push(format!(
+            "Energy D: {:.3}",
+            self.base.get_energy_change(time_step)
+        ));
         text_to_draw.push(format!("Age: {:.3}", self.get_age(view.board.get_time())));
         text_to_draw.push(format!(
             "Pos: ({:.1}, {:.1})",

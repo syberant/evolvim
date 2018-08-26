@@ -32,6 +32,8 @@ pub struct Rock {
     prev_sbip_min_y: usize,
     prev_sbip_max_x: usize,
     prev_sbip_max_y: usize,
+    // Stats or info
+    prev_energy: f64,
 }
 
 impl Rock {
@@ -62,6 +64,8 @@ impl Rock {
             prev_sbip_min_y: 0,
             prev_sbip_max_x: 0,
             prev_sbip_max_y: 0,
+
+            prev_energy: energy,
         }
     }
 
@@ -101,6 +105,8 @@ impl Rock {
             prev_sbip_min_y: 0,
             prev_sbip_max_x: 0,
             prev_sbip_max_y: 0,
+
+            prev_energy: energy,
         }
     }
 
@@ -273,6 +279,14 @@ impl Rock {
 
     pub fn add_energy(&mut self, energy_to_add: f64) {
         self.energy += energy_to_add.max(0.0);
+    }
+
+    pub fn record_energy(&mut self) {
+        self.prev_energy = self.energy;
+    }
+
+    pub fn get_energy_change(&self, time_step: f64) -> f64 {
+        (self.energy - self.prev_energy) / time_step
     }
 
     /// Sets the center of this `SoftBody` and makes sure the entire body stays inside of the world.
