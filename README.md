@@ -77,6 +77,10 @@ they're both newbie-friendly programming languages with a large and active commu
 Also, you don't have to know [Rust] to tinker with the constants in `constants.rs`;
 they can change the way `evolvim` behaves a lot. Feel free to experiment with them!
 
+# Temporary disclaimer
+I have made big steps but there is **no evolution visible at the moment**.
+This is under active development and very much a work in progress.
+
 [Processing code]: https://github.com/evolvio/evolv.io/tree/120b3c1f11c6beade92343fc40f57d376b8a7434
 [carykh]: https://www.youtube.com/user/carykh
 [Rust]: https://rust-lang.org
