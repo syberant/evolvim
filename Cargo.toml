@@ -2,6 +2,7 @@
 authors = ["Sybrand Aarnoutse (syberant)"]
 name = "evolvim"
 version = "0.1.0"
+license = "MIT"
 
 [dependencies]
 nalgebra = "0.16.0"
