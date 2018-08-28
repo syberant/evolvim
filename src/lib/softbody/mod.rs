@@ -173,8 +173,8 @@ impl HLSoftBody {
             if distance < combined_radius {
                 let force = combined_radius * COLLISION_FORCE;
 
-                let add_vx = ((self_px - collider_px) / distance) * force * self_mass;
-                let add_vy = ((self_py - collider_py) / distance) * force * self_mass;
+                let add_vx = (self_px - collider_px) / distance * force / self_mass;
+                let add_vy = (self_py - collider_py) / distance * force / self_mass;
 
                 let mut self_mut_deref = self.borrow_mut();
                 self_mut_deref.add_vx(add_vx);
