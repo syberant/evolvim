@@ -128,27 +128,29 @@ impl Terrain {
         }
 
         // Draw text for `Tile` under cursor
-        let tile_pos = view.mouse.into_board_coordinate(
+        if let Some(tile_pos) = view.mouse.into_board_coordinate(
             view.get_precise_x(),
             view.get_precise_y(),
             view.get_tile_size(),
-        );
-        let tile = self.get_tile_at(tile_pos);
+            view.board.get_board_size(),
+        ) {
+            let tile = self.get_tile_at(tile_pos);
 
-        let text = &format!("{:.0}", tile.get_food_level() * 100.0);
+            let text = &format!("{:.0}", tile.get_food_level() * 100.0);
 
-        Text::new(12)
-            .draw(
-                text,
-                glyphs,
-                &context.draw_state,
-                transform.trans(
-                    tile_pos.0 as f64 * size + 0.5 * size,
-                    tile_pos.1 as f64 * size + 0.5 * size,
-                ),
-                graphics,
-            )
-            .expect("Your font doesn't seem to be working... Could not draw text.");
+            Text::new(12)
+                .draw(
+                    text,
+                    glyphs,
+                    &context.draw_state,
+                    transform.trans(
+                        tile_pos.0 as f64 * size + 0.5 * size,
+                        tile_pos.1 as f64 * size + 0.5 * size,
+                    ),
+                    graphics,
+                )
+                .expect("Your font doesn't seem to be working... Could not draw text.");
+        }
     }
 }
 

@@ -31,22 +31,34 @@ impl MouseCoordinate {
         base_x: f64,
         base_y: f64,
         scale: f64,
-    ) -> BoardPreciseCoordinate {
+        board_size: BoardSize,
+    ) -> Option<BoardPreciseCoordinate> {
         let x = base_x + self.0 / scale;
         let y = base_y + self.1 / scale;
 
-        if x < 0.0 || y < 0.0 {
-            panic!("Mouse moved outside of window.");
+        if x < 0.0 || y < 0.0 || x > board_size.0 as f64 - 1.0 || y > board_size.1 as f64 - 1.0 {
+            // panic!("Mouse moved outside of window.");
+            None
+        } else {
+            Some(BoardPreciseCoordinate(x, y))
         }
-
-        return BoardPreciseCoordinate(x, y);
     }
 
     /// Converts this into a tile coordinate of the board.
     ///
     /// This is equal to calling `into_board_precise_coordinate` and then turning it into a `BoardCoordinate` via the `From` trait
     /// (see `BoardPreciseCoordinate`).
-    pub fn into_board_coordinate(&self, base_x: f64, base_y: f64, scale: f64) -> BoardCoordinate {
-        return BoardCoordinate::from(self.into_board_precise_coordinate(base_x, base_y, scale));
+    pub fn into_board_coordinate(
+        &self,
+        base_x: f64,
+        base_y: f64,
+        scale: f64,
+        board_size: BoardSize,
+    ) -> Option<BoardCoordinate> {
+        if let Some(val) = self.into_board_precise_coordinate(base_x, base_y, scale, board_size) {
+            Some(BoardCoordinate::from(val))
+        } else {
+            None
+        }
     }
 }
