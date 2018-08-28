@@ -227,6 +227,7 @@ impl Creature {
             self.base.get_px(),
             self.base.get_py()
         ));
+        text_to_draw.push(format!("Speed: {}", self.base.get_total_velocity()));
 
         draw_lines(
             text_to_draw,
