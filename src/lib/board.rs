@@ -162,6 +162,20 @@ impl Board {
         self.selected_creature = Some(oldest.clone());
     }
 
+    pub fn select_biggest(&mut self) {
+        let biggest = self.creatures.iter().fold(&self.creatures[0], |c_old, c| {
+            if c.borrow().get_creature().base.get_energy()
+                > c_old.borrow().get_creature().base.get_energy()
+            {
+                &c
+            } else {
+                c_old
+            }
+        });
+
+        self.selected_creature = Some(biggest.clone());
+    }
+
     pub fn update(&mut self, time_step: f64) {
         // let previous_year = self.year;
         self.year += time_step;

@@ -71,6 +71,9 @@ fn main() {
                 Keyboard(Key::O) => {
                     view.board.select_oldest();
                 }
+                Keyboard(Key::B) => {
+                    view.board.select_biggest();
+                }
                 Keyboard(Key::Q) => {
                     view.board.selected_creature = None;
                 }
