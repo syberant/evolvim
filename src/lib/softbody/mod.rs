@@ -246,7 +246,7 @@ impl HLSoftBody {
                             );
                             let combined_radius = self_radius * FIGHT_RANGE + c.base.get_radius();
 
-                            c.brain.wants_birth() > -1.0 // must be a willing creature
+                            c.brain.wants_help_birth() > -1.0 // must be a willing creature
                             && dist < combined_radius // must be close enough
 
                             // TODO: find out if this addition to the Processing code works

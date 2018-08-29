@@ -187,6 +187,7 @@ impl Brain {
             "Eating",
             "Birth",
             "Mouth hue",
+            "Help birth",
         ];
 
         // Turn it into `String`s
@@ -218,5 +219,9 @@ impl Brain {
 
     pub fn wants_mouth_hue(&self) -> f64 {
         self.get_output()[5]
+    }
+
+    pub fn wants_help_birth(&self) -> f64 {
+        self.get_output()[6]
     }
 }
