@@ -1,6 +1,6 @@
 # Evolv.io improved!
 
-This project is a [Rust] port of the original [Processing code] from [carykh].
+This project is a [Rust] port of the [Processing code] from [carykh] and contributors.
 The code was 100% rewritten but includes most ideas of the [Processing code] with a lot merely being translated into [Rust].
 
 # Why is this improved?
@@ -23,7 +23,7 @@ This version still provides:
 # Performance
 
 ## Graphics
-At the time of writing, my implementation is reasonably efficient, but turning the graphics off will still help.
+At the time of writing, my implementation is pretty terrible so turning the graphics off will help.
 
 ## Running benchmarks
 I have written some benchmarks to assess the performance of this crate.
@@ -46,9 +46,10 @@ Also, it remains to be seen how much it will help.
 
 # Conclusion
 
-## Involve people with technology
+## Involving people with technology
 The original project by [carykh] got a lot of people involved with programming or at least interested.
-Modifications to the code were however hard because it wasn't very well documented and pretty messy. I hope to make it easier to contribute to this version by eventually providing good documentation and clean code.
+Modifications to the code were however hard because it wasn't very well documented and pretty messy.
+I hope to make it easier to contribute to this version by eventually providing good documentation and clean code.
 
 My choice of [Rust] is a mixed blessing: it runs blazingly fast, prevents a lot of bugs and is my favorite language.
 It does however have a pretty steep learning curve and I spent months fighting with the compiler when I was getting started.
@@ -61,7 +62,7 @@ I hope the Java programmers can take the joke and not hack me up into bits; also
 `cargo` was getting hysterical...
 
 I may have been a bit mean to Java so feel free to [bash] on Rust.
-(Not that you're going to find anything to [bash] on. 😁)
+(Not that you're going to find anything to [bash] on... 😁)
 
 ## Feeling intimidated by Rust?
 If you're already a programmer I suggest the following route (maybe it was my route):
@@ -76,10 +77,6 @@ they're both newbie-friendly programming languages with a large and active commu
 
 Also, you don't have to know [Rust] to tinker with the constants in `constants.rs`;
 they can change the way `evolvim` behaves a lot. Feel free to experiment with them!
-
-# Temporary disclaimer
-I have made big steps but there is **no evolution visible at the moment**.
-This is under active development and very much a work in progress.
 
 [Processing code]: https://github.com/evolvio/evolv.io/tree/120b3c1f11c6beade92343fc40f57d376b8a7434
 [carykh]: https://www.youtube.com/user/carykh
