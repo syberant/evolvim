@@ -142,8 +142,8 @@ impl Brain {
                 assert!(parent_id < amount_parents as usize);
 
                 let r = (rng.gen::<f64>() * 2.0 - 1.0).powi(9);
-                let mutate_multi = rng.gen::<f64>().powi(9);
-                let mutability = rng.gen::<f64>().powi(14);
+                let mutate_multi = 0.5.powi(9);
+                let mutability = 0.0005;
 
                 theta_1[(y, z)] = parents[parent_id].borrow().get_creature().brain.theta_1[(y, z)]
                     + r * mutability / mutate_multi;
@@ -162,8 +162,8 @@ impl Brain {
                 assert!(parent_id < amount_parents as usize);
 
                 let r = (rng.gen::<f64>() * 2.0 - 1.0).powi(9);
-                let mutate_multi = rng.gen::<f64>().powi(9);
-                let mutability = rng.gen::<f64>().powi(14);
+                let mutate_multi = 0.5.powi(9);
+                let mutability = 0.0005;
 
                 theta_2[(y, z)] = parents[parent_id].borrow().get_creature().brain.theta_2[(y, z)]
                     + r * mutability / mutate_multi;
