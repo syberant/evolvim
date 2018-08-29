@@ -105,4 +105,4 @@ pub const FOOD_SENSITIVITY: f64 = 0.3;
 // ********************** //
 // **** REPRODUCTION **** //
 // ********************** //
-pub const BABY_SIZE: f64 = SAFE_SIZE;
+pub const BABY_SIZE: f64 = SAFE_SIZE + 0.1;
