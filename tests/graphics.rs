@@ -15,5 +15,9 @@ fn test_graphics_from_hsba() {
 #[test]
 fn test_ui_mouse_to_board_coordinate() {
     let mouse = MouseCoordinate::new(333.01, 866.99);
-    assert!(mouse.into_board_coordinate(0.1, 0.3, 10.0) == (33, 86));
+    assert!(
+        mouse
+            .into_board_coordinate(0.1, 0.3, 10.0, (100, 100))
+            .unwrap() == (33, 86)
+    );
 }
