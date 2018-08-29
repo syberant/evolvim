@@ -28,6 +28,9 @@ type HiddenLayerSizePlusBias = U11;
 /// The amount of neurons in the output layer.
 type OutputLayerSize = U10;
 
+// const AXON_ANGLES_0: Vec<f64> = get_axon_angles(110, 0);
+// const AXON_ANGLES_1: Vec<f64> = get_axon_angles(110, 1);
+
 pub struct Brain {
     // This dimension should be equal to InputLayerSize + 1.
     a_1: RowVectorN<FPN, InputLayerSizePlusBias>,
@@ -130,11 +133,13 @@ impl Brain {
         let random_rotation: f64 = rng.gen();
         let amount_parents = parents.len() as f64;
 
+        let mutability = 0.0005;
+
+        let axon_angles = get_axon_angles(110, 0);
         for y in 0..theta_1.nrows() {
             for z in 0..theta_1.ncols() {
                 // BRAIN_HEIGHT = 11; x = 0; BRAIN_WIDTH = 3;
-                let axon_angle =
-                    PI + (((y + z) as f64 - 11.0) / 2.0).atan2(0.0 - 3.0 / 2.0) / (2.0 * PI);
+                let axon_angle = axon_angles[y + z];
 
                 let parent_id =
                     (((axon_angle + random_rotation) % 1.0) * amount_parents).floor() as usize;
@@ -143,18 +148,17 @@ impl Brain {
 
                 let r = (rng.gen::<f64>() * 2.0 - 1.0).powi(9);
                 let mutate_multi = 0.5.powi(9);
-                let mutability = 0.0005;
 
                 theta_1[(y, z)] = parents[parent_id].borrow().get_creature().brain.theta_1[(y, z)]
                     + r * mutability / mutate_multi;
             }
         }
 
+        let axon_angles = get_axon_angles(110, 1);
         for y in 0..theta_2.nrows() {
             for z in 0..theta_2.ncols() {
                 // BRAIN_HEIGHT = 11; x = 1; BRAIN_WIDTH = 3;
-                let axon_angle =
-                    PI + (((y + z) as f64 - 11.0) / 2.0).atan2(1.0 - 3.0 / 2.0) / (2.0 * PI);
+                let axon_angle = axon_angles[y + z];
 
                 let parent_id =
                     (((axon_angle + random_rotation) % 1.0) * amount_parents).floor() as usize;
@@ -163,7 +167,6 @@ impl Brain {
 
                 let r = (rng.gen::<f64>() * 2.0 - 1.0).powi(9);
                 let mutate_multi = 0.5.powi(9);
-                let mutability = 0.0005;
 
                 theta_2[(y, z)] = parents[parent_id].borrow().get_creature().brain.theta_2[(y, z)]
                     + r * mutability / mutate_multi;
@@ -224,4 +227,18 @@ impl Brain {
     pub fn wants_help_birth(&self) -> f64 {
         self.get_output()[6]
     }
+}
+
+fn get_axon_angles(max: usize, x: usize) -> Vec<f64> {
+    let mut vec = Vec::with_capacity(max);
+    const BRAIN_WIDTH: f64 = 3.0;
+    const BRAIN_HEIGHT: f64 = 11.0;
+
+    for i in 0..max {
+        vec.push(
+            PI + ((i as f64 - BRAIN_HEIGHT) / 2.0).atan2(x as f64 - BRAIN_WIDTH / 2.0) / (2.0 * PI),
+        );
+    }
+
+    vec
 }
