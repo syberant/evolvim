@@ -231,9 +231,12 @@ impl HLSoftBody {
             let self_py = self.borrow().get_py();
             let self_radius = self.borrow().get_radius();
 
-            let mut parents: Vec<HLSoftBody> = self
-                .borrow()
-                .get_colliders(sbip)
+            let mut colliders = self.borrow().get_colliders(sbip);
+
+            // Remove self
+            colliders.remove_softbody(self.value_clone());
+
+            let mut parents: Vec<HLSoftBody> = colliders
                 .into_iter()
                 .filter(|rc_soft| {
                     match rc_soft.borrow().deref() {
@@ -259,6 +262,8 @@ impl HLSoftBody {
                 })
                 .map(|rc_soft| HLSoftBody::from(Rc::clone(&rc_soft)))
                 .collect();
+
+            parents.push(self.clone());
 
             let available_energy = parents.iter().fold(0.0, |acc, c| {
                 acc + c.borrow().get_creature().get_baby_energy()
