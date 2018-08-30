@@ -242,6 +242,26 @@ impl Creature {
         );
 
         self.brain.draw(context, graphics, glyphs);
+
+        let size = view.get_tile_size();
+        let transform = context
+            .transform
+            .trans(-view.get_precise_x() * size, -view.get_precise_y() * size);
+
+        let radius = self.base.get_radius() / 2.0;
+        let color = [1.0, 1.0, 1.0, 0.5];
+
+        let rect = [
+            // This gives the upper-left corner of the circle so subtract the radius.
+            (self.base.get_px() - radius) * size,
+            (self.base.get_py() - radius) * size,
+            radius * 2.0 * size,
+            radius * 2.0 * size,
+        ];
+
+        let ellipse = ellipse::Ellipse::new(color);
+
+        ellipse.draw(rect, &context.draw_state, transform, graphics);
     }
 }
 
