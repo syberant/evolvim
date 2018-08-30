@@ -46,7 +46,7 @@ pub const DEFAULT_ROCK_AMOUNT: usize = 0;
 pub const DEFAULT_MIN_TEMP: f64 = -0.5;
 
 /// The hottest it is going to get.
-pub const DEFAULT_MAX_TEMP: f64 = 1.0;
+pub const DEFAULT_MAX_TEMP: f64 = 0.7;
 
 /// Determines whether you start with "user control" or not.
 ///
