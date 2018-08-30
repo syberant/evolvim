@@ -133,7 +133,9 @@ impl Brain {
         let random_rotation: f64 = rng.gen();
         let amount_parents = parents.len() as f64;
 
-        let mutability = 0.0005;
+        const MUTABILITY: f64 = 0.0005;
+        // const MUTATE_MULTI: f64 = 0.5.powi(9);
+        const MUTATE_MULTI: f64 = 0.001953125;
 
         let axon_angles = get_axon_angles(110, 0);
         for y in 0..theta_1.nrows() {
@@ -150,7 +152,7 @@ impl Brain {
                 let mutate_multi = 0.5.powi(9);
 
                 theta_1[(y, z)] = parents[parent_id].borrow().get_creature().brain.theta_1[(y, z)]
-                    + r * mutability / mutate_multi;
+                    + r * MUTABILITY / MUTATE_MULTI;
             }
         }
 
@@ -169,7 +171,7 @@ impl Brain {
                 let mutate_multi = 0.5.powi(9);
 
                 theta_2[(y, z)] = parents[parent_id].borrow().get_creature().brain.theta_2[(y, z)]
-                    + r * mutability / mutate_multi;
+                    + r * MUTABILITY / MUTATE_MULTI;
             }
         }
 
