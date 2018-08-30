@@ -24,3 +24,11 @@ bench = []
 [lib]
 name = "lib_evolvim"
 path = "./src/lib/mod.rs"
+
+[[bin]]
+name = "evolvim"
+path = "./src/main.rs"
+
+[[bin]]
+name = "check_terrain_gen"
+path = "./src/checkTerrainGen.rs"
