@@ -110,22 +110,6 @@ impl Rock {
         }
     }
 
-    /// Takes a new coordinate and changes itself to it without any checking.
-    ///
-    /// This function is unsafe because we are not checking for moving outside of the board or not,
-    /// please use `set_body_x()` which has some checks included.
-    pub unsafe fn set_px(&mut self, new_x: f64) {
-        self.px = new_x;
-    }
-
-    /// Takes a new coordinate and changes itself to it without any checking.
-    ///
-    /// This function is unsafe because we are not checking for moving outside of the board or not,
-    /// please use `set_body_y()` which has some checks included.
-    pub unsafe fn set_py(&mut self, new_y: f64) {
-        self.py = new_y;
-    }
-
     /// Return this body's radius, used for collissions, etc.
     pub fn get_radius(&self) -> f64 {
         return (self.energy / ENERGY_DENSITY / PI).sqrt().max(0.0);

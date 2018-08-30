@@ -5,6 +5,8 @@
 // Use this to generate errors
 // #![deny(missing_docs)]
 
+#![deny(unsafe_code)]
+
 pub mod board;
 pub mod brain;
 pub mod climate;
