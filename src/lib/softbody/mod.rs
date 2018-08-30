@@ -22,12 +22,6 @@ const MATURE_AGE: f64 = 0.01;
 /// TODO: come up with a better name.
 pub struct HLSoftBody(Rc<RefCell<SoftBody>>);
 
-impl From<Rc<RefCell<SoftBody>>> for HLSoftBody {
-    fn from(sb_rc: Rc<RefCell<SoftBody>>) -> Self {
-        HLSoftBody(sb_rc)
-    }
-}
-
 impl From<SoftBody> for HLSoftBody {
     fn from(sb: SoftBody) -> HLSoftBody {
         HLSoftBody(Rc::new(RefCell::new(sb)))
@@ -36,7 +30,7 @@ impl From<SoftBody> for HLSoftBody {
 
 impl Clone for HLSoftBody {
     fn clone(&self) -> Self {
-        HLSoftBody(self.value_clone())
+        HLSoftBody(Rc::clone(&self.0))
     }
 }
 
@@ -56,7 +50,7 @@ impl Clone for HLSoftBody {
 
 impl PartialEq<HLSoftBody> for HLSoftBody {
     fn eq(&self, rhs: &HLSoftBody) -> bool {
-        Rc::ptr_eq(self.value_ref(), rhs.value_ref())
+        Rc::ptr_eq(&self.0, &rhs.0)
     }
 }
 
@@ -74,16 +68,6 @@ impl HLSoftBody {
     /// Returns a boolean indicating whether this `HLSoftBody` is currently borrowed.
     pub fn can_borrow_mut(&self) -> bool {
         return self.0.try_borrow_mut().is_ok();
-    }
-
-    /// Returns a reference to the underlying `RcSoftBody`
-    pub fn value_ref(&self) -> &Rc<RefCell<SoftBody>> {
-        return &self.0;
-    }
-
-    /// Get a clone of the internal `RcSoftBody`
-    pub fn value_clone(&self) -> Rc<RefCell<SoftBody>> {
-        return Rc::clone(&self.0);
     }
 
     /// Calls the same function on all types and updates `SoftBodiesInPositions` by calling `set_sbip`.

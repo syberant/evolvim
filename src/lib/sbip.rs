@@ -28,7 +28,7 @@ impl SoftBodyBucket for SoftBodiesAt {
         }
     }
 
-    /// Adds the given `RcSoftBody`, prevents duplicates.
+    /// Adds the given `HLSoftBody`, prevents duplicates.
     fn add_softbody(&mut self, body: HLSoftBody) {
         for i in 0..self.len() {
             if self[i] == body {

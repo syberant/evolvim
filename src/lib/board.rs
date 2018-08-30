@@ -9,8 +9,6 @@ extern crate rand;
 
 use super::*;
 use constants::*;
-use std::cell::RefCell;
-use std::rc::Rc;
 
 /// The amount of times a year an object is updated.
 ///
@@ -293,9 +291,7 @@ impl Board {
     fn maintain_creature_minimum(&mut self) {
         while self.creatures.len() < self.creature_minimum {
             let board_size = self.get_board_size();
-            let creature = HLSoftBody::from(Rc::new(RefCell::new(SoftBody::new_random_creature(
-                board_size, self.year,
-            ))));
+            let creature = HLSoftBody::from(SoftBody::new_random_creature(board_size, self.year));
 
             // Initialize in `SoftBodiesInPositions` as well.
             creature.set_sbip(&mut self.soft_bodies_in_positions, board_size);
