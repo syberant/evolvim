@@ -8,21 +8,20 @@
 
 use super::*;
 use std::ops::Range;
-use std::rc::Rc;
 
 pub trait SoftBodyBucket {
-    fn remove_softbody(&mut self, body: RcSoftBody);
+    fn remove_softbody(&mut self, body: HLSoftBody);
 
-    fn add_softbody(&mut self, body: RcSoftBody);
+    fn add_softbody(&mut self, body: HLSoftBody);
 }
 
-pub type SoftBodiesAt = Vec<RcSoftBody>;
+pub type SoftBodiesAt = Vec<HLSoftBody>;
 
 impl SoftBodyBucket for SoftBodiesAt {
-    fn remove_softbody(&mut self, body: RcSoftBody) {
+    fn remove_softbody(&mut self, body: HLSoftBody) {
         // WARNING: Only removes one instance
         for i in 0..self.len() {
-            if Rc::ptr_eq(&self[i], &body) {
+            if self[i] == body {
                 self.remove(i);
                 break;
             }
@@ -30,9 +29,9 @@ impl SoftBodyBucket for SoftBodiesAt {
     }
 
     /// Adds the given `RcSoftBody`, prevents duplicates.
-    fn add_softbody(&mut self, body: RcSoftBody) {
+    fn add_softbody(&mut self, body: HLSoftBody) {
         for i in 0..self.len() {
-            if Rc::ptr_eq(&self[i], &body) {
+            if self[i] == body {
                 return;
             }
         }
@@ -63,12 +62,12 @@ impl SoftBodiesInPositions {
         return &self.0[x][y];
     }
 
-    pub fn add_soft_body_at(&mut self, x: usize, y: usize, body: RcSoftBody) {
+    pub fn add_soft_body_at(&mut self, x: usize, y: usize, body: HLSoftBody) {
         self.0[x][y].push(body);
     }
 
     /// NOTE: only removes one instance of `body`.
-    pub fn remove_soft_body_at(&mut self, x: usize, y: usize, body: RcSoftBody) {
+    pub fn remove_soft_body_at(&mut self, x: usize, y: usize, body: HLSoftBody) {
         self.0[x][y].remove_softbody(body);
     }
 
@@ -78,7 +77,7 @@ impl SoftBodiesInPositions {
         for x in x_range {
             for y in y_range.clone() {
                 for i in self.get_soft_bodies_at(x, y) {
-                    soft_body_bucket.add_softbody(Rc::clone(i));
+                    soft_body_bucket.add_softbody(i.clone());
                 }
             }
         }

@@ -15,31 +15,22 @@ const PIECES: usize = 20;
 const AGE_FACTOR: f64 = 1.0;
 const MATURE_AGE: f64 = 0.01;
 
-/// Our `safe` saviour! Provides multiple references to a `SoftBody`.
-pub type RcSoftBody = Rc<RefCell<SoftBody>>;
-
 /// Higher-Level SoftBody
 ///
 /// This is a wrapper struct providing some useful functions.
 ///
 /// TODO: come up with a better name.
-pub struct HLSoftBody(RcSoftBody);
+pub struct HLSoftBody(Rc<RefCell<SoftBody>>);
 
-impl From<RcSoftBody> for HLSoftBody {
-    fn from(val: RcSoftBody) -> Self {
-        return HLSoftBody(val);
-    }
-}
-
-impl Into<RcSoftBody> for HLSoftBody {
-    fn into(self) -> RcSoftBody {
-        return self.0;
+impl From<Rc<RefCell<SoftBody>>> for HLSoftBody {
+    fn from(sb_rc: Rc<RefCell<SoftBody>>) -> Self {
+        HLSoftBody(sb_rc)
     }
 }
 
 impl From<SoftBody> for HLSoftBody {
     fn from(sb: SoftBody) -> HLSoftBody {
-        HLSoftBody::from(Rc::new(RefCell::new(sb)))
+        HLSoftBody(Rc::new(RefCell::new(sb)))
     }
 }
 
@@ -69,12 +60,6 @@ impl PartialEq<HLSoftBody> for HLSoftBody {
     }
 }
 
-impl PartialEq<RcSoftBody> for HLSoftBody {
-    fn eq(&self, rhs: &RcSoftBody) -> bool {
-        Rc::ptr_eq(self.value_ref(), rhs)
-    }
-}
-
 impl HLSoftBody {
     /// Wrapper function
     pub fn borrow(&self) -> Ref<SoftBody> {
@@ -92,12 +77,12 @@ impl HLSoftBody {
     }
 
     /// Returns a reference to the underlying `RcSoftBody`
-    pub fn value_ref(&self) -> &RcSoftBody {
+    pub fn value_ref(&self) -> &Rc<RefCell<SoftBody>> {
         return &self.0;
     }
 
     /// Get a clone of the internal `RcSoftBody`
-    pub fn value_clone(&self) -> RcSoftBody {
+    pub fn value_clone(&self) -> Rc<RefCell<SoftBody>> {
         return Rc::clone(&self.0);
     }
 
@@ -132,7 +117,7 @@ impl HLSoftBody {
                 for y in self_borrow.previous_y_range() {
                     // Prevents deleting tiles we are currently in.
                     if !self_borrow.is_in_tile(x, y) {
-                        sbip.remove_soft_body_at(x, y, self.value_clone());
+                        sbip.remove_soft_body_at(x, y, self.clone());
                     }
                 }
             }
@@ -141,9 +126,20 @@ impl HLSoftBody {
                 for y in self_borrow.current_y_range() {
                     // Prevents duplicate entries.
                     if !self_borrow.was_in_tile(x, y) {
-                        sbip.add_soft_body_at(x, y, self.value_clone());
+                        sbip.add_soft_body_at(x, y, self.clone());
                     }
                 }
+            }
+        }
+    }
+
+    /// Completely removes this `HLSoftBody` from `sbip`.
+    ///
+    /// NOTE: `HLSoftBody` is added again when `set_sbip` is called.
+    pub fn remove_from_sbip(&mut self, sbip: &mut SoftBodiesInPositions) {
+        for x in self.borrow().current_x_range() {
+            for y in self.borrow().current_y_range() {
+                sbip.remove_soft_body_at(x, y, self.clone());
             }
         }
     }
@@ -155,7 +151,7 @@ impl HLSoftBody {
         let mut colliders = self.borrow().get_colliders(sbip);
 
         // Remove self
-        colliders.remove_softbody(self.value_clone());
+        colliders.remove_softbody(self.clone());
 
         let self_px = self.borrow().get_px();
         let self_py = self.borrow().get_py();
@@ -196,16 +192,19 @@ impl HLSoftBody {
         climate: &Climate,
         sbip: &mut SoftBodiesInPositions,
     ) {
-        let mut self_deref = self.borrow_mut();
+        // To keep the borrowchecker happy.
+        {
+            let self_deref = self.borrow_mut();
 
-        for _i in 0..PIECES {
-            let tile_pos = self_deref.get_random_covered_tile(board_size);
-            terrain.add_food_or_nothing_at(tile_pos, self_deref.get_energy() / PIECES as f64);
+            for _i in 0..PIECES {
+                let tile_pos = self_deref.get_random_covered_tile(board_size);
+                terrain.add_food_or_nothing_at(tile_pos, self_deref.get_energy() / PIECES as f64);
 
-            terrain.update_at(tile_pos, time, climate);
+                terrain.update_at(tile_pos, time, climate);
+            }
         }
 
-        self_deref.remove_from_sbip(sbip, self.value_clone());
+        self.remove_from_sbip(sbip);
     }
 
     /// Returns a new creature if there's a birth, otherwise returns `None`
@@ -229,7 +228,7 @@ impl HLSoftBody {
             let mut colliders = self.borrow().get_colliders(sbip);
 
             // Remove self
-            colliders.remove_softbody(self.value_clone());
+            colliders.remove_softbody(self.clone());
 
             let mut parents: Vec<HLSoftBody> = colliders
                 .into_iter()
@@ -255,7 +254,6 @@ impl HLSoftBody {
                         _ => false,
                     }
                 })
-                .map(|rc_soft| HLSoftBody::from(Rc::clone(&rc_soft)))
                 .collect();
 
             parents.push(self.clone());
@@ -331,17 +329,6 @@ impl SoftBody {
     /// Checks if the center is inside of the world, possibly corrects it and returns it.
     pub fn check_center_y(y: usize, board_height: usize) -> usize {
         return y.max(0).min(board_height - 1);
-    }
-
-    /// Completely removes this `SoftBody` from `sbip`.
-    ///
-    /// NOTE: `SoftBody` is added again when `set_sbip` is called.
-    pub fn remove_from_sbip(&mut self, sbip: &mut SoftBodiesInPositions, self_ref: RcSoftBody) {
-        for x in self.current_x_range() {
-            for y in self.current_y_range() {
-                sbip.remove_soft_body_at(x, y, Rc::clone(&self_ref));
-            }
-        }
     }
 
     /// Returns the distance between two points.

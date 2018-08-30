@@ -1,6 +1,5 @@
 use super::*;
 use std::ops::Range;
-use std::rc::Rc;
 
 /// The view part of MVC (Model-View-Controller), currently takes on jobs for the controller too.
 ///
@@ -81,9 +80,7 @@ impl View {
                 let dist = SoftBody::distance(exact_pos.0, exact_pos.1, px, py);
 
                 if dist < radius {
-                    self.board
-                        .selected_creature
-                        .select(HLSoftBody::from(Rc::clone(c_ref)));
+                    self.board.selected_creature.select(c_ref.clone());
                     break;
                 }
             }

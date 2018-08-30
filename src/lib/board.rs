@@ -47,10 +47,10 @@ impl Default for SelectedCreature {
 
 impl SelectedCreature {
     /// Checks if the given creature was selected and if so, removes it by setting `self.0` to `None`.
-    pub fn unselect_if_dead(&mut self, creature: &RcSoftBody) {
+    pub fn unselect_if_dead(&mut self, creature: HLSoftBody) {
         if let Some(sel_creature) = &self.0 {
             // If `creature` isn't the same as `self.selected_creature`.
-            if sel_creature != creature {
+            if *sel_creature != creature {
                 // Then don't change to `None`.
                 return;
             }
@@ -345,7 +345,7 @@ impl Board {
                 self.creatures[i].return_to_earth(time, board_size, terrain, climate, sbip);
 
                 self.selected_creature
-                    .unselect_if_dead(self.creatures[i].value_ref());
+                    .unselect_if_dead(self.creatures[i].clone());
                 self.creatures.remove(i);
 
             // println!("Dead!");
