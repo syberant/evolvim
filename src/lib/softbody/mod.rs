@@ -188,29 +188,24 @@ impl HLSoftBody {
 
     /// This function requires a reference to a `Board`.
     /// This is usually impossible so you'll have to turn to `unsafe`.
-    pub fn return_to_earth(&mut self, board: &mut Board, board_size: BoardSize) {
-        let time = board.get_time();
+    pub fn return_to_earth(
+        &mut self,
+        time: f64,
+        board_size: BoardSize,
+        terrain: &mut Terrain,
+        climate: &Climate,
+        sbip: &mut SoftBodiesInPositions,
+    ) {
+        let mut self_deref = self.borrow_mut();
 
-        // To make the borrow-checker happy.
-        {
-            let terrain = &mut board.terrain;
-            let sbip = &mut board.soft_bodies_in_positions;
+        for _i in 0..PIECES {
+            let tile_pos = self_deref.get_random_covered_tile(board_size);
+            terrain.add_food_or_nothing_at(tile_pos, self_deref.get_energy() / PIECES as f64);
 
-            let mut self_deref = self.borrow_mut();
-
-            for _i in 0..PIECES {
-                let tile_pos = self_deref.get_random_covered_tile(board_size);
-                terrain.add_food_or_nothing_at(tile_pos, self_deref.get_energy() / PIECES as f64);
-
-                // TODO: check if this is neccessary and fix this mess!
-                terrain.update_at(tile_pos, time, &board.climate);
-            }
-
-            self_deref.remove_from_sbip(sbip, self.value_clone());
+            terrain.update_at(tile_pos, time, climate);
         }
 
-        // Unselect this creature if it was selected.
-        board.unselect_if_dead(self.value_ref());
+        self_deref.remove_from_sbip(sbip, self.value_clone());
     }
 
     /// Returns a new creature if there's a birth, otherwise returns `None`

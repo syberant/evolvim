@@ -81,7 +81,9 @@ impl View {
                 let dist = SoftBody::distance(exact_pos.0, exact_pos.1, px, py);
 
                 if dist < radius {
-                    self.board.selected_creature = Some(HLSoftBody::from(Rc::clone(c_ref)));
+                    self.board
+                        .selected_creature
+                        .select(HLSoftBody::from(Rc::clone(c_ref)));
                     break;
                 }
             }
@@ -181,9 +183,9 @@ impl View {
                 .update_all_at(time, &self.board.climate, x_range, y_range);
             // self.board.terrain.update_all(time, &self.board.climate);
 
-            if self.board.selected_creature.is_some() {
+            if self.board.selected_creature.0.is_some() {
                 let pos = {
-                    let c = &self.board.selected_creature.as_ref().unwrap();
+                    let c = &self.board.selected_creature.0.as_ref().unwrap();
                     let c = c.borrow();
 
                     c.get_position()
@@ -221,7 +223,7 @@ impl View {
                     c.borrow().get_creature().draw(context, graphics, &self);
                 }
 
-                if let Some(c) = &self.board.selected_creature {
+                if let Some(ref c) = self.board.selected_creature.0 {
                     let creature = c.borrow();
                     let creature = creature.get_creature();
 

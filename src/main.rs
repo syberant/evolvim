@@ -75,7 +75,7 @@ fn main() {
                     view.board.select_biggest();
                 }
                 Keyboard(Key::Q) => {
-                    view.board.selected_creature = None;
+                    view.board.selected_creature.deselect();
                 }
                 _ => (),
             }

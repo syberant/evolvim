@@ -37,6 +37,39 @@ impl From<BoardPreciseCoordinate> for BoardCoordinate {
     }
 }
 
+pub struct SelectedCreature(pub Option<HLSoftBody>);
+
+impl Default for SelectedCreature {
+    fn default() -> Self {
+        SelectedCreature(None)
+    }
+}
+
+impl SelectedCreature {
+    /// Checks if the given creature was selected and if so, removes it by setting `self.0` to `None`.
+    pub fn unselect_if_dead(&mut self, creature: &RcSoftBody) {
+        if let Some(sel_creature) = &self.0 {
+            // If `creature` isn't the same as `self.selected_creature`.
+            if sel_creature != creature {
+                // Then don't change to `None`.
+                return;
+            }
+
+            // Else go on
+        }
+
+        self.0 = None;
+    }
+
+    pub fn select(&mut self, creature: HLSoftBody) {
+        self.0 = Some(creature);
+    }
+
+    pub fn deselect(&mut self) {
+        self.0 = None;
+    }
+}
+
 pub struct Board {
     // Fields relevant for the board itself.
     board_width: usize,
@@ -61,7 +94,7 @@ pub struct Board {
 
     // Miscelanious
     user_control: bool,
-    pub selected_creature: Option<HLSoftBody>,
+    pub selected_creature: SelectedCreature,
 }
 
 impl Default for Board {
@@ -121,7 +154,7 @@ impl Board {
             rocks,
 
             user_control,
-            selected_creature: None,
+            selected_creature: SelectedCreature::default(),
         };
 
         // Initialize creatures.
@@ -131,21 +164,6 @@ impl Board {
         // TODO
 
         return board;
-    }
-
-    /// Checks if the given creature was selected and if so, removes it by setting `self.selected_creature` to `None`.
-    pub fn unselect_if_dead(&mut self, creature: &RcSoftBody) {
-        if let Some(sel_creature) = &self.selected_creature {
-            // If `creature` isn't the same as `self.selected_creature`.
-            if sel_creature != creature {
-                // Then don't change to `None`.
-                return;
-            }
-
-            // Else go on
-        }
-
-        self.selected_creature = None;
     }
 
     pub fn select_oldest(&mut self) {
@@ -159,7 +177,7 @@ impl Board {
             }
         });
 
-        self.selected_creature = Some(oldest.clone());
+        self.selected_creature.select(oldest.clone());
     }
 
     pub fn select_biggest(&mut self) {
@@ -173,7 +191,7 @@ impl Board {
             }
         });
 
-        self.selected_creature = Some(biggest.clone());
+        self.selected_creature.select(biggest.clone());
     }
 
     pub fn update(&mut self, time_step: f64) {
@@ -313,18 +331,21 @@ impl Board {
     ///
     /// Utilizes the `should_die` function of `SoftBody`.
     fn remove_dead_creatures(&mut self) {
+        let time = self.get_time();
         let board_size = self.get_board_size();
-        let self_ptr: *mut Board = self as *mut Board;
+        let terrain = &mut self.terrain;
+        let climate = &self.climate;
+        let sbip = &mut self.soft_bodies_in_positions;
 
         // TODO: possibly optimise code
         let mut i = 0;
         while i < self.creatures.len() {
             // let creature = &mut self.creatures[i];
             if self.creatures[i].borrow().should_die() {
-                unsafe {
-                    // Infallable
-                    self.creatures[i].return_to_earth(&mut (*self_ptr), board_size);
-                }
+                self.creatures[i].return_to_earth(time, board_size, terrain, climate, sbip);
+
+                self.selected_creature
+                    .unselect_if_dead(self.creatures[i].value_ref());
                 self.creatures.remove(i);
 
             // println!("Dead!");
