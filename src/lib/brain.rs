@@ -101,17 +101,20 @@ impl Brain {
 
     /// Returns a brain with completely random weights.
     pub fn new_random() -> Self {
+        let theta_1 = <MatrixMN<FPN, InputLayerSizePlusBias, HiddenLayerSize>>::new_random()
+            - <MatrixMN<FPN, InputLayerSizePlusBias, HiddenLayerSize>>::from_element(0.5);
+        let theta_2 = <MatrixMN<FPN, HiddenLayerSizePlusBias, OutputLayerSize>>::new_random()
+            - <MatrixMN<FPN, HiddenLayerSizePlusBias, OutputLayerSize>>::from_element(0.5);
+
         Brain {
             // Empty input
             a_1: <RowVectorN<FPN, InputLayerSizePlusBias>>::zeros(),
             // Initialize random weights between [-0.5, 0.5].
-            theta_1: <MatrixMN<FPN, InputLayerSizePlusBias, HiddenLayerSize>>::new_random()
-                - <MatrixMN<FPN, InputLayerSizePlusBias, HiddenLayerSize>>::from_element(0.5),
+            theta_1,
             // Empty hidden layer
             a_2: <RowVectorN<FPN, HiddenLayerSizePlusBias>>::zeros(),
             // Initialize random weights between [-0.5, 0.5].
-            theta_2: <MatrixMN<FPN, HiddenLayerSizePlusBias, OutputLayerSize>>::new_random()
-                - <MatrixMN<FPN, HiddenLayerSizePlusBias, OutputLayerSize>>::from_element(0.5),
+            theta_2,
             // Empty output
             a_3: <RowVectorN<FPN, OutputLayerSize>>::zeros(),
         }
@@ -146,10 +149,7 @@ impl Brain {
                 let parent_id =
                     (((axon_angle + random_rotation) % 1.0) * amount_parents).floor() as usize;
 
-                assert!(parent_id < amount_parents as usize);
-
                 let r = (rng.gen::<f64>() * 2.0 - 1.0).powi(9);
-                let mutate_multi = 0.5.powi(9);
 
                 theta_1[(y, z)] = parents[parent_id].borrow().get_creature().brain.theta_1[(y, z)]
                     + r * MUTABILITY / MUTATE_MULTI;
@@ -165,10 +165,7 @@ impl Brain {
                 let parent_id =
                     (((axon_angle + random_rotation) % 1.0) * amount_parents).floor() as usize;
 
-                assert!(parent_id < amount_parents as usize);
-
                 let r = (rng.gen::<f64>() * 2.0 - 1.0).powi(9);
-                let mutate_multi = 0.5.powi(9);
 
                 theta_2[(y, z)] = parents[parent_id].borrow().get_creature().brain.theta_2[(y, z)]
                     + r * MUTABILITY / MUTATE_MULTI;
