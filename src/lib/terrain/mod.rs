@@ -9,10 +9,12 @@
 
 extern crate noise;
 extern crate rand;
+extern crate rayon;
 
 pub mod tile;
 
 use self::noise::{NoiseFn, Point2, Seedable};
+use self::rayon::iter::{IntoParallelRefMutIterator, ParallelIterator};
 use super::*;
 use tile::Tile;
 
@@ -25,11 +27,9 @@ pub struct Terrain {
 
 impl Terrain {
     pub fn update_all(&mut self, time: f64, climate: &Climate) {
-        for column in &mut self.tiles {
-            for tile in column {
-                tile.update(time, climate);
-            }
-        }
+        self.tiles.par_iter_mut().flatten().for_each(|t| {
+            t.update(time, climate);
+        })
     }
 
     pub fn update_all_at(
