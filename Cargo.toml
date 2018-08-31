@@ -1,29 +1,8 @@
 [package]
 authors = ["Sybrand Aarnoutse (syberant)"]
+license = "MIT"
 name = "evolvim"
 version = "0.1.0"
-license = "MIT"
-
-[dependencies]
-nalgebra = "0.16.0"
-noise = "0.5.1"
-piston_window = "0.80.0"
-rand = "0.5.4"
-piston2d-gfx_graphics = "0.51.0"
-gfx_device_gl = "0.15.3"
-shader_version = "0.3.0"
-gfx = "0.17.1"
-
-[dependencies.piston2d-graphics]
-version = "0.26.0"
-features = ["glyph_cache_rusttype"]
-
-[features]
-bench = []
-
-[lib]
-name = "lib_evolvim"
-path = "./src/lib/mod.rs"
 
 [[bin]]
 name = "evolvim"
@@ -32,3 +11,25 @@ path = "./src/main.rs"
 [[bin]]
 name = "check_terrain_gen"
 path = "./src/checkTerrainGen.rs"
+
+[dependencies]
+gfx = "0.17.1"
+gfx_device_gl = "0.15.3"
+nalgebra = "0.16.0"
+noise = "0.5.1"
+piston2d-gfx_graphics = "0.51.0"
+piston_window = "0.80.0"
+rand = "0.5.4"
+rayon = "1.0.2"
+shader_version = "0.3.0"
+
+[dependencies.piston2d-graphics]
+features = ["glyph_cache_rusttype"]
+version = "0.26.0"
+
+[features]
+bench = []
+
+[lib]
+name = "lib_evolvim"
+path = "./src/lib/mod.rs"
