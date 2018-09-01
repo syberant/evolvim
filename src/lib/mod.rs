@@ -7,6 +7,10 @@
 
 #![deny(unsafe_code)]
 
+#[macro_use]
+extern crate serde_derive;
+extern crate serde;
+
 pub mod board;
 pub mod brain;
 pub mod climate;

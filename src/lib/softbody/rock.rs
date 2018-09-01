@@ -11,6 +11,7 @@ const ENERGY_DENSITY: f64 = 1.0
     / (super::creature::MINIMUM_SURVIVABLE_SIZE * super::creature::MINIMUM_SURVIVABLE_SIZE * PI);
 pub const FIGHT_RANGE: f64 = 2.0;
 
+#[derive(Serialize, Deserialize)]
 pub struct Rock {
     // Position
     px: f64,

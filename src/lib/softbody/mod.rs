@@ -278,6 +278,7 @@ impl HLSoftBody {
     }
 }
 
+#[derive(Serialize, Deserialize)]
 pub enum SoftBody {
     Rock(Rock),
     Creature(Creature),

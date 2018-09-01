@@ -19,6 +19,7 @@ use tile::Tile;
 /// Contains the terrain of the world.
 ///
 /// TODO: possibly speed up with `nalgebra`.
+#[derive(Serialize, Deserialize)]
 pub struct Terrain {
     tiles: Vec<Vec<Tile>>,
 }

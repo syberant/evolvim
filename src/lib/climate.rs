@@ -1,5 +1,6 @@
 use std::f64::consts::PI;
 
+#[derive(Serialize, Deserialize)]
 pub struct Climate {
     temperature: f64,
     min_temperature: f64,

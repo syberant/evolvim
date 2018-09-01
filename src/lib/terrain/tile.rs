@@ -1,6 +1,7 @@
 use super::constants::*;
 use super::*;
 
+#[derive(Serialize, Deserialize)]
 pub enum Tile {
     Water,
     Land(LandTile),
@@ -119,6 +120,7 @@ impl Tile {
     }
 }
 
+#[derive(Serialize, Deserialize)]
 pub struct LandTile {
     fertility: f64,
     food_level: f64,

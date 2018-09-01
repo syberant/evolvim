@@ -31,6 +31,7 @@ type OutputLayerSize = U10;
 // const AXON_ANGLES_0: Vec<f64> = get_axon_angles(110, 0);
 // const AXON_ANGLES_1: Vec<f64> = get_axon_angles(110, 1);
 
+#[derive(Serialize, Deserialize)]
 pub struct Brain {
     // This dimension should be equal to InputLayerSize + 1.
     a_1: RowVectorN<FPN, InputLayerSizePlusBias>,
