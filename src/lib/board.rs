@@ -404,3 +404,30 @@ impl Board {
         return SEASONS[season].to_string();
     }
 }
+
+impl serde::Serialize for Board {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        use serde::ser::SerializeStruct;
+        use std::cell::Ref;
+        use std::ops::Deref;
+
+        let mut state = serializer.serialize_struct("Board", 7)?;
+
+        state.serialize_field("terrain", &self.terrain)?;
+
+        state.serialize_field("creature_minimum", &self.creature_minimum)?;
+        let sb_cr: Vec<Ref<SoftBody>> = self.creatures.iter().map(|c| c.borrow()).collect();
+        let cr = sb_cr.iter().map(|c| c.deref());
+        state.serialize_field::<Vec<&SoftBody>>("creatures", &cr.collect())?;
+
+        state.serialize_field("creature_id_up_to", &self.creature_id_up_to)?;
+        state.serialize_field("year", &self.year)?;
+        state.serialize_field("climate", &self.climate)?;
+
+        let sb_ro: Vec<Ref<SoftBody>> = self.rocks.iter().map(|r| r.borrow()).collect();
+        let ro = sb_ro.iter().map(|r| r.deref());
+        state.serialize_field::<Vec<&SoftBody>>("rocks", &ro.collect())?;
+
+        state.end()
+    }
+}
