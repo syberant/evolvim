@@ -431,3 +431,98 @@ impl serde::Serialize for Board {
         state.end()
     }
 }
+
+impl<'de> serde::Deserialize<'de> for Board {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        use serde::de::*;
+
+        struct BoardVisitor;
+
+        impl<'de> Visitor<'de> for BoardVisitor {
+            type Value = Board;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+                formatter.write_str("struct Board")
+            }
+
+            fn visit_seq<V: SeqAccess<'de>>(self, mut seq: V) -> Result<Board, V::Error> {
+                let terrain: Terrain = seq
+                    .next_element()?
+                    .ok_or_else(|| Error::invalid_length(0, &self))?;
+                let creature_minimum = seq
+                    .next_element()?
+                    .ok_or_else(|| Error::invalid_length(1, &self))?;
+                let creatures_ir: Vec<SoftBody> = seq
+                    .next_element()?
+                    .ok_or_else(|| Error::invalid_length(2, &self))?;
+                let creature_id_up_to = seq
+                    .next_element()?
+                    .ok_or_else(|| Error::invalid_length(3, &self))?;
+                let year = seq
+                    .next_element()?
+                    .ok_or_else(|| Error::invalid_length(4, &self))?;
+                let climate = seq
+                    .next_element()?
+                    .ok_or_else(|| Error::invalid_length(5, &self))?;
+                let rocks_ir: Vec<SoftBody> = seq
+                    .next_element()?
+                    .ok_or_else(|| Error::invalid_length(6, &self))?;
+
+                let board_size = (terrain.get_width(), terrain.get_height());
+                let mut soft_bodies_in_positions = SoftBodiesInPositions::new_allocated(board_size);
+                let mut creatures: Vec<HLSoftBody> = creatures_ir
+                    .into_iter()
+                    .map(|c| HLSoftBody::from(c))
+                    .collect();
+                let mut rocks: Vec<HLSoftBody> =
+                    rocks_ir.into_iter().map(|r| HLSoftBody::from(r)).collect();
+                for c in &mut creatures {
+                    c.set_sbip(&mut soft_bodies_in_positions, board_size);
+                    c.set_sbip(&mut soft_bodies_in_positions, board_size);
+                }
+                for r in &mut rocks {
+                    r.set_sbip(&mut soft_bodies_in_positions, board_size);
+                    r.set_sbip(&mut soft_bodies_in_positions, board_size);
+                }
+
+                Ok(Board {
+                    // Fields relevant for the board itself.
+                    board_width: terrain.get_width(),
+                    board_height: terrain.get_height(),
+                    terrain,
+
+                    // Fields relevant for the creatures.
+                    creature_minimum,
+                    soft_bodies_in_positions,
+                    creatures,
+                    creature_id_up_to,
+                    // _creature_rank_metric: usize,
+
+                    // Fields relevant for time or history
+                    year,
+
+                    // Fields relevant for temperature
+                    climate,
+
+                    // Fields relevant for rocks
+                    rocks,
+
+                    // Miscelanious
+                    user_control: false,
+                    selected_creature: SelectedCreature::default(),
+                })
+            }
+        }
+
+        const FIELDS: &[&str] = &[
+            "terrain",
+            "creature_minimum",
+            "creatures",
+            "creature_id_up_to",
+            "year",
+            "climate",
+            "rocks",
+        ];
+        deserializer.deserialize_struct("Board", FIELDS, BoardVisitor)
+    }
+}
