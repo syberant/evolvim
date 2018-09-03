@@ -1,4 +1,4 @@
-# Evolv.io improved!
+# Evolv.io improved! [![Build Status](https://travis-ci.org/syberant/evolvim.svg?branch=master)](https://travis-ci.org/syberant/evolvim)
 
 This project is a [Rust] port of the [Processing code] from [carykh] and contributors.
 The code was 100% rewritten but includes most (all?) ideas of the [Processing code] with a lot merely being translated into [Rust].
