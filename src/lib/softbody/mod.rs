@@ -34,20 +34,6 @@ impl Clone for HLSoftBody {
     }
 }
 
-// impl Deref for HLSoftBody {
-//     type Target = SoftBody;
-
-//     fn deref(&self) -> &SoftBody {
-//         self.0.borrow().deref()
-//     }
-// }
-
-// impl DerefMut for HLSoftBody {
-//     fn deref_mut(&mut self) -> &mut SoftBody {
-//         self.0.borrow_mut().deref_mut()
-//     }
-// }
-
 impl PartialEq<HLSoftBody> for HLSoftBody {
     fn eq(&self, rhs: &HLSoftBody) -> bool {
         Rc::ptr_eq(&self.0, &rhs.0)
