@@ -5,6 +5,7 @@
 //!
 //! TODO: documentation.
 
+extern crate bincode;
 extern crate rand;
 
 use super::*;
@@ -386,6 +387,16 @@ impl Board {
     pub fn get_board_height(&self) -> usize {
         return self.board_height;
     }
+
+    pub fn load_from<P: AsRef<std::path::Path>>(path: P) -> Self {
+        let file = std::fs::File::open(path).expect("Could not open file.");
+        bincode::deserialize_from(file).expect("Could not parse file")
+    }
+
+    pub fn save_to<P: AsRef<std::path::Path>>(&self, path: P) {
+        let file = std::fs::File::create(path).unwrap();
+        bincode::serialize_into(file, self).unwrap();
+    }
 }
 
 impl Board {
@@ -409,7 +420,6 @@ impl serde::Serialize for Board {
     fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         use serde::ser::SerializeStruct;
         use std::cell::Ref;
-        use std::ops::Deref;
 
         let mut state = serializer.serialize_struct("Board", 7)?;
 
@@ -417,7 +427,7 @@ impl serde::Serialize for Board {
 
         state.serialize_field("creature_minimum", &self.creature_minimum)?;
         let sb_cr: Vec<Ref<SoftBody>> = self.creatures.iter().map(|c| c.borrow()).collect();
-        let cr = sb_cr.iter().map(|c| c.deref());
+        let cr = sb_cr.iter().map(|c| &**c);
         state.serialize_field::<Vec<&SoftBody>>("creatures", &cr.collect())?;
 
         state.serialize_field("creature_id_up_to", &self.creature_id_up_to)?;
@@ -425,7 +435,7 @@ impl serde::Serialize for Board {
         state.serialize_field("climate", &self.climate)?;
 
         let sb_ro: Vec<Ref<SoftBody>> = self.rocks.iter().map(|r| r.borrow()).collect();
-        let ro = sb_ro.iter().map(|r| r.deref());
+        let ro = sb_ro.iter().map(|r| &**r);
         state.serialize_field::<Vec<&SoftBody>>("rocks", &ro.collect())?;
 
         state.end()

@@ -13,6 +13,7 @@ name = "check_terrain_gen"
 path = "./src/checkTerrainGen.rs"
 
 [dependencies]
+bincode = "1.0.1"
 noise = "0.5.1"
 piston_window = "0.80.0"
 rand = "0.5.4"
