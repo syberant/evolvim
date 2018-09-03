@@ -210,6 +210,9 @@ impl Board {
             self.terrain.update_all(self.year, &self.climate);
         }
 
+        let time = self.year;
+        let board_size = self.get_board_size();
+
         // Update all rocks.
         for r in &self.rocks {
             // Calls `borrow_mut()` so there should now be no mutable references.
@@ -225,10 +228,8 @@ impl Board {
 
             c.get_creature_mut().base.record_energy();
 
-            c.metabolize(time_step, &self);
+            c.metabolize(time_step, time);
 
-            let time = self.year;
-            let board_size = self.get_board_size();
             let terrain = &mut self.terrain;
             let climate = &self.climate;
 
@@ -257,7 +258,6 @@ impl Board {
 
         // Finish the iteration.
         for r in &self.rocks {
-            let board_size = self.get_board_size();
             // This function takes a mutable pointer to `self`.
             r.apply_motions(
                 time_step * OBJECT_TIMESTEPS_PER_YEAR,
@@ -268,7 +268,6 @@ impl Board {
         }
 
         for c in &self.creatures {
-            let board_size = self.get_board_size();
             // This function takes a mutable pointer to `self`.
             c.apply_motions(
                 time_step * OBJECT_TIMESTEPS_PER_YEAR,

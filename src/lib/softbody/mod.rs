@@ -407,9 +407,9 @@ impl SoftBody {
     }
 
     /// Performs the energy requirement to keep living.
-    pub fn metabolize(&mut self, time_step: f64, board: &Board) {
+    pub fn metabolize(&mut self, time_step: f64, time: f64) {
         // TODO: fix ugly code.
-        let age = AGE_FACTOR * (board.get_time() - self.get_birth_time());
+        let age = AGE_FACTOR * (time - self.get_birth_time());
         let creature = self.get_creature_mut();
         let energy_to_lose = creature.get_energy() * METABOLISM_ENERGY * age * time_step;
         creature.lose_energy(energy_to_lose);
