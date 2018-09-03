@@ -8,9 +8,13 @@ mod benches {
     use self::lib_evolvim::*;
     use self::test::Bencher;
 
+    fn get_stable_870() -> Board {
+        Board::load_from("assets/stable_870.bin").unwrap()
+    }
+
     #[bench]
     fn bench_softbody_collide_all(b: &mut Bencher) {
-        let board = Board::default();
+        let board = get_stable_870();
 
         b.iter(|| {
             for c_rc in &board.creatures {
