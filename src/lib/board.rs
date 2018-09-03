@@ -388,14 +388,19 @@ impl Board {
         return self.board_height;
     }
 
-    pub fn load_from<P: AsRef<std::path::Path>>(path: P) -> Self {
-        let file = std::fs::File::open(path).expect("Could not open file.");
-        bincode::deserialize_from(file).expect("Could not parse file")
+    pub fn load_from<P: AsRef<std::path::Path>>(path: P) -> Result<Self, Box<std::error::Error>> {
+        let file = std::fs::File::open(path)?;
+        Ok(bincode::deserialize_from(file)?)
     }
 
-    pub fn save_to<P: AsRef<std::path::Path>>(&self, path: P) {
-        let file = std::fs::File::create(path).unwrap();
-        bincode::serialize_into(file, self).unwrap();
+    pub fn save_to<P: AsRef<std::path::Path>>(
+        &self,
+        path: P,
+    ) -> Result<(), Box<std::error::Error>> {
+        let file = std::fs::File::create(path)?;
+        bincode::serialize_into(file, self)?;
+
+        Ok(())
     }
 }
 

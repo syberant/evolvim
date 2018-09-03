@@ -7,7 +7,7 @@ use piston_window::*;
 
 fn main() {
     let mut view = View::default();
-    // view.board = Board::load_from("test.bin");
+    // view.board = Board::load_from("test.bin").unwrap();
     let time = view.board.get_time();
     view.board.update(0.001);
     view.board.terrain.update_all(time, &view.board.climate);
@@ -79,7 +79,7 @@ fn main() {
                     view.board.selected_creature.deselect();
                 }
                 // Keyboard(Key::S) => {
-                //     view.board.save_to("test.bin");
+                //     view.board.save_to("test.bin").unwrap();
                 // }
                 _ => (),
             }
