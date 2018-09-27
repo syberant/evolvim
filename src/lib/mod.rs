@@ -15,7 +15,6 @@ pub mod board;
 pub mod brain;
 pub mod climate;
 pub mod constants;
-pub mod graphics;
 pub mod sbip;
 pub mod softbody;
 pub mod terrain;

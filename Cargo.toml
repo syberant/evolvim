@@ -6,7 +6,7 @@ version = "0.1.0"
 
 [[bin]]
 name = "evolvim"
-path = "./src/main.rs"
+path = "./src/main/mod.rs"
 
 [[bin]]
 name = "check_terrain_gen"

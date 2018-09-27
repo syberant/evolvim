@@ -200,14 +200,14 @@ impl View {
     pub fn draw<C, G>(&self, context: Context, graphics: &mut G, glyphs: &mut C)
     where
         C: CharacterCache,
-        C::Error: std::fmt::Debug,
+        C::Error: Debug,
         G: Graphics<Texture = C::Texture>,
     {
         use self::DisplayMode::*;
 
         match self.mode {
             Normal => {
-                self.board.terrain.draw(context, graphics, glyphs, &self);
+                draw_terrain(&self.board.terrain, context, graphics, glyphs, &self);
 
                 let y_range = self.get_y_range();
                 let x_range = self.get_x_range();
@@ -217,18 +217,18 @@ impl View {
                     .soft_bodies_in_positions
                     .get_soft_bodies_in(x_range, y_range)
                 {
-                    c.borrow().get_creature().draw(context, graphics, &self);
+                    draw_creature(c.borrow().get_creature(), context, graphics, &self);
                 }
 
                 if let Some(ref c) = self.board.selected_creature.0 {
                     let creature = c.borrow();
                     let creature = creature.get_creature();
 
-                    creature.draw_details(context, graphics, glyphs, &self);
+                    draw_details_creature(creature, context, graphics, glyphs, &self);
                 }
             }
             Tiles => {
-                self.board.terrain.draw(context, graphics, glyphs, &self);
+                draw_terrain(&self.board.terrain, context, graphics, glyphs, &self);
             }
             None => {}
         }
