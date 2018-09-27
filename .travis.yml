@@ -10,6 +10,7 @@ rust:
 matrix:
   allow_failures:
     - rust: nightly
+    - rust: beta
 
 script:
 - cargo build --release --bin evolvim
