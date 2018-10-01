@@ -2,6 +2,8 @@
 //!
 //! Uses a neural network implemented with a linear algebra crate to make it efficient.
 
+#![warn(missing_docs)]
+
 extern crate nalgebra;
 extern crate rand;
 
@@ -31,6 +33,14 @@ type OutputLayerSize = U10;
 // const AXON_ANGLES_0: Vec<f64> = get_axon_angles(110, 0);
 // const AXON_ANGLES_1: Vec<f64> = get_axon_angles(110, 1);
 
+/// This struct contains all parameters and values necessary for a feed-forward neural network.
+///
+/// # Usage
+/// Give it some input with `load_input()` and perform the calculations with `feed_forward()`, then extract the output with `get_output`.
+/// Or just do all three at once with `run`!
+///
+/// # Processing equivalent
+/// *Brain.pde/Brain*, although this doesn't have an `Axon` class/structure to rely on.
 #[derive(Serialize, Deserialize)]
 pub struct Brain {
     // This dimension should be equal to InputLayerSize + 1.
@@ -46,6 +56,9 @@ pub struct Brain {
 }
 
 impl Brain {
+    /// # Processing equivalent
+    /// *Brain.pde/input*, with the first part (loading the input) being done with a call to `self.load_input()`
+    /// and the second part (feed-forward) being done by `self.feed_forward()`.
     pub fn run(&mut self, input: BrainInput) {
         // Load the input into the net.
         self.load_input(input);
@@ -54,6 +67,7 @@ impl Brain {
         self.feed_forward();
     }
 
+    /// Loads all values from `input` into the neural network, also adds bias and memory.
     pub fn load_input(&mut self, input: BrainInput) {
         let memory = self.get_memory();
         // TODO: fix this ugly code.
@@ -62,18 +76,23 @@ impl Brain {
             .insert_column(1, memory);
     }
 
+    /// # Processing equivalent
+    /// *Brain.pde/outputs*, although here only a reference to the output values is returned instead of a copy.
     pub fn get_output(&self) -> BrainOutput {
         return self.a_3.as_slice();
     }
 
+    /// Returns a reference to the hidden layer values.
     pub fn get_hidden_layer(&self) -> &[FPN] {
         self.a_2.as_slice()
     }
 
+    /// Returns a reference to the input layer values.
     pub fn get_input_layer(&self) -> &[FPN] {
         self.a_1.as_slice()
     }
 
+    /// Performs feed foward propagation on the neural network.
     // TODO: see if I can speed this up a little with clever memory management.
     pub fn feed_forward(&mut self) {
         let mut z_2 = self.a_1 * self.theta_1;
@@ -121,7 +140,9 @@ impl Brain {
         }
     }
 
-    /// Equivalent to the Processing function, also includes the mutateAxon function.
+    /// # Processing equivalent
+    /// *Brain.pde/evolve*, although the structure of the brain is different and there are no calls to `Axon`s here.
+    /// Everything is done in this function.
     ///
     /// TODO: improve performance via vectorization.
     /// TODO: understand formulae and improve them or come up with my own
@@ -182,6 +203,8 @@ impl Brain {
         }
     }
 
+    /// # Processing equivalent
+    /// Returns *Brain.pde/outputLabels*.
     pub fn intentions(&self) -> Vec<String> {
         let info = vec![
             "Memory",
@@ -198,6 +221,7 @@ impl Brain {
     }
 }
 
+#[allow(missing_docs)]
 // All functions to retrieve intentions
 impl Brain {
     pub fn get_memory(&self) -> f64 {
