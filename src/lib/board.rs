@@ -165,6 +165,7 @@ impl Board {
         return board;
     }
 
+    /// Selects the oldest creature still alive.
     pub fn select_oldest(&mut self) {
         let oldest = self.creatures.iter().fold(&self.creatures[0], |c_old, c| {
             if c.borrow().get_creature().get_birth_time()
@@ -179,11 +180,10 @@ impl Board {
         self.selected_creature.select(oldest.clone());
     }
 
+    /// Selects the biggest creature.
     pub fn select_biggest(&mut self) {
         let biggest = self.creatures.iter().fold(&self.creatures[0], |c_old, c| {
-            if c.borrow().get_creature().base.get_energy()
-                > c_old.borrow().get_creature().base.get_energy()
-            {
+            if c.borrow().get_creature().get_energy() > c_old.borrow().get_creature().get_energy() {
                 &c
             } else {
                 c_old
@@ -226,7 +226,7 @@ impl Board {
 
             let mut c = c_rc.borrow_mut();
 
-            c.get_creature_mut().base.record_energy();
+            c.get_creature_mut().record_energy();
 
             c.metabolize(time_step, time);
 
@@ -288,6 +288,9 @@ impl Board {
     }
 
     /// Maintains the creature minimum by adding random creatures until there are at least `self.creature_minimum` creatures.
+    ///
+    /// # Processing equivalent
+    /// This function is the equivalent of *Board.pde/maintainCreatureMinimum* with *choosePreexisting* set to false.
     fn maintain_creature_minimum(&mut self) {
         while self.creatures.len() < self.creature_minimum {
             let board_size = self.get_board_size();

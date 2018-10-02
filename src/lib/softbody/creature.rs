@@ -8,10 +8,24 @@ const EAT_SPEED: f64 = 0.5;
 
 #[derive(Serialize, Deserialize)]
 pub struct Creature {
-    pub base: Rock,
+    base: Rock,
     birth_time: f64,
     pub brain: Brain,
     mouth_hue: f64,
+}
+
+impl std::ops::Deref for Creature {
+    type Target = Rock;
+
+    fn deref(&self) -> &Rock {
+        &self.base
+    }
+}
+
+impl std::ops::DerefMut for Creature {
+    fn deref_mut(&mut self) -> &mut Rock {
+        &mut self.base
+    }
 }
 
 impl Creature {

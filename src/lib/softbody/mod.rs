@@ -205,13 +205,8 @@ impl HLSoftBody {
                 .filter(|rc_soft| {
                     match rc_soft.borrow().deref() {
                         SoftBody::Creature(c) => {
-                            let dist = SoftBody::distance(
-                                self_px,
-                                self_py,
-                                c.base.get_px(),
-                                c.base.get_py(),
-                            );
-                            let combined_radius = self_radius * FIGHT_RANGE + c.base.get_radius();
+                            let dist = SoftBody::distance(self_px, self_py, c.get_px(), c.get_py());
+                            let combined_radius = self_radius * FIGHT_RANGE + c.get_radius();
 
                             c.brain.wants_help_birth() > -1.0 // must be a willing creature
                             && dist < combined_radius // must be close enough
@@ -333,7 +328,6 @@ impl SoftBody {
         return self.get_creature().get_birth_time();
     }
 
-    /// Parts of this function are unsafe. Only mess with them if you know what you're doing!
     pub fn use_brain(
         &mut self,
         time_step: f64,
@@ -349,15 +343,13 @@ impl SoftBody {
         creature.brain.run(input);
 
         if use_output {
-            creature
-                .base
-                .accelerate(creature.brain.wants_acceleration(), time_step);
-            creature
-                .base
-                .turn(creature.brain.wants_turning(), time_step);
+            let acceleration = creature.brain.wants_acceleration();
+            creature.accelerate(acceleration, time_step);
+            let turning = creature.brain.wants_turning();
+            creature.turn(turning, time_step);
 
             // TODO: clean this mess.
-            let tile_pos = creature.base.get_random_covered_tile(board_size);
+            let tile_pos = creature.get_random_covered_tile(board_size);
             let tile = terrain.get_tile_at_mut(tile_pos);
 
             let eat_amount = creature.brain.wants_to_eat();
@@ -414,7 +406,7 @@ impl SoftBody {
     fn get_random_covered_tile(&self, board_size: BoardSize) -> BoardCoordinate {
         match self {
             SoftBody::Rock(b) => b.get_random_covered_tile(board_size),
-            SoftBody::Creature(c) => c.base.get_random_covered_tile(board_size),
+            SoftBody::Creature(c) => c.get_random_covered_tile(board_size),
         }
     }
 
@@ -426,7 +418,7 @@ impl SoftBody {
     fn moved_between_tiles(&self) -> bool {
         match self {
             SoftBody::Rock(b) => b.moved_between_tiles(),
-            SoftBody::Creature(c) => c.base.moved_between_tiles(),
+            SoftBody::Creature(c) => c.moved_between_tiles(),
         }
     }
 
@@ -434,7 +426,7 @@ impl SoftBody {
     fn is_in_tile(&self, x: usize, y: usize) -> bool {
         match self {
             SoftBody::Rock(b) => b.is_in_tile(x, y),
-            SoftBody::Creature(c) => c.base.is_in_tile(x, y),
+            SoftBody::Creature(c) => c.is_in_tile(x, y),
         }
     }
 
@@ -442,7 +434,7 @@ impl SoftBody {
     fn was_in_tile(&self, x: usize, y: usize) -> bool {
         match self {
             SoftBody::Rock(b) => b.was_in_tile(x, y),
-            SoftBody::Creature(c) => c.base.was_in_tile(x, y),
+            SoftBody::Creature(c) => c.was_in_tile(x, y),
         }
     }
 
@@ -450,7 +442,7 @@ impl SoftBody {
     fn previous_x_range(&self) -> Range<usize> {
         match self {
             SoftBody::Rock(b) => b.previous_x_range(),
-            SoftBody::Creature(c) => c.base.previous_x_range(),
+            SoftBody::Creature(c) => c.previous_x_range(),
         }
     }
 
@@ -458,7 +450,7 @@ impl SoftBody {
     fn previous_y_range(&self) -> Range<usize> {
         match self {
             SoftBody::Rock(b) => b.previous_y_range(),
-            SoftBody::Creature(c) => c.base.previous_y_range(),
+            SoftBody::Creature(c) => c.previous_y_range(),
         }
     }
 
@@ -466,7 +458,7 @@ impl SoftBody {
     fn current_x_range(&self) -> Range<usize> {
         match self {
             SoftBody::Rock(b) => b.current_x_range(),
-            SoftBody::Creature(c) => c.base.current_x_range(),
+            SoftBody::Creature(c) => c.current_x_range(),
         }
     }
 
@@ -474,7 +466,7 @@ impl SoftBody {
     fn current_y_range(&self) -> Range<usize> {
         match self {
             SoftBody::Rock(b) => b.current_y_range(),
-            SoftBody::Creature(c) => c.base.current_y_range(),
+            SoftBody::Creature(c) => c.current_y_range(),
         }
     }
 
@@ -482,7 +474,7 @@ impl SoftBody {
     fn get_colliders(&self, sbip: &SoftBodiesInPositions) -> SoftBodiesAt {
         match self {
             SoftBody::Rock(b) => b.get_colliders(sbip),
-            SoftBody::Creature(c) => c.base.get_colliders(sbip),
+            SoftBody::Creature(c) => c.get_colliders(sbip),
         }
     }
 
@@ -490,7 +482,7 @@ impl SoftBody {
     fn update_sbip_variables(&mut self, board_size: BoardSize) {
         match self {
             SoftBody::Rock(b) => b.update_sbip_variables(board_size),
-            SoftBody::Creature(c) => c.base.update_sbip_variables(board_size),
+            SoftBody::Creature(c) => c.update_sbip_variables(board_size),
         };
     }
 
@@ -498,7 +490,7 @@ impl SoftBody {
     pub fn get_px(&self) -> f64 {
         match self {
             SoftBody::Rock(b) => b.get_px(),
-            SoftBody::Creature(c) => c.base.get_px(),
+            SoftBody::Creature(c) => c.get_px(),
         }
     }
 
@@ -506,7 +498,7 @@ impl SoftBody {
     pub fn get_py(&self) -> f64 {
         match self {
             SoftBody::Rock(b) => b.get_py(),
-            SoftBody::Creature(c) => c.base.get_py(),
+            SoftBody::Creature(c) => c.get_py(),
         }
     }
 
@@ -518,7 +510,7 @@ impl SoftBody {
     pub fn get_radius(&self) -> f64 {
         match self {
             SoftBody::Rock(b) => b.get_radius(),
-            SoftBody::Creature(c) => c.base.get_radius(),
+            SoftBody::Creature(c) => c.get_radius(),
         }
     }
 
@@ -526,7 +518,7 @@ impl SoftBody {
     fn get_mass(&self) -> f64 {
         match self {
             SoftBody::Rock(b) => b.get_mass(),
-            SoftBody::Creature(c) => c.base.get_mass(),
+            SoftBody::Creature(c) => c.get_mass(),
         }
     }
 
@@ -542,7 +534,7 @@ impl SoftBody {
     fn add_vx(&mut self, value_to_add: f64) {
         match self {
             SoftBody::Rock(b) => b.add_vx(value_to_add),
-            SoftBody::Creature(c) => c.base.add_vx(value_to_add),
+            SoftBody::Creature(c) => c.add_vx(value_to_add),
         }
     }
 
@@ -550,7 +542,7 @@ impl SoftBody {
     fn add_vy(&mut self, value_to_add: f64) {
         match self {
             SoftBody::Rock(b) => b.add_vy(value_to_add),
-            SoftBody::Creature(c) => c.base.add_vy(value_to_add),
+            SoftBody::Creature(c) => c.add_vy(value_to_add),
         }
     }
 }

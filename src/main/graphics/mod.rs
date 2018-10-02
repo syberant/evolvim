@@ -99,7 +99,8 @@ pub fn draw_lines<G, C>(
             &context.draw_state,
             transform,
             graphics,
-        ).expect("Your font doesn't seem to be working... Could not draw text.");
+        )
+        .expect("Your font doesn't seem to be working... Could not draw text.");
     }
 }
 
@@ -194,13 +195,13 @@ pub fn draw_creature<G: Graphics>(
         .transform
         .trans(-view.get_precise_x() * size, -view.get_precise_y() * size);
 
-    let radius = creature.base.get_radius();
+    let radius = creature.get_radius();
     let color = from_hsba([creature.get_mouth_hue() as f32, 1.0, 1.0, 1.0]);
 
     let rect = [
         // This gives the upper-left corner of the circle so subtract the radius.
-        (creature.base.get_px() - radius) * size,
-        (creature.base.get_py() - radius) * size,
+        (creature.get_px() - radius) * size,
+        (creature.get_py() - radius) * size,
         radius * 2.0 * size,
         radius * 2.0 * size,
     ];
@@ -228,7 +229,7 @@ pub fn draw_details_creature<C, G>(
     let time_step = 0.001;
     text_to_draw.push(format!(
         "Energy D: {:.3}",
-        creature.base.get_energy_change(time_step)
+        creature.get_energy_change(time_step)
     ));
     text_to_draw.push(format!(
         "Age: {:.3}",
@@ -236,10 +237,10 @@ pub fn draw_details_creature<C, G>(
     ));
     text_to_draw.push(format!(
         "Pos: ({:.1}, {:.1})",
-        creature.base.get_px(),
-        creature.base.get_py()
+        creature.get_px(),
+        creature.get_py()
     ));
-    text_to_draw.push(format!("Speed: {}", creature.base.get_total_velocity()));
+    text_to_draw.push(format!("Speed: {:.3}", creature.get_total_velocity()));
 
     draw_lines(
         text_to_draw,
@@ -258,13 +259,13 @@ pub fn draw_details_creature<C, G>(
         .transform
         .trans(-view.get_precise_x() * size, -view.get_precise_y() * size);
 
-    let radius = creature.base.get_radius() / 2.0;
+    let radius = creature.get_radius() / 2.0;
     let color = [1.0, 1.0, 1.0, 0.5];
 
     let rect = [
         // This gives the upper-left corner of the circle so subtract the radius.
-        (creature.base.get_px() - radius) * size,
-        (creature.base.get_py() - radius) * size,
+        (creature.get_px() - radius) * size,
+        (creature.get_py() - radius) * size,
         radius * 2.0 * size,
         radius * 2.0 * size,
     ];
