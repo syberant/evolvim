@@ -7,10 +7,11 @@ The code was 100% rewritten but includes most (all?) ideas of the [Processing co
 
 Because it's in [Rust] of course!
 
-There are (or will be: WIP) a number of reasons why this version is better than the original:
+There are (or will be: WIP) a number of reasons why this version is (or will be) an improvement over the original:
 - WIP: better documentation
 - Performance, [Processing] isn't known for anything resembling speed, at least not when compared to [Rust].
 - Flexibility, don't like my graphical implementation? Just use `Board` and build your own!
+- File saving and loading (Done!)
 
 The original version has since also [been converted](https://github.com/evolvio/evolv.io/) to pure Java
 (No, I am not going to provide a link; Java isn't worthy of that).
@@ -28,6 +29,18 @@ This version still provides:
 
 ## Running benchmarks
 Use `cargo bench --features=bench` to run all benchmarks.
+
+# Usage
+You can use the internal logic and make your own graphics-frontend or use mine (which is pretty crappy).
+
+## Controls for example frontend
+- click on a creature to select it
+- `b` to select the biggest creature
+- `o` to select the oldest creature
+- `q` to deselect a creature
+- `Up` to speed up time
+- `Down` to slow down time
+
 
 # Documentation
 As this project is very young it doesn't have good documentation yet, some can be found however by typing `cargo doc --no-deps --open`.
