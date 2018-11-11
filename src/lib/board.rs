@@ -221,7 +221,7 @@ impl Board {
 
         // TODO: fix ugly and unidiomatic code.
         for c_rc in &self.creatures {
-            // This function calls `borrow_mut()`
+            // These functions call `borrow_mut()`
             c_rc.collide(&self.soft_bodies_in_positions);
 
             let mut c = c_rc.borrow_mut();

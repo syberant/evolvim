@@ -147,18 +147,3 @@ impl Creature {
         self.mouth_hue = value.min(1.0).max(0.0);
     }
 }
-
-// Functions calling themselves for `self.base`
-impl Creature {
-    pub fn is_on_water(&self, terrain: &Terrain, board_size: BoardSize) -> bool {
-        return self.base.is_on_water(terrain, board_size);
-    }
-
-    pub fn get_energy(&self) -> f64 {
-        return self.base.get_energy();
-    }
-
-    pub fn lose_energy(&mut self, energy_to_lose: f64) {
-        self.base.lose_energy(energy_to_lose);
-    }
-}
