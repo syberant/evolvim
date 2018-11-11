@@ -93,6 +93,8 @@ pub const METABOLISM_ENERGY: f64 = 0.004;
 
 pub const SWIM_ENERGY: f64 = 0.008;
 pub const EAT_ENERGY: f64 = 0.05;
+pub const FIGHT_ENERGY: f64 = 0.06;
+pub const INJURED_ENERGY: f64 = 0.25;
 
 // ********************* //
 // ******* FOOD ******** //
