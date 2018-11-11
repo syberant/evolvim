@@ -1,5 +1,5 @@
 use super::*;
-use constants::*;
+use self::constants::*;
 
 mod creature;
 mod rock;

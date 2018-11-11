@@ -19,9 +19,9 @@ pub mod sbip;
 pub mod softbody;
 pub mod terrain;
 
-pub use board::*;
-pub use brain::*;
-pub use climate::Climate;
-pub use sbip::*;
-pub use softbody::*;
-pub use terrain::*;
+pub use self::board::*;
+pub use self::brain::*;
+pub use self::climate::Climate;
+pub use self::sbip::*;
+pub use self::softbody::*;
+pub use self::terrain::*;

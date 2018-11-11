@@ -9,7 +9,7 @@ extern crate bincode;
 extern crate rand;
 
 use super::*;
-use constants::*;
+use self::constants::*;
 
 /// The amount of times a year an object is updated.
 ///

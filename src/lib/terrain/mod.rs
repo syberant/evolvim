@@ -14,7 +14,7 @@ pub mod tile;
 
 use self::noise::{NoiseFn, Point2, Seedable};
 use super::*;
-use tile::Tile;
+use self::tile::Tile;
 
 /// Contains the terrain of the world.
 ///
