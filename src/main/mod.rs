@@ -3,7 +3,7 @@ extern crate piston_window;
 
 mod graphics;
 
-use graphics::View;
+use self::graphics::View;
 // use lib_evolvim::*;
 use piston_window::*;
 
@@ -88,10 +88,10 @@ fn main() {
         }
 
         if let Event::Input(input) = event {
-            use mouse::MouseButton::*;
-            use Button::Mouse;
-            use ButtonState::*;
-            use Input::*;
+            use self::mouse::MouseButton::*;
+            use self::Button::Mouse;
+            use self::ButtonState::*;
+            use self::Input::*;
 
             match input {
                 Button(b_args) => match b_args.button {
