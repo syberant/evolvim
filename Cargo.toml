@@ -1,13 +1,17 @@
 [package]
 authors = ["Sybrand Aarnoutse (syberant)"]
+edition = "2018"
 license = "MIT"
 name = "evolvim"
 version = "0.1.0"
-edition = "2018"
 
 [[bin]]
 name = "evolvim"
 path = "./src/main/mod.rs"
+
+[[bin]]
+name = "evolvim_cli"
+path = "./src/cli.rs"
 
 [[bin]]
 name = "check_terrain_gen"
@@ -15,6 +19,7 @@ path = "./src/checkTerrainGen.rs"
 
 [dependencies]
 bincode = "1.0.1"
+clap = "2.32.0"
 noise = "0.5.1"
 piston_window = "0.80.0"
 rand = "0.5.4"
