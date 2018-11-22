@@ -65,6 +65,9 @@ fn main() {
         }
     }
 
+    // Clear line
+    print!("\x1B[2K");
+
     if matches.is_present("info") {
         println!("Year: {}", board.get_time() as usize);
         println!("Population: {}", board.creatures.len());
