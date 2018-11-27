@@ -21,10 +21,12 @@ path = "./src/checkTerrainGen.rs"
 bincode = "1.0.1"
 clap = "2.32.0"
 noise = "0.5.1"
+piston2d-gfx_graphics = "0.51.0"
 piston_window = "0.80.0"
 rand = "0.5.4"
 serde = "1.0.75"
 serde_derive = "1.0.75"
+rayon = "1.0.2"
 
 [dependencies.nalgebra]
 features = ["serde-serialize"]

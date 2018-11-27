@@ -6,9 +6,9 @@ mod rock;
 
 pub use self::creature::*;
 pub use self::rock::*;
-use std::cell::{Ref, RefCell, RefMut};
 use std::ops::Range;
-use std::rc::Rc;
+use std::sync::Arc;
+use std::sync::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 
 const COLLISION_FORCE: f64 = 0.01;
 const PIECES: usize = 20;
@@ -20,40 +20,40 @@ const MATURE_AGE: f64 = 0.01;
 /// This is a wrapper struct providing some useful functions.
 ///
 /// TODO: come up with a better name.
-pub struct HLSoftBody(Rc<RefCell<SoftBody>>);
+pub struct HLSoftBody(Arc<RwLock<SoftBody>>);
 
 impl From<SoftBody> for HLSoftBody {
     fn from(sb: SoftBody) -> HLSoftBody {
-        HLSoftBody(Rc::new(RefCell::new(sb)))
+        HLSoftBody(Arc::new(RwLock::new(sb)))
     }
 }
 
 impl Clone for HLSoftBody {
     fn clone(&self) -> Self {
-        HLSoftBody(Rc::clone(&self.0))
+        HLSoftBody(Arc::clone(&self.0))
     }
 }
 
 impl PartialEq<HLSoftBody> for HLSoftBody {
     fn eq(&self, rhs: &HLSoftBody) -> bool {
-        Rc::ptr_eq(&self.0, &rhs.0)
+        Arc::ptr_eq(&self.0, &rhs.0)
     }
 }
 
 impl HLSoftBody {
     /// Wrapper function
-    pub fn borrow(&self) -> Ref<SoftBody> {
-        return self.0.borrow();
+    pub fn borrow(&self) -> RwLockReadGuard<SoftBody> {
+        return self.0.read().unwrap();
     }
 
     /// Wrapper function
-    pub fn borrow_mut(&self) -> RefMut<SoftBody> {
-        return self.0.borrow_mut();
+    pub fn borrow_mut(&self) -> RwLockWriteGuard<SoftBody> {
+        return self.0.write().unwrap();
     }
 
     /// Returns a boolean indicating whether this `HLSoftBody` is currently borrowed.
     pub fn can_borrow_mut(&self) -> bool {
-        return self.0.try_borrow_mut().is_ok();
+        return self.0.try_write().is_ok();
     }
 
     /// Calls the same function on all types and updates `SoftBodiesInPositions` by calling `set_sbip`.
