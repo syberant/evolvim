@@ -38,6 +38,7 @@ version = "0.26.0"
 
 [features]
 bench = []
+multithreading = []
 
 [lib]
 name = "lib_evolvim"

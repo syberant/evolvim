@@ -7,8 +7,18 @@ mod rock;
 pub use self::creature::*;
 pub use self::rock::*;
 use std::ops::Range;
-use std::sync::Arc;
-use std::sync::{RwLock, RwLockReadGuard, RwLockWriteGuard};
+use std::cell::{RefCell, RefMut, Ref};
+use std::rc::Rc;
+
+#[cfg(multithreading)]
+type ReferenceCounter = std::sync::Arc;
+#[cfg(not(multithreading))]
+type ReferenceCounter<A> = std::rc::Rc<A>;
+
+#[cfg(multithreading)]
+type MutPoint = std::sync::RwLock;
+#[cfg(not(multithreading))]
+type MutPoint<A> = std::cell::RefCell<A>;
 
 const COLLISION_FORCE: f64 = 0.01;
 const PIECES: usize = 20;
@@ -20,40 +30,55 @@ const MATURE_AGE: f64 = 0.01;
 /// This is a wrapper struct providing some useful functions.
 ///
 /// TODO: come up with a better name.
-pub struct HLSoftBody(Arc<RwLock<SoftBody>>);
+pub struct HLSoftBody(ReferenceCounter<MutPoint<SoftBody>>);
 
 impl From<SoftBody> for HLSoftBody {
     fn from(sb: SoftBody) -> HLSoftBody {
-        HLSoftBody(Arc::new(RwLock::new(sb)))
+        HLSoftBody(ReferenceCounter::new(MutPoint::new(sb)))
     }
 }
 
 impl Clone for HLSoftBody {
     fn clone(&self) -> Self {
-        HLSoftBody(Arc::clone(&self.0))
+        HLSoftBody(ReferenceCounter::clone(&self.0))
     }
 }
 
 impl PartialEq<HLSoftBody> for HLSoftBody {
     fn eq(&self, rhs: &HLSoftBody) -> bool {
-        Arc::ptr_eq(&self.0, &rhs.0)
+        ReferenceCounter::ptr_eq(&self.0, &rhs.0)
     }
 }
 
 impl HLSoftBody {
     /// Wrapper function
+    #[cfg(multithreading)]
     pub fn borrow(&self) -> RwLockReadGuard<SoftBody> {
         return self.0.read().unwrap();
     }
+    #[cfg(not(multithreading))]
+    pub fn borrow(&self) -> Ref<SoftBody> {
+        return self.0.borrow();
+    }
 
     /// Wrapper function
+    #[cfg(multithreading)]
     pub fn borrow_mut(&self) -> RwLockWriteGuard<SoftBody> {
         return self.0.write().unwrap();
     }
+    #[cfg(not(multithreading))]
+    pub fn borrow_mut(&self) -> RefMut<SoftBody> {
+        return self.0.borrow_mut();
+    }
 
-    /// Returns a boolean indicating whether this `HLSoftBody` is currently borrowed.
+    /// Returns a boolean indicating whether this `HLSoftBody` is currently borrowed, useful for debugging.
+    #[cfg(multithreading)]
     pub fn can_borrow_mut(&self) -> bool {
         return self.0.try_write().is_ok();
+    }
+    #[cfg(not(multithreading))]
+    pub fn can_borrow_mut(&self) -> bool {
+        return self.0.try_borrow_mut().is_ok();
     }
 
     /// Calls the same function on all types and updates `SoftBodiesInPositions` by calling `set_sbip`.
