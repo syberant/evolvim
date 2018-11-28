@@ -92,7 +92,6 @@ pub struct Board {
     pub rocks: Vec<HLSoftBody>,
 
     // Miscelanious
-    user_control: bool,
     pub selected_creature: SelectedCreature,
 }
 
@@ -104,7 +103,6 @@ impl Default for Board {
         let amount_rocks = DEFAULT_ROCK_AMOUNT;
         let min_temp = DEFAULT_MIN_TEMP;
         let max_temp = DEFAULT_MAX_TEMP;
-        let user_control = START_IN_CONTROL;
 
         return Board::new_random(
             board_size,
@@ -113,7 +111,6 @@ impl Default for Board {
             amount_rocks,
             min_temp,
             max_temp,
-            user_control,
         );
     }
 }
@@ -127,7 +124,6 @@ impl Board {
         amount_rocks: usize,
         min_temp: f64,
         max_temp: f64,
-        user_control: bool,
     ) -> Self {
         let creatures = Vec::with_capacity(creature_minimum);
         let rocks = Vec::with_capacity(amount_rocks);
@@ -151,8 +147,7 @@ impl Board {
             climate,
 
             rocks,
-
-            user_control,
+            
             selected_creature: SelectedCreature::default(),
         };
 
@@ -235,16 +230,12 @@ impl Board {
 
             c.use_brain(
                 time_step,
-                !self.user_control,
+                true,
                 time,
                 board_size,
                 terrain,
                 climate,
             );
-
-            if self.user_control {
-                // TODO: provide user control over creature.
-            }
         }
 
         // Kill weak creatures.
@@ -529,7 +520,6 @@ impl<'de> serde::Deserialize<'de> for Board {
                     rocks,
 
                     // Miscelanious
-                    user_control: false,
                     selected_creature: SelectedCreature::default(),
                 })
             }

@@ -48,12 +48,6 @@ pub const DEFAULT_MIN_TEMP: f64 = -0.5;
 /// The hottest it is going to get.
 pub const DEFAULT_MAX_TEMP: f64 = 0.7;
 
-/// Determines whether you start with "user control" or not.
-///
-/// Set to false to immediately let creatures loose in the world,
-/// or set to true to stop creatures from moving and take control of them.
-pub const START_IN_CONTROL: bool = false;
-
 /// Used for terrain generation.
 pub const DEFAULT_NOISE_STEP_SIZE: f64 = 0.1;
 
