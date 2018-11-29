@@ -9,7 +9,6 @@
 
 extern crate noise;
 extern crate rand;
-extern crate rayon;
 
 pub mod tile;
 
@@ -26,8 +25,17 @@ pub struct Terrain {
 }
 
 impl Terrain {
+    #[cfg(multithreading)]
     pub fn update_all(&mut self, time: f64, climate: &Climate) {
+        extern crate rayon;
+        
         self.tiles.par_iter_mut().flatten().for_each(|t| {
+            t.update(time, climate);
+        })
+    }
+    #[cfg(not(multithreading))]
+    pub fn update_all(&mut self, time: f64, climate: &Climate) {
+        self.tiles.iter_mut().flatten().for_each(|t| {
             t.update(time, climate);
         })
     }
