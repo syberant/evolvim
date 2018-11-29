@@ -7,8 +7,7 @@ mod rock;
 pub use self::creature::*;
 pub use self::rock::*;
 use std::ops::Range;
-use std::cell::{RefCell, RefMut, Ref};
-use std::rc::Rc;
+use std::cell::{RefMut, Ref};
 
 #[cfg(multithreading)]
 type ReferenceCounter = std::sync::Arc;

@@ -14,7 +14,6 @@ extern crate rayon;
 pub mod tile;
 
 use self::noise::{NoiseFn, Point2, Seedable};
-use self::rayon::iter::{IntoParallelRefMutIterator, ParallelIterator};
 use super::*;
 use self::tile::Tile;
 

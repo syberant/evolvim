@@ -4,10 +4,10 @@ use super::*;
 pub enum Dragging {
     /// The user is currently dragging the board around.
     Board,
-    /// The user is currently dragging the minimum temperature around.
-    MinTemperature,
-    /// The user is currently dragging the maximum temperature around.
-    MaxTemperature,
+    // /// The user is currently dragging the minimum temperature around.
+    // MinTemperature,
+    // /// The user is currently dragging the maximum temperature around.
+    // MaxTemperature,
     /// The user isn't dragging anything around.
     None,
 }
