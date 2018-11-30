@@ -1,10 +1,19 @@
 extern crate lib_evolvim;
 extern crate clap;
+extern crate ctrlc;
 
 use lib_evolvim::Board;
 use clap::{Arg, App};
+use std::sync::atomic::Ordering;
 
 fn main() {
+    let abort_reader = std::sync::Arc::new(std::sync::atomic::ATOMIC_BOOL_INIT);
+    let abort_writer = abort_reader.clone();
+    
+    ctrlc::set_handler(move || {
+        abort_writer.store(true, Ordering::SeqCst)
+    }).expect("Error setting SIGINT handler! Blame the other crate!");
+
     let matches = App::new("Evolvim - cli")
         .version(clap::crate_version!())
         .author("Sybrand Aarnoutse")
@@ -56,6 +65,11 @@ fn main() {
         let years: usize = years.parse().unwrap();
 
         for _j in 0..years {
+            if abort_reader.load(Ordering::SeqCst) {
+                // Ctrl-C was pressed, stop the simulation
+                break;
+            }
+
             println!("Simulating year {}...", board.get_time() as usize);
             print!("\x1B[1A");
             for _i in 0..1000 {
