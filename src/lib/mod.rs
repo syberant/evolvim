@@ -18,6 +18,7 @@ pub mod constants;
 pub mod sbip;
 pub mod softbody;
 pub mod terrain;
+pub mod version;
 
 pub use self::board::*;
 pub use self::brain::*;
@@ -25,3 +26,4 @@ pub use self::climate::Climate;
 pub use self::sbip::*;
 pub use self::softbody::*;
 pub use self::terrain::*;
+pub use self::version::Version;

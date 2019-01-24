@@ -410,7 +410,9 @@ impl serde::Serialize for Board {
         #[cfg(not(multithreading))]
         type ReadPtr<'a, A> = std::cell::Ref<'a, A>;
 
-        let mut state = serializer.serialize_struct("Board", 7)?;
+        let mut state = serializer.serialize_struct("Board", 8)?;
+        
+        state.serialize_field("version", &Version::current_version())?;
 
         state.serialize_field("terrain", &self.terrain)?;
 
@@ -445,27 +447,39 @@ impl<'de> serde::Deserialize<'de> for Board {
             }
 
             fn visit_seq<V: SeqAccess<'de>>(self, mut seq: V) -> Result<Board, V::Error> {
-                let terrain: Terrain = seq
+                let file_version: Version = seq
                     .next_element()?
                     .ok_or_else(|| Error::invalid_length(0, &self))?;
-                let creature_minimum = seq
+                // Check if file is compatible with this version of the library.
+                if !file_version.is_compatible_with_current() {
+                    return Err(Error::custom(format!(
+                        "file from version {} can not be used with current version ({})",
+                        file_version,
+                        Version::current_version()
+                    )));
+                }
+
+                let terrain: Terrain = seq
                     .next_element()?
                     .ok_or_else(|| Error::invalid_length(1, &self))?;
-                let creatures_ir: Vec<SoftBody> = seq
+                let creature_minimum = seq
                     .next_element()?
                     .ok_or_else(|| Error::invalid_length(2, &self))?;
-                let creature_id_up_to = seq
+                let creatures_ir: Vec<SoftBody> = seq
                     .next_element()?
                     .ok_or_else(|| Error::invalid_length(3, &self))?;
-                let year = seq
+                let creature_id_up_to = seq
                     .next_element()?
                     .ok_or_else(|| Error::invalid_length(4, &self))?;
-                let climate = seq
+                let year = seq
                     .next_element()?
                     .ok_or_else(|| Error::invalid_length(5, &self))?;
-                let rocks_ir: Vec<SoftBody> = seq
+                let climate = seq
                     .next_element()?
                     .ok_or_else(|| Error::invalid_length(6, &self))?;
+                let rocks_ir: Vec<SoftBody> = seq
+                    .next_element()?
+                    .ok_or_else(|| Error::invalid_length(7, &self))?;
 
                 let board_size = (terrain.get_width(), terrain.get_height());
                 let mut soft_bodies_in_positions = SoftBodiesInPositions::new_allocated(board_size);
@@ -513,6 +527,7 @@ impl<'de> serde::Deserialize<'de> for Board {
         }
 
         const FIELDS: &[&str] = &[
+            "version",
             "terrain",
             "creature_minimum",
             "creatures",
