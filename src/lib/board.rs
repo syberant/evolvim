@@ -7,6 +7,8 @@
 
 extern crate bincode;
 extern crate rand;
+#[cfg(multithreading)]
+extern crate rayon;
 
 use super::*;
 use self::constants::*;
@@ -188,33 +190,10 @@ impl Board {
         self.selected_creature.select(biggest.clone());
     }
 
-    pub fn update(&mut self, time_step: f64) {
-        // let previous_year = self.year;
-        self.year += time_step;
-
-        // Possibly record population history here.
-
-        self.climate.update(self.year);
-        let temp_change_into_frame =
-            self.climate.get_temperature() - self.climate.get_growth_rate(self.year - time_step);
-        let temp_change_out_of_frame =
-            self.climate.get_growth_rate(self.year + time_step) - self.climate.get_temperature();
-
-        if temp_change_into_frame * temp_change_out_of_frame < 0.0 {
-            // Temperature change flipped direction
-            self.terrain.update_all(self.year, &self.climate);
-        }
-
+    pub fn update_creatures(&mut self, time_step: f64) {
         let time = self.year;
         let board_size = self.get_board_size();
 
-        // Update all rocks.
-        for r in &self.rocks {
-            // Calls `borrow_mut()` so there should now be no mutable references.
-            r.collide(&self.soft_bodies_in_positions);
-        }
-
-        // TODO: fix ugly and unidiomatic code.
         for c_rc in &self.creatures {
             // These functions call `borrow_mut()`
             c_rc.collide(&self.soft_bodies_in_positions);
@@ -237,6 +216,23 @@ impl Board {
                 climate,
             );
         }
+    }
+
+    pub fn update(&mut self, time_step: f64) {
+        self.year += time_step;
+        self.climate.update(self.year);
+
+        let temp_change_into_frame =
+            self.climate.get_temperature() - self.climate.get_growth_rate(self.year - time_step);
+        let temp_change_out_of_frame =
+            self.climate.get_growth_rate(self.year + time_step) - self.climate.get_temperature();
+
+        if temp_change_into_frame * temp_change_out_of_frame < 0.0 {
+            // Temperature change flipped direction
+            self.terrain.update_all(self.year, &self.climate);
+        }
+
+        self.update_creatures(time_step);
 
         // Kill weak creatures.
         self.remove_dead_creatures();
@@ -247,31 +243,22 @@ impl Board {
         // Experimental: this was moved from above to always keep the creature minimum.
         self.maintain_creature_minimum();
 
-        // Finish the iteration.
-        for r in &self.rocks {
-            // This function takes a mutable pointer to `self`.
-            r.apply_motions(
-                time_step * OBJECT_TIMESTEPS_PER_YEAR,
-                board_size,
-                &self.terrain,
-                &mut self.soft_bodies_in_positions,
-            );
-        }
+        // Move the creatures around on the board
+        self.move_creatures(time_step);
+    }
+
+    // #[cfg(multithreading)]
+    pub fn move_creatures(&mut self, time_step: f64) {
+        let board_size = self.get_board_size();
 
         for c in &self.creatures {
-            // This function takes a mutable pointer to `self`.
             c.apply_motions(
                 time_step * OBJECT_TIMESTEPS_PER_YEAR,
                 board_size,
                 &self.terrain,
                 &mut self.soft_bodies_in_positions,
             );
-
-            // TODO: implement seeing.
-            // c.see();
         }
-
-        // TODO: implement filesaving.
     }
 
     pub fn prepare_for_drawing(&mut self) {
