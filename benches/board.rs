@@ -10,8 +10,8 @@ mod benches {
 
     const FRAME_TIME_STEP: f64 = 0.001;
 
-    fn get_stable_870() -> Board {
-        Board::load_from("assets/stable_870.bin").unwrap()
+    fn get_test_board() -> Board {
+        Board::load_from("assets/test.bin").unwrap()
     }
 
     #[bench]
@@ -20,8 +20,8 @@ mod benches {
     }
 
     #[bench]
-    fn bench_board_update_870(b: &mut Bencher) {
-        let mut board = get_stable_870();
+    fn bench_board_update(b: &mut Bencher) {
+        let mut board = get_test_board();
 
         b.iter(|| {
             board.update(FRAME_TIME_STEP);

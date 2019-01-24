@@ -3,7 +3,7 @@ authors = ["Sybrand Aarnoutse (syberant)"]
 edition = "2018"
 license = "MIT"
 name = "evolvim"
-version = "0.1.0"
+version = "0.2.0"
 
 [[bin]]
 name = "evolvim"

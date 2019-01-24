@@ -10,13 +10,13 @@ mod benches {
 
     const TIME_STEP: f64 = 0.001;
 
-    fn get_stable_870() -> Board {
-        Board::load_from("assets/stable_870.bin").unwrap()
+    fn get_test_board() -> Board {
+        Board::load_from("assets/test.bin").unwrap()
     }
 
     #[bench]
-    fn bench_softbody_collide_870(b: &mut Bencher) {
-        let board = get_stable_870();
+    fn bench_softbody_collide(b: &mut Bencher) {
+        let board = get_test_board();
 
         b.iter(|| {
             for c_rc in &board.creatures {
@@ -26,8 +26,8 @@ mod benches {
     }
 
     #[bench]
-    fn bench_softbody_use_brain_870(b: &mut Bencher) {
-        let mut board = get_stable_870();
+    fn bench_softbody_use_brain(b: &mut Bencher) {
+        let mut board = get_test_board();
 
         b.iter(|| {
             let board_size = board.get_board_size();
@@ -43,8 +43,8 @@ mod benches {
     }
 
     #[bench]
-    fn bench_softbody_metabolize_870(b: &mut Bencher) {
-        let board = get_stable_870();
+    fn bench_softbody_metabolize(b: &mut Bencher) {
+        let board = get_test_board();
 
         b.iter(|| {
             let time = board.get_time();
@@ -56,8 +56,8 @@ mod benches {
     }
 
     #[bench]
-    fn bench_softbody_apply_motions_870(b: &mut Bencher) {
-        let mut board = get_stable_870();
+    fn bench_softbody_apply_motions(b: &mut Bencher) {
+        let mut board = get_test_board();
 
         b.iter(|| {
             let board_size = board.get_board_size();
