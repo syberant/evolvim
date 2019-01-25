@@ -90,9 +90,6 @@ pub struct Board {
     // Fields relevant for temperature
     pub climate: Climate,
 
-    // Fields relevant for rocks
-    pub rocks: Vec<HLSoftBody>,
-
     // Miscelanious
     pub selected_creature: SelectedCreature,
 }
@@ -102,7 +99,6 @@ impl Default for Board {
         let board_size = DEFAULT_BOARD_SIZE;
         let noise_step_size = DEFAULT_NOISE_STEP_SIZE;
         let creature_minimum = DEFAULT_CREATURE_MINIMUM;
-        let amount_rocks = DEFAULT_ROCK_AMOUNT;
         let min_temp = DEFAULT_MIN_TEMP;
         let max_temp = DEFAULT_MAX_TEMP;
 
@@ -110,7 +106,6 @@ impl Default for Board {
             board_size,
             noise_step_size,
             creature_minimum,
-            amount_rocks,
             min_temp,
             max_temp,
         );
@@ -123,12 +118,10 @@ impl Board {
         board_size: BoardSize,
         noise_step_size: f64,
         creature_minimum: usize,
-        amount_rocks: usize,
         min_temp: f64,
         max_temp: f64,
     ) -> Self {
         let creatures = Vec::with_capacity(creature_minimum);
-        let rocks = Vec::with_capacity(amount_rocks);
 
         // Initialize climate.
         let mut climate = Climate::new(min_temp, max_temp);
@@ -148,8 +141,6 @@ impl Board {
 
             climate,
 
-            rocks,
-            
             selected_creature: SelectedCreature::default(),
         };
 
@@ -410,7 +401,7 @@ impl serde::Serialize for Board {
         #[cfg(not(multithreading))]
         type ReadPtr<'a, A> = std::cell::Ref<'a, A>;
 
-        let mut state = serializer.serialize_struct("Board", 8)?;
+        let mut state = serializer.serialize_struct("Board", 7)?;
         
         state.serialize_field("version", &Version::current_version())?;
 
@@ -424,10 +415,6 @@ impl serde::Serialize for Board {
         state.serialize_field("creature_id_up_to", &self.creature_id_up_to)?;
         state.serialize_field("year", &self.year)?;
         state.serialize_field("climate", &self.climate)?;
-
-        let sb_ro: Vec<ReadPtr<SoftBody>> = self.rocks.iter().map(|r| r.borrow()).collect();
-        let ro = sb_ro.iter().map(|r| &**r);
-        state.serialize_field::<Vec<&SoftBody>>("rocks", &ro.collect())?;
 
         state.end()
     }
@@ -465,7 +452,7 @@ impl<'de> serde::Deserialize<'de> for Board {
                 let creature_minimum = seq
                     .next_element()?
                     .ok_or_else(|| Error::invalid_length(2, &self))?;
-                let creatures_ir: Vec<SoftBody> = seq
+                let creatures_ir: Vec<Creature> = seq
                     .next_element()?
                     .ok_or_else(|| Error::invalid_length(3, &self))?;
                 let creature_id_up_to = seq
@@ -477,9 +464,6 @@ impl<'de> serde::Deserialize<'de> for Board {
                 let climate = seq
                     .next_element()?
                     .ok_or_else(|| Error::invalid_length(6, &self))?;
-                let rocks_ir: Vec<SoftBody> = seq
-                    .next_element()?
-                    .ok_or_else(|| Error::invalid_length(7, &self))?;
 
                 let board_size = (terrain.get_width(), terrain.get_height());
                 let mut soft_bodies_in_positions = SoftBodiesInPositions::new_allocated(board_size);
@@ -487,15 +471,9 @@ impl<'de> serde::Deserialize<'de> for Board {
                     .into_iter()
                     .map(|c| HLSoftBody::from(c))
                     .collect();
-                let mut rocks: Vec<HLSoftBody> =
-                    rocks_ir.into_iter().map(|r| HLSoftBody::from(r)).collect();
                 for c in &mut creatures {
                     c.set_sbip(&mut soft_bodies_in_positions, board_size);
                     c.set_sbip(&mut soft_bodies_in_positions, board_size);
-                }
-                for r in &mut rocks {
-                    r.set_sbip(&mut soft_bodies_in_positions, board_size);
-                    r.set_sbip(&mut soft_bodies_in_positions, board_size);
                 }
 
                 Ok(Board {
@@ -517,9 +495,6 @@ impl<'de> serde::Deserialize<'de> for Board {
                     // Fields relevant for temperature
                     climate,
 
-                    // Fields relevant for rocks
-                    rocks,
-
                     // Miscelanious
                     selected_creature: SelectedCreature::default(),
                 })
@@ -534,7 +509,6 @@ impl<'de> serde::Deserialize<'de> for Board {
             "creature_id_up_to",
             "year",
             "climate",
-            "rocks",
         ];
         deserializer.deserialize_struct("Board", FIELDS, BoardVisitor)
     }

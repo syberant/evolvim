@@ -39,9 +39,6 @@ pub const DEFAULT_BOARD_SIZE: BoardSize = (DEFAULT_BOARD_WIDTH, DEFAULT_BOARD_HE
 /// New random creatures will be generated if the population drops under this amount.
 pub const DEFAULT_CREATURE_MINIMUM: usize = 60;
 
-/// The amount of rocks in the world.
-pub const DEFAULT_ROCK_AMOUNT: usize = 0;
-
 /// The coldest it is going to get.
 pub const DEFAULT_MIN_TEMP: f64 = -0.5;
 

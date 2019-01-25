@@ -160,30 +160,6 @@ pub fn draw_terrain<C, G>(
     }
 }
 
-pub fn draw_rock<G>(rock: &Rock, context: Context, graphics: &mut G, view: &View)
-where
-    G: Graphics,
-{
-    let size = view.get_tile_size();
-    let transform = context
-        .transform
-        .trans(-view.get_precise_x() * size, -view.get_precise_y() * size);
-
-    let radius = rock.get_radius();
-    // let color = from_hsba([0.0, 1.0, 0.7, 1.0]);
-    let color = [0.5, 0.5, 0.5, 1.0];
-    let rect = [
-        rock.get_px() * size,
-        rock.get_py() * size,
-        radius * 2.0 * size,
-        radius * 2.0 * size,
-    ];
-
-    let ellipse = ellipse::Ellipse::new(color);
-
-    ellipse.draw(rect, &context.draw_state, transform, graphics);
-}
-
 pub fn draw_creature<G: Graphics>(
     creature: &Creature,
     context: Context,
