@@ -173,7 +173,7 @@ impl Brain {
 
                 let r = (rng.gen::<f64>() * 2.0 - 1.0).powi(9);
 
-                theta_1[(y, z)] = parents[parent_id].borrow().get_creature().brain.theta_1[(y, z)]
+                theta_1[(y, z)] = parents[parent_id].borrow().brain.theta_1[(y, z)]
                     + r * MUTABILITY / MUTATE_MULTI;
             }
         }
@@ -189,7 +189,7 @@ impl Brain {
 
                 let r = (rng.gen::<f64>() * 2.0 - 1.0).powi(9);
 
-                theta_2[(y, z)] = parents[parent_id].borrow().get_creature().brain.theta_2[(y, z)]
+                theta_2[(y, z)] = parents[parent_id].borrow().brain.theta_2[(y, z)]
                     + r * MUTABILITY / MUTATE_MULTI;
             }
         }

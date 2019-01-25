@@ -135,8 +135,7 @@ impl HLSoftBody {
     }
 
     pub fn fight(&mut self, amount: f64, time: f64, time_step: f64, sbip: &SoftBodiesInPositions) {
-        let mut sb = self.borrow_mut();
-        let creature = sb.get_creature_mut();
+        let mut creature = self.borrow_mut();
         if amount > 0.0 && creature.get_age(time) >= MATURE_AGE {
             creature.lose_energy(amount * time_step * FIGHT_ENERGY);
 
@@ -155,8 +154,7 @@ impl HLSoftBody {
 
                 if distance < combined_radius {
                     // collider was hit, remove energy
-                    col.get_creature_mut()
-                        .lose_energy(amount * INJURED_ENERGY * time_step);
+                    col.lose_energy(amount * INJURED_ENERGY * time_step);
                 }
             }
         }
@@ -230,9 +228,9 @@ impl HLSoftBody {
         sbip: &mut SoftBodiesInPositions,
         board_size: BoardSize,
     ) -> Option<HLSoftBody> {
-        if self.borrow().get_creature().get_energy() > SAFE_SIZE
-            && self.borrow().get_creature().brain.wants_birth() > 0.0
-            && self.borrow().get_creature().get_age(time) > MATURE_AGE
+        if self.borrow().get_energy() > SAFE_SIZE
+            && self.borrow().brain.wants_birth() > 0.0
+            && self.borrow().get_age(time) > MATURE_AGE
         {
             let self_px = self.borrow().get_px();
             let self_py = self.borrow().get_py();
@@ -262,7 +260,7 @@ impl HLSoftBody {
             parents.push(self.clone());
 
             let available_energy = parents.iter().fold(0.0, |acc, c| {
-                acc + c.borrow().get_creature().get_baby_energy()
+                acc + c.borrow().get_baby_energy()
             });
 
             if available_energy > BABY_SIZE {
@@ -270,8 +268,7 @@ impl HLSoftBody {
 
                 // Giving birth costs energy
                 parents.iter_mut().for_each(|c| {
-                    let mut c_ref_mut = c.borrow_mut();
-                    let c = c_ref_mut.get_creature_mut();
+                    let mut c = c.borrow_mut();
 
                     let energy_to_lose = energy * (c.get_baby_energy() / available_energy);
                     c.lose_energy(energy_to_lose);
@@ -300,16 +297,6 @@ impl HLSoftBody {
 pub type SoftBody = Creature;
 
 impl SoftBody {
-    /// Returns true if this `SoftBody` is a creature and false otherwise.
-    pub fn is_creature(&self) -> bool {
-        true
-    }
-
-    /// Returns true if this `SoftBody` is a rock and false otherwise.
-    pub fn is_rock(&self) -> bool {
-        false
-    }
-
     /// Wrapper function.
     pub fn new_random_creature(board_size: BoardSize, time: f64) -> SoftBody {
         Creature::new_random(board_size, time)
@@ -335,16 +322,6 @@ impl SoftBody {
 
 // Here are all the functions only applicable to `Creature`s.
 impl SoftBody {
-    /// Returns a reference to the `Creature` that was hidden in this `SoftBody` or `panic!`s.
-    pub fn get_creature(&self) -> &Creature {
-        return self;
-    }
-
-    /// Returns a mutable reference to the `Creature` that was hidden in this `SoftBody` or `panic!`s.
-    pub fn get_creature_mut(&mut self) -> &mut Creature {
-        return self;
-    }
-
     pub fn use_brain(
         &mut self,
         time_step: f64,
@@ -356,7 +333,7 @@ impl SoftBody {
         climate: &Climate,
     ) {
         let input = self.get_input(terrain);
-        let creature = self.get_creature_mut();
+        let creature = self;
         creature.brain.run(input);
 
         if use_output {
@@ -388,7 +365,7 @@ impl SoftBody {
     fn get_input(&self, terrain: &Terrain) -> BrainInput {
         let mut input = [0.0; 9];
 
-        let creature = self.get_creature();
+        let creature = self;
         input[0] = creature.get_energy();
         input[1] = creature.get_mouth_hue();
         let pos = BoardPreciseCoordinate(self.get_px(), self.get_py()).into();
@@ -405,7 +382,7 @@ impl SoftBody {
     pub fn metabolize(&mut self, time_step: f64, time: f64) {
         // TODO: fix ugly code.
         let age = AGE_FACTOR * (time - self.get_birth_time());
-        let creature = self.get_creature_mut();
+        let creature = self;
         let energy_to_lose = creature.get_energy() * METABOLISM_ENERGY * age * time_step;
         creature.lose_energy(energy_to_lose);
 

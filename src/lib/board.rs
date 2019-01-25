@@ -156,8 +156,8 @@ impl Board {
     /// Selects the oldest creature still alive.
     pub fn select_oldest(&mut self) {
         let oldest = self.creatures.iter().fold(&self.creatures[0], |c_old, c| {
-            if c.borrow().get_creature().get_birth_time()
-                < c_old.borrow().get_creature().get_birth_time()
+            if c.borrow().get_birth_time()
+                < c_old.borrow().get_birth_time()
             {
                 &c
             } else {
@@ -171,7 +171,7 @@ impl Board {
     /// Selects the biggest creature.
     pub fn select_biggest(&mut self) {
         let biggest = self.creatures.iter().fold(&self.creatures[0], |c_old, c| {
-            if c.borrow().get_creature().get_energy() > c_old.borrow().get_creature().get_energy() {
+            if c.borrow().get_energy() > c_old.borrow().get_energy() {
                 &c
             } else {
                 c_old
@@ -191,7 +191,7 @@ impl Board {
 
             let mut c = c_rc.borrow_mut();
 
-            c.get_creature_mut().record_energy();
+            c.record_energy();
 
             c.metabolize(time_step, time);
 

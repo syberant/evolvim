@@ -75,16 +75,16 @@ impl Rock {
         let parent_amount = parents.len();
 
         let px = parents.iter().fold(0.0, |acc, parent| {
-            acc + parent.borrow().get_creature().px / parent_amount as f64
+            acc + parent.borrow().px / parent_amount as f64
         });
         let py = parents.iter().fold(0.0, |acc, parent| {
-            acc + parent.borrow().get_creature().py / parent_amount as f64
+            acc + parent.borrow().py / parent_amount as f64
         });
         let rotation = parents.iter().fold(0.0, |acc, parent| {
-            acc + parent.borrow().get_creature().rotation / parent_amount as f64
+            acc + parent.borrow().rotation / parent_amount as f64
         });
 
-        let density = parents[0].borrow().get_creature().density;
+        let density = parents[0].borrow().density;
 
         Rock {
             px,

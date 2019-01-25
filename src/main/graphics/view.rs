@@ -217,14 +217,13 @@ impl View {
                     .soft_bodies_in_positions
                     .get_soft_bodies_in(x_range, y_range)
                 {
-                    draw_creature(c.borrow().get_creature(), context, graphics, &self);
+                    draw_creature(&c.borrow(), context, graphics, &self);
                 }
 
                 if let Some(ref c) = self.board.selected_creature.0 {
                     let creature = c.borrow();
-                    let creature = creature.get_creature();
 
-                    draw_details_creature(creature, context, graphics, glyphs, &self);
+                    draw_details_creature(&creature, context, graphics, glyphs, &self);
                 }
             }
             Tiles => {

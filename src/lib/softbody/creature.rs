@@ -109,7 +109,7 @@ impl Creature {
         let birth_time = time;
         // The hue is the mean of all parent hues
         let mouth_hue = parents.iter().fold(0.0, |acc, parent| {
-            acc + parent.borrow().get_creature().mouth_hue / parent_amount as f64
+            acc + parent.borrow().mouth_hue / parent_amount as f64
         });
 
         Creature {
