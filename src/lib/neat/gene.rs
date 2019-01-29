@@ -1,5 +1,6 @@
 pub type Id = usize;
 
+#[derive(Debug)]
 pub enum NodeType {
     Sensor,
     Hidden,
@@ -11,6 +12,7 @@ pub struct NodeGene {
     pub id: Id,
 }
 
+#[derive(Clone)]
 pub struct ConnectionGene {
     pub from: Id,
     pub to: Id,

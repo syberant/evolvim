@@ -1,8 +1,13 @@
 use super::Genome;
 use super::gene::{NodeGene, ConnectionGene, Id, NodeType};
 
+static mut INNOVATION_NUMBER: usize = 0;
+
 fn get_innovation_number() -> usize {
-    unimplemented!()
+    unsafe {
+        INNOVATION_NUMBER += 1;
+        return INNOVATION_NUMBER;
+    }
 }
 
 impl Genome {
@@ -19,7 +24,7 @@ impl Genome {
         self.connection_genome.push(connection);
     }
 
-    pub fn mutate_add_node(&mut self, connection_id: usize) {
+    pub fn mutate_connection_to_node(&mut self, connection_id: usize) {
         let next_node_id = self.next_node_id();
         let (from, to) = self.connection_genome[connection_id].disable_and_info();
 

@@ -17,6 +17,11 @@ Bigger scale:
 ## Biological recombination
 TODO
 
+## NEAT recombination
+for every gene:
+- inherit randomly if it exists in both parents
+- otherwise inherit from the one parent who has it **OR** maybe inherit it **OR** only inherit if it's from the fittest parent
+
 ## Possible changes to NEAT
 To stop a constant growth of the genome:
 - have a mutation delete disabled genes
