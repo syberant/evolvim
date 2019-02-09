@@ -18,27 +18,27 @@ name = "check_terrain_gen"
 path = "./src/checkTerrainGen.rs"
 
 [dependencies]
-bincode = "1.0.1"
+bincode = "1.1.1"
 clap = "2.32.0"
 ctrlc = "3.1.1"
 noise = "0.5.1"
-piston2d-gfx_graphics = "0.51.0"
-piston_window = "0.80.0"
-rand = "0.5.4"
-serde = "1.0.75"
-serde_derive = "1.0.75"
+piston2d-gfx_graphics = "0.56.0"
+piston_window = "0.89.0"
+rand = "0.6.5"
+serde = "1.0.87"
+serde_derive = "1.0.87"
 
 [dependencies.nalgebra]
 features = ["serde-serialize"]
-version = "0.16.0"
+version = "0.17.0"
 
 [dependencies.piston2d-graphics]
 features = ["glyph_cache_rusttype"]
-version = "0.26.0"
+version = "0.30.0"
 
 [dependencies.rayon]
 optional = true
-version = "1.0.2"
+version = "1.0.3"
 
 [features]
 bench = []
