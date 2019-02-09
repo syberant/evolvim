@@ -16,10 +16,18 @@ fn test_recombination() {
     let mut gen1 = neat::Genome::new_fully_linked();
     let mut gen2 = neat::Genome::new_fully_linked();
 
-    for _i in 0..10 {
+    for _i in 0..5 {
         gen1.mutate();
         gen2.mutate();
     }
+
+    println!("Parent A:");
+    gen1.log_nodes();
+    gen1.log_connections();
+
+    println!("Parent B:");
+    gen2.log_nodes();
+    gen2.log_connections();
 
     let baby = neat::Genome::new_from_2(&gen1, &gen2);
     println!("Genome after recombination:");
