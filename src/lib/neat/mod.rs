@@ -108,16 +108,6 @@ impl Genome {
 
         return genome;
     }
-
-    pub fn mutate(&mut self) {
-        let gene_count = self.connection_genome.len();
-
-        if rand::random::<isize>() > 0 {
-            self.mutate_add_connection();
-        } else if rand::random::<isize>() > 0 {
-            self.mutate_connection_to_node();
-        }
-    }
 }
 
 impl Genome {
