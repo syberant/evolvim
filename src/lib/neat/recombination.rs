@@ -6,8 +6,6 @@ impl Genome {
         let mut genome = Genome {
             node_genome: Vec::new(),
             connection_genome: Vec::new(),
-
-            node_id: parent_a.node_id.max(parent_b.node_id),
         };
         
         let mut iter_b = parent_b.connection_genome.iter();

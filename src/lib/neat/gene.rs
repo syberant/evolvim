@@ -1,6 +1,6 @@
 pub type Id = usize;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum NodeType {
     Sensor,
     Hidden,
