@@ -1,6 +1,6 @@
 use super::Genome;
 use super::gene::NodeGene;
-use super::rand;
+use super::utils::{RecombinationGenomesIterator, RecombinationGeneTypes};
 
 impl Genome {
     /// Multipoint crossover:
@@ -12,44 +12,20 @@ impl Genome {
             node_genome: Vec::new(),
             connection_genome: Vec::new(),
         };
-        
-        let mut genes_a = parent_a.connection_genome.iter().peekable();
-        let mut genes_b = parent_b.connection_genome.iter().peekable();
 
-        loop {
-            let gene_a = genes_a.peek();
-            let gene_b = genes_b.peek();
-
-            if gene_a.is_none() {
-                for g in genes_b {
-                    // excess gene from parent B
-                    genome.connection_genome.push(g.clone());
-                }
-                break;
-            } else if gene_b.is_none() {
-                for g in genes_a {
-                    // excess gene from parent A
-                    genome.connection_genome.push(g.clone());
-                }
-                break;
-            }
-
-            use std::cmp::Ordering;
-            match gene_a.unwrap().innovation_number.cmp(&gene_b.unwrap().innovation_number) {
-                Ordering::Equal => {
-                    // matching gene, averaging weight
-                    let weight_b = genes_b.next().unwrap().weight;
-                    genome.connection_genome.push(genes_a.next().unwrap().clone());
-                    genome.connection_genome.last_mut().unwrap().weight += weight_b;
+        use RecombinationGeneTypes::*;
+        for g in RecombinationGenomesIterator::new(parent_a, parent_b) {
+            match g {
+                Matching(a, b) => {
+                    genome.connection_genome.push(a.clone());
+                    genome.connection_genome.last_mut().unwrap().weight += b.weight;
                     genome.connection_genome.last_mut().unwrap().weight /= 2.0;
                 },
-                Ordering::Less => {
-                    // disjoint gene from parent A
-                    genome.connection_genome.push(genes_a.next().unwrap().clone());
+                Disjoint(_, gene) => {
+                    genome.connection_genome.push(gene.clone());
                 },
-                Ordering::Greater => {
-                    // disjoint gene from parent B
-                    genome.connection_genome.push(genes_b.next().unwrap().clone());
+                Excess(_, gene) => {
+                    genome.connection_genome.push(gene.clone());
                 }
             }
         }
