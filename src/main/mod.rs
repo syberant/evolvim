@@ -1,15 +1,50 @@
 extern crate lib_evolvim;
 extern crate piston_window;
+extern crate clap;
 
 mod graphics;
 
 use self::graphics::View;
-// use lib_evolvim::*;
+use lib_evolvim::Board;
+use clap::{Arg, App};
 use piston_window::*;
 
 fn main() {
+    let matches = App::new("Evolvim - GUI launched via CLI")
+        .version(clap::crate_version!())
+        .author("Sybrand Aarnoutse")
+        .arg(Arg::with_name("output")
+            .short("o")
+            .long("output")
+            .value_name("FILE")
+            .takes_value(true)
+            .help("The output file, save to this when done"))
+        .arg(Arg::with_name("input")
+            .short("i")
+            .long("input")
+            .value_name("FILE")
+            .takes_value(true)
+            .help("The input file, start with this as board"))
+        .arg(Arg::with_name("save")
+            .short("s")
+            .long("save")
+            .takes_value(false)
+            .conflicts_with("output")
+            .requires("input")
+            .help("Saves to the input file when done"))
+        .get_matches();
+    
     let mut view = View::default();
-    // view.board = Board::load_from("test.bin").unwrap();
+    if let Some(filename) = matches.value_of("input") {
+        view.board = Board::load_from(filename).unwrap();
+    }
+
+    let output_file = if matches.is_present("save") {
+        matches.value_of("input")
+    } else {
+        matches.value_of("output")
+    };
+
     let time = view.board.get_time();
     view.board.update(0.001);
     view.board.terrain.update_all(time, &view.board.climate);
@@ -114,5 +149,9 @@ fn main() {
             view.board.get_time(),
             view.board.get_season()
         ));
+    }
+
+    if let Some(filename) = output_file {
+        view.board.save_to(filename).unwrap();
     }
 }
