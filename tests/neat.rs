@@ -51,3 +51,17 @@ fn test_mutation() {
     gen.log_nodes();
     gen.log_connections();
 }
+
+#[test]
+fn test_genetical_distance() {
+    let mut gen1 = neat::Genome::new_fully_linked();
+    let mut gen2 = neat::Genome::new_fully_linked();
+
+    for _i in 0..5 {
+        gen1.mutate();
+        gen2.mutate();
+    }
+
+    let distance = gen1.genetical_distance(&gen2);
+    println!("The distance between two randomly mutated genomes is {}", distance);
+}

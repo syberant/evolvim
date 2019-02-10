@@ -4,6 +4,8 @@ mod gene;
 mod recombination;
 mod mutation;
 // mod innovations;
+mod speciation;
+mod utils;
 
 use self::gene::{NodeGene, ConnectionGene, Id, NodeType};
 use rand::Rng;
