@@ -1,13 +1,13 @@
 extern crate rand;
 
 mod gene;
-mod recombination;
 mod mutation;
+mod recombination;
 // mod innovations;
 mod speciation;
 mod utils;
 
-use self::gene::{NodeGene, ConnectionGene, Id, NodeType};
+use self::gene::{ConnectionGene, Id, NodeGene, NodeType};
 use rand::Rng;
 
 const AMOUNT_INPUT: usize = 3;
@@ -56,10 +56,7 @@ impl Genome {
     }
 
     fn add_node(&mut self, node_type: NodeType, id: Id) {
-        self.node_genome.push(NodeGene {
-            node_type,
-            id,
-        });
+        self.node_genome.push(NodeGene { node_type, id });
     }
 
     fn add_connection(&mut self, from: Id, to: Id, weight: f64) {
@@ -89,7 +86,7 @@ impl Genome {
         for _i in 0..AMOUNT_OUTPUT {
             genome.add_node(NodeType::Output, node_counter);
             node_counter += 1;
-            
+
             let to = genome.node_genome.last().unwrap().id;
             for i in 0..AMOUNT_INPUT {
                 let from = genome.node_genome[i].id;
@@ -125,7 +122,10 @@ impl Genome {
             if n.enabled == false {
                 print!("DISABLED! ");
             }
-            println!("innovation {}: from {} to {} with weight {}", n.innovation_number, n.from, n.to, n.weight);
+            println!(
+                "innovation {}: from {} to {} with weight {}",
+                n.innovation_number, n.from, n.to, n.weight
+            );
         }
     }
 }

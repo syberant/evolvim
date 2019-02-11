@@ -13,8 +13,8 @@ extern crate rand;
 pub mod tile;
 
 use self::noise::{NoiseFn, Point2, Seedable};
-use super::*;
 use self::tile::Tile;
+use super::*;
 
 /// Contains the terrain of the world.
 ///
@@ -28,7 +28,7 @@ impl Terrain {
     #[cfg(multithreading)]
     pub fn update_all(&mut self, time: f64, climate: &Climate) {
         extern crate rayon;
-        
+
         self.tiles.par_iter_mut().flatten().for_each(|t| {
             t.update(time, climate);
         })
@@ -134,13 +134,15 @@ impl Terrain {
                         * 4.0
                         + get_noise(&ng, x as f64 * step_size * 0.5, y as f64 * step_size * 0.5)
                             * big_force
-                            * 4.0 - 1.5;
+                            * 4.0
+                        - 1.5;
 
                 let mut climate_type = get_noise(
                     &ng,
                     x as f64 * step_size * 0.2 + 10000.0,
                     y as f64 * step_size * 0.2 + 10000.0,
-                ) * 1.63 - 0.4;
+                ) * 1.63
+                    - 0.4;
 
                 climate_type = climate_type.max(0.0).min(0.8);
                 tiles[x].push(Tile::new(fertility, climate_type));

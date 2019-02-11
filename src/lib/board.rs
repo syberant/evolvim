@@ -10,8 +10,8 @@ extern crate rand;
 #[cfg(multithreading)]
 extern crate rayon;
 
-use super::*;
 use self::constants::*;
+use super::*;
 
 /// The amount of times a year an object is updated.
 ///
@@ -156,9 +156,7 @@ impl Board {
     /// Selects the oldest creature still alive.
     pub fn select_oldest(&mut self) {
         let oldest = self.creatures.iter().fold(&self.creatures[0], |c_old, c| {
-            if c.borrow().get_birth_time()
-                < c_old.borrow().get_birth_time()
-            {
+            if c.borrow().get_birth_time() < c_old.borrow().get_birth_time() {
                 &c
             } else {
                 c_old
@@ -198,14 +196,7 @@ impl Board {
             let terrain = &mut self.terrain;
             let climate = &self.climate;
 
-            c.use_brain(
-                time_step,
-                true,
-                time,
-                board_size,
-                terrain,
-                climate,
-            );
+            c.use_brain(time_step, true, time, board_size, terrain, climate);
         }
     }
 
@@ -402,7 +393,7 @@ impl serde::Serialize for Board {
         type ReadPtr<'a, A> = std::cell::Ref<'a, A>;
 
         let mut state = serializer.serialize_struct("Board", 7)?;
-        
+
         state.serialize_field("version", &Version::current_version())?;
 
         state.serialize_field("terrain", &self.terrain)?;

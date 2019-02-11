@@ -63,5 +63,8 @@ fn test_genetical_distance() {
     }
 
     let distance = gen1.genetical_distance(&gen2);
-    println!("The distance between two randomly mutated genomes is {}", distance);
+    println!(
+        "The distance between two randomly mutated genomes is {}",
+        distance
+    );
 }

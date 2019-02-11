@@ -1,12 +1,12 @@
-use super::*;
 use self::constants::*;
+use super::*;
 
 mod creature;
 mod rock;
 
 pub use self::creature::*;
 pub use self::rock::*;
-use std::cell::{RefMut, Ref};
+use std::cell::{Ref, RefMut};
 
 #[cfg(multithreading)]
 type ReferenceCounter = std::sync::Arc;
@@ -89,7 +89,9 @@ impl HLSoftBody {
     ) {
         use std::ops::DerefMut;
 
-        self.borrow_mut().deref_mut().apply_motions(time_step, terrain, board_size);
+        self.borrow_mut()
+            .deref_mut()
+            .apply_motions(time_step, terrain, board_size);
 
         self.set_sbip(sbip, board_size);
     }
@@ -220,6 +222,14 @@ impl HLSoftBody {
         self.remove_from_sbip(sbip);
     }
 
+    fn wants_primary_birth(&self, time: f64) -> bool {
+        let temp = self.borrow();
+
+        temp.get_energy() > SAFE_SIZE
+            && temp.brain.wants_birth() > 0.0
+            && temp.get_age(time) > MATURE_AGE
+    }
+
     /// Returns a new creature if there's a birth, otherwise returns `None`
     // TODO: cleanup
     pub fn try_reproduce(
@@ -228,10 +238,7 @@ impl HLSoftBody {
         sbip: &mut SoftBodiesInPositions,
         board_size: BoardSize,
     ) -> Option<HLSoftBody> {
-        if self.borrow().get_energy() > SAFE_SIZE
-            && self.borrow().brain.wants_birth() > 0.0
-            && self.borrow().get_age(time) > MATURE_AGE
-        {
+        if self.wants_primary_birth(time) {
             let self_px = self.borrow().get_px();
             let self_py = self.borrow().get_py();
             let self_radius = self.borrow().get_radius();
@@ -245,23 +252,23 @@ impl HLSoftBody {
                 .into_iter()
                 .filter(|rc_soft| {
                     let c = rc_soft.borrow();
-                            let dist = SoftBody::distance(self_px, self_py, c.get_px(), c.get_py());
-                            let combined_radius = self_radius * FIGHT_RANGE + c.get_radius();
+                    let dist = SoftBody::distance(self_px, self_py, c.get_px(), c.get_py());
+                    let combined_radius = self_radius * FIGHT_RANGE + c.get_radius();
 
-                            c.brain.wants_help_birth() > -1.0 // must be a willing creature
+                    c.brain.wants_help_birth() > -1.0 // must be a willing creature
                             && dist < combined_radius // must be close enough
 
-                            // TODO: find out if this addition to the Processing code works
-                            // && c.get_age(time) >= MATURE_AGE // creature must be old enough
-                            // && c.base.get_energy() > SAFE_SIZE
+                    // TODO: find out if this addition to the Processing code works
+                    // && c.get_age(time) >= MATURE_AGE // creature must be old enough
+                    // && c.base.get_energy() > SAFE_SIZE
                 })
                 .collect();
 
             parents.push(self.clone());
 
-            let available_energy = parents.iter().fold(0.0, |acc, c| {
-                acc + c.borrow().get_baby_energy()
-            });
+            let available_energy = parents
+                .iter()
+                .fold(0.0, |acc, c| acc + c.borrow().get_baby_energy());
 
             if available_energy > BABY_SIZE {
                 let energy = BABY_SIZE;
@@ -274,9 +281,7 @@ impl HLSoftBody {
                     c.lose_energy(energy_to_lose);
                 });
 
-                let sb = HLSoftBody::from(Creature::new_baby(
-                    parents, energy, time,
-                ));
+                let sb = HLSoftBody::from(Creature::new_baby(parents, energy, time));
 
                 sb.set_sbip(sbip, board_size);
                 sb.set_sbip(sbip, board_size);

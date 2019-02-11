@@ -23,8 +23,7 @@ pub struct ConnectionGene {
     pub innovation_number: usize,
 }
 
-impl NodeGene {
-}
+impl NodeGene {}
 
 impl ConnectionGene {
     pub fn disable_and_info(&mut self) -> (Id, Id) {

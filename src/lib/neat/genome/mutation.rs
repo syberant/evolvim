@@ -1,5 +1,5 @@
-use super::{Genome, get_next_node_id};
-use super::gene::{NodeType, NodeGene};
+use super::gene::{NodeGene, NodeType};
+use super::{get_next_node_id, Genome};
 
 const CHANCE_MUTATE_NEW_LINK: f64 = 0.1;
 const CHANCE_MUTATE_LINK_TO_NODE: f64 = 0.05;
@@ -9,8 +9,8 @@ const CHANCE_MUTATE_TOGGLE_ENABLED: f64 = 0.05;
 
 impl Genome {
     pub fn mutate(&mut self) {
-        use MutationType::*;
         use rand::distributions::Distribution;
+        use MutationType::*;
 
         enum MutationType {
             AddConnection,
@@ -27,7 +27,7 @@ impl Genome {
                     ConnectionToNode,
                     TweakWeight,
                     RandomizeWeight,
-                    ToggleEnabled
+                    ToggleEnabled,
                 ]
             }
 
@@ -41,7 +41,6 @@ impl Genome {
                 ]
             }
         }
-
 
         let dist = rand::distributions::WeightedIndex::new(&MutationType::get_weights()).unwrap();
         let mut rng = rand::thread_rng();
@@ -62,7 +61,7 @@ impl Genome {
         let from = self.get_random_node_id();
         let to = self.get_random_node_id();
         let weight = Self::get_random_weight();
-        
+
         self.add_connection(from, to, weight);
     }
 
@@ -74,12 +73,10 @@ impl Genome {
         self.add_connection(from, next_node_id, Self::get_random_weight());
         self.add_connection(next_node_id, to, Self::get_random_weight());
 
-        self.node_genome.push(
-            NodeGene {
-                node_type: NodeType::Hidden,
-                id: next_node_id,
-            }
-        );
+        self.node_genome.push(NodeGene {
+            node_type: NodeType::Hidden,
+            id: next_node_id,
+        });
     }
 
     pub fn mutate_tweak_weight(&mut self) {

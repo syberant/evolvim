@@ -104,9 +104,11 @@ impl Tile {
     /// This panics for water tiles since you should never try gaining food from them.
     pub fn remove_food(&mut self, food_to_remove: f64) {
         match self {
-            Tile::Water => if food_to_remove > 0.0 {
-                panic!("You called `remove_food` on a water tile, water tiles don't have any food and should not be eaten.")
-            },
+            Tile::Water => {
+                if food_to_remove > 0.0 {
+                    panic!("You called `remove_food` on a water tile, water tiles don't have any food and should not be eaten.")
+                }
+            }
             Tile::Land(t) => t.remove_food(food_to_remove),
         }
     }

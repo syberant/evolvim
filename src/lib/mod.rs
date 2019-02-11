@@ -15,11 +15,11 @@ pub mod board;
 pub mod brain;
 pub mod climate;
 pub mod constants;
+pub mod neat;
 pub mod sbip;
 pub mod softbody;
 pub mod terrain;
 pub mod version;
-pub mod neat;
 
 pub use self::board::*;
 pub use self::brain::*;

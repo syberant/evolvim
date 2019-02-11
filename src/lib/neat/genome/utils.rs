@@ -32,25 +32,21 @@ impl<'a> Iterator for RecombinationGenomesIterator<'a> {
 
     // TODO: make some use of if let to remove unneccessary .unwrap()'s
     fn next(&mut self) -> Option<RecombinationGeneTypes<'a>> {
-        use RecombinationGeneTypes::*;
         use Parent::*;
+        use RecombinationGeneTypes::*;
 
         let gene_a = self.parent_a.peek();
         let gene_b = self.parent_b.peek();
 
         if gene_a.is_none() {
             if let Some(b) = self.parent_b.next() {
-                return Some(
-                    Excess(B, b)
-                );
+                return Some(Excess(B, b));
             } else {
                 return None;
             }
         } else if gene_b.is_none() {
             if let Some(a) = self.parent_a.next() {
-                return Some(
-                    Excess(A, a)
-                );
+                return Some(Excess(A, a));
             } else {
                 return None;
             };
@@ -65,7 +61,8 @@ impl<'a> Iterator for RecombinationGenomesIterator<'a> {
             Ordering::Equal => {
                 // matching gene
                 return Some(Matching(
-                    self.parent_a.next().unwrap(), self.parent_b.next().unwrap()
+                    self.parent_a.next().unwrap(),
+                    self.parent_b.next().unwrap(),
                 ));
             }
             Ordering::Less => {

@@ -1,6 +1,6 @@
-use super::Genome;
 use super::gene::NodeGene;
-use super::utils::{RecombinationGenomesIterator, RecombinationGeneTypes};
+use super::utils::{RecombinationGeneTypes, RecombinationGenomesIterator};
+use super::Genome;
 
 impl Genome {
     /// Multipoint crossover:
@@ -20,10 +20,10 @@ impl Genome {
                     genome.connection_genome.push(a.clone());
                     genome.connection_genome.last_mut().unwrap().weight += b.weight;
                     genome.connection_genome.last_mut().unwrap().weight /= 2.0;
-                },
+                }
                 Disjoint(_, gene) => {
                     genome.connection_genome.push(gene.clone());
-                },
+                }
                 Excess(_, gene) => {
                     genome.connection_genome.push(gene.clone());
                 }
@@ -36,9 +36,13 @@ impl Genome {
         return genome;
     }
 
-    fn generate_nodes_from_connections(&mut self, parent_a: &Vec<NodeGene>, parent_b: &Vec<NodeGene>) {
+    fn generate_nodes_from_connections(
+        &mut self,
+        parent_a: &Vec<NodeGene>,
+        parent_b: &Vec<NodeGene>,
+    ) {
         use std::collections::HashSet;
-        
+
         let mut neuron_ids = HashSet::new();
 
         for i in &self.connection_genome {

@@ -1,39 +1,45 @@
+extern crate clap;
 extern crate lib_evolvim;
 extern crate piston_window;
-extern crate clap;
 
 mod graphics;
 
 use self::graphics::View;
+use clap::{App, Arg};
 use lib_evolvim::Board;
-use clap::{Arg, App};
 use piston_window::*;
 
 fn main() {
     let matches = App::new("Evolvim - GUI launched via CLI")
         .version(clap::crate_version!())
         .author("Sybrand Aarnoutse")
-        .arg(Arg::with_name("output")
-            .short("o")
-            .long("output")
-            .value_name("FILE")
-            .takes_value(true)
-            .help("The output file, save to this when done"))
-        .arg(Arg::with_name("input")
-            .short("i")
-            .long("input")
-            .value_name("FILE")
-            .takes_value(true)
-            .help("The input file, start with this as board"))
-        .arg(Arg::with_name("save")
-            .short("s")
-            .long("save")
-            .takes_value(false)
-            .conflicts_with("output")
-            .requires("input")
-            .help("Saves to the input file when done"))
+        .arg(
+            Arg::with_name("output")
+                .short("o")
+                .long("output")
+                .value_name("FILE")
+                .takes_value(true)
+                .help("The output file, save to this when done"),
+        )
+        .arg(
+            Arg::with_name("input")
+                .short("i")
+                .long("input")
+                .value_name("FILE")
+                .takes_value(true)
+                .help("The input file, start with this as board"),
+        )
+        .arg(
+            Arg::with_name("save")
+                .short("s")
+                .long("save")
+                .takes_value(false)
+                .conflicts_with("output")
+                .requires("input")
+                .help("Saves to the input file when done"),
+        )
         .get_matches();
-    
+
     let mut view = View::default();
     if let Some(filename) = matches.value_of("input") {
         view.board = Board::load_from(filename).unwrap();

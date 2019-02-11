@@ -24,7 +24,7 @@ impl Version {
             false
         } else if self.minor != VERSION_MINOR {
             // This is currently an unstable crate so breaking changes will bump the minor version.
-            // 
+            //
             // If this crate ever becomes stable this will need to change.
             false
         } else {
