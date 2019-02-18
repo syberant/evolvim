@@ -330,38 +330,38 @@ impl SoftBody {
     pub fn use_brain(
         &mut self,
         time_step: f64,
-        use_output: bool,
         // The following are parts of a `Board`.
         time: f64,
         board_size: BoardSize,
         terrain: &mut Terrain,
         climate: &Climate,
     ) {
-        let input = self.get_input(terrain);
         let creature = self;
-        creature.brain.run(input);
+        
+        let acceleration = creature.brain.wants_acceleration();
+        creature.accelerate(acceleration, time_step);
+        let turning = creature.brain.wants_turning();
+        creature.turn(turning, time_step);
 
-        if use_output {
-            let acceleration = creature.brain.wants_acceleration();
-            creature.accelerate(acceleration, time_step);
-            let turning = creature.brain.wants_turning();
-            creature.turn(turning, time_step);
+        // TODO: clean this mess.
+        let tile_pos = creature.get_random_covered_tile(board_size);
+        let tile = terrain.get_tile_at_mut(tile_pos);
 
-            // TODO: clean this mess.
-            let tile_pos = creature.get_random_covered_tile(board_size);
-            let tile = terrain.get_tile_at_mut(tile_pos);
+        let eat_amount = creature.brain.wants_to_eat();
+        creature.eat(eat_amount, time_step, time, climate, tile);
 
-            let eat_amount = creature.brain.wants_to_eat();
-            creature.eat(eat_amount, time_step, time, climate, tile);
+        // Fighting is done elsewhere
+        // .fight(fight_amount, time, time_step, sbip);
 
-            // Fighting is done elsewhere
-            // .fight(fight_amount, time, time_step, sbip);
+        // Reproducing is done elsewhere
 
-            // Reproducing is done elsewhere
+        let mouth_hue = creature.brain.wants_mouth_hue();
+        creature.set_mouth_hue(mouth_hue);
+    }
 
-            let mouth_hue = creature.brain.wants_mouth_hue();
-            creature.set_mouth_hue(mouth_hue);
-        }
+    pub fn update_brain(&mut self, env: &Terrain) {
+        let input = self.get_input(env);
+        self.brain.run(input);
     }
 
     /// Gets the input for the brain of the creature.

@@ -179,6 +179,20 @@ impl Board {
         self.selected_creature.select(biggest.clone());
     }
 
+    #[cfg(not(multithreading))]
+    fn update_brains(&mut self) {
+        self.creatures.iter().for_each(|c| {
+            c.borrow_mut().update_brain(&self.terrain);
+        });
+    }
+
+    #[cfg(multithreading)]
+    fn update_brains(&mut self) {
+        self.creatures.map(|c| c.borrow_mut()).par_iter().for_each(|c| {
+            c.update_brain(&self.terrain);
+        });
+    }
+
     pub fn update_creatures(&mut self, time_step: f64) {
         let time = self.year;
         let board_size = self.get_board_size();
@@ -192,11 +206,15 @@ impl Board {
             c.record_energy();
 
             c.metabolize(time_step, time);
+        }
 
-            let terrain = &mut self.terrain;
-            let climate = &self.climate;
+        self.update_brains();
 
-            c.use_brain(time_step, true, time, board_size, terrain, climate);
+        let use_output = true;
+        if use_output {
+            for c_rc in &self.creatures {
+                c_rc.borrow_mut().use_brain(time_step, time, board_size, &mut self.terrain, &self.climate);
+            }
         }
     }
 

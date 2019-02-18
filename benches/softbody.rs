@@ -37,7 +37,21 @@ mod benches {
 
             for c_rc in &board.creatures {
                 c_rc.borrow_mut()
-                    .use_brain(TIME_STEP, true, time, board_size, terrain, climate);
+                    .use_brain(TIME_STEP, time, board_size, terrain, climate);
+            }
+        })
+    }
+
+    #[bench]
+    fn bench_softbody_update_brain(b: &mut Bencher) {
+        let mut board = get_test_board();
+
+        b.iter(|| {
+            let terrain = &mut board.terrain;
+
+            for c_rc in &board.creatures {
+                c_rc.borrow_mut()
+                    .update_brain(terrain);
             }
         })
     }
