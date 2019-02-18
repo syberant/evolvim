@@ -1,4 +1,4 @@
-use super::input::{InputType, Environment};
+use super::input::{Environment, InputType};
 use super::output::OutputType;
 
 // TODO: use unsafe pointers to speed things up
@@ -34,7 +34,7 @@ impl NeuralNet {
 
         // unsafe here is necessary
         // it is safe because we use .connections with the immutable reference and .value with the mutable one
-        for i in unsafe {&(*(&self.nodes[id] as *const Node)).connections} {
+        for i in unsafe { &(*(&self.nodes[id] as *const Node)).connections } {
             self.nodes[i.to_index].value += value * i.weight;
         }
     }
@@ -51,7 +51,7 @@ struct Input {
 }
 
 impl Input {
-    pub fn load_into(&self, nodes: &mut[Node], env: &Environment) {
+    pub fn load_into(&self, nodes: &mut [Node], env: &Environment) {
         let data = self.input_type.get_data(env);
         nodes[self.node_index].add_to_value(data);
     }

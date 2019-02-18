@@ -337,7 +337,7 @@ impl SoftBody {
         climate: &Climate,
     ) {
         let creature = self;
-        
+
         let acceleration = creature.brain.wants_acceleration();
         creature.accelerate(acceleration, time_step);
         let turning = creature.brain.wants_turning();

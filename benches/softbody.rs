@@ -50,8 +50,7 @@ mod benches {
             let terrain = &mut board.terrain;
 
             for c_rc in &board.creatures {
-                c_rc.borrow_mut()
-                    .update_brain(terrain);
+                c_rc.borrow_mut().update_brain(terrain);
             }
         })
     }

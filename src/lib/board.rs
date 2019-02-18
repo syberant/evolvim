@@ -188,9 +188,12 @@ impl Board {
 
     #[cfg(multithreading)]
     fn update_brains(&mut self) {
-        self.creatures.map(|c| c.borrow_mut()).par_iter().for_each(|c| {
-            c.update_brain(&self.terrain);
-        });
+        self.creatures
+            .map(|c| c.borrow_mut())
+            .par_iter()
+            .for_each(|c| {
+                c.update_brain(&self.terrain);
+            });
     }
 
     pub fn update_creatures(&mut self, time_step: f64) {
@@ -213,7 +216,13 @@ impl Board {
         let use_output = true;
         if use_output {
             for c_rc in &self.creatures {
-                c_rc.borrow_mut().use_brain(time_step, time, board_size, &mut self.terrain, &self.climate);
+                c_rc.borrow_mut().use_brain(
+                    time_step,
+                    time,
+                    board_size,
+                    &mut self.terrain,
+                    &self.climate,
+                );
             }
         }
     }

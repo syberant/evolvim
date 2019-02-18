@@ -6,7 +6,7 @@ pub struct Environment<'a> {
 
 pub enum InputType {
     Eye(Eye),
-    Bias(f64)
+    Bias(f64),
 }
 
 impl InputType {
