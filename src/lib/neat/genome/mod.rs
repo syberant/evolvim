@@ -7,7 +7,8 @@ mod recombination;
 mod speciation;
 mod utils;
 
-use self::gene::{ConnectionGene, Id, NodeGene, NodeType};
+use self::gene::{ConnectionGene, NodeGene};
+pub use self::gene::{Id, NodeType};
 use rand::Rng;
 
 const AMOUNT_INPUT: usize = 3;
@@ -35,6 +36,15 @@ pub struct Genome {
 }
 
 impl Genome {
+    /// Accessor function to gain readonly access to the `node_genome`; used for generating a phenotype.
+    pub fn get_node_genome(&self) -> &Vec<NodeGene> {
+        &self.node_genome
+    }
+    /// Accessor function to gain readonly access to the `connection_genome`; used for generating a phenotype.
+    pub fn get_connection_genome(&self) -> &Vec<ConnectionGene> {
+        &self.connection_genome
+    }
+
     fn get_random_node_id(&self) -> Id {
         self.node_genome[self.get_random_node_place()].id
     }

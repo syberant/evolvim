@@ -1,3 +1,5 @@
+mod generate;
+
 use super::input::{Environment, InputType};
 use super::output::OutputType;
 
@@ -45,6 +47,15 @@ pub struct Output {
     output_type: OutputType,
 }
 
+impl Output {
+    pub fn new(node_index: usize, output_type: OutputType) -> Self {
+        Output {
+            node_index,
+            output_type,
+        }
+    }
+}
+
 struct Input {
     node_index: usize,
     input_type: InputType,
@@ -55,8 +66,16 @@ impl Input {
         let data = self.input_type.get_data(env);
         nodes[self.node_index].add_to_value(data);
     }
+
+    pub fn new(node_index: usize, input_type: InputType) -> Self {
+        Input {
+            node_index,
+            input_type,
+        }
+    }
 }
 
+#[derive(Clone)]
 struct Node {
     pub value: f64,
     pub connections: Vec<Connection>,
@@ -70,11 +89,25 @@ impl Node {
     pub fn perform_sigmoid(&mut self) -> f64 {
         return sigmoid(self.value);
     }
+
+    pub fn empty() -> Self {
+        Node {
+            value: 0.0,
+            connections: Vec::new(),
+        }
+    }
 }
 
+#[derive(Clone)]
 struct Connection {
     to_index: usize,
     weight: f64,
+}
+
+impl Connection {
+    pub fn new(to_index: usize, weight: f64) -> Self {
+        Connection { to_index, weight }
+    }
 }
 
 fn sigmoid(n: f64) -> f64 {

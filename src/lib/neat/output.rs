@@ -1,1 +1,3 @@
-pub enum OutputType {}
+pub enum OutputType {
+    Test,
+}
