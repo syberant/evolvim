@@ -367,7 +367,7 @@ impl SoftBody {
     /// Gets the input for the brain of the creature.
     ///
     /// TODO: improve!
-    fn get_input(&self, terrain: &Terrain) -> BrainInput {
+    fn get_input(&self, terrain: &Terrain) -> crate::brain::feed_forward::BrainInput {
         let mut input = [0.0; 9];
 
         let creature = self;

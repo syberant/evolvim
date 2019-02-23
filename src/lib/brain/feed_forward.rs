@@ -11,7 +11,6 @@ use self::allocator::Allocator;
 use self::dimension::DimName;
 use self::nalgebra::*;
 use self::rand::Rng;
-use super::*;
 use std::f64::consts::PI;
 
 pub type BrainOutput<'a> = &'a [FPN];
@@ -146,7 +145,7 @@ impl Brain {
     ///
     /// TODO: improve performance via vectorization.
     /// TODO: understand formulae and improve them or come up with my own
-    pub fn evolve(parents: &Vec<HLSoftBody>) -> Self {
+    pub fn evolve(parents: &Vec<crate::softbody::HLSoftBody>) -> Self {
         let a_1 = <RowVectorN<FPN, InputLayerSizePlusBias>>::zeros();
         let a_2 = <RowVectorN<FPN, HiddenLayerSizePlusBias>>::zeros();
         let a_3 = <RowVectorN<FPN, OutputLayerSize>>::zeros();
