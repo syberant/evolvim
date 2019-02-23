@@ -18,9 +18,26 @@ Bigger scale:
 TODO
 
 ## NEAT recombination
-for every gene:
-- inherit randomly if it exists in both parents
-- otherwise inherit from the one parent who has it **OR** maybe inherit it **OR** only inherit if it's from the fittest parent
+There are multiple methods of recombination, here is an example:
+
+for an excess gene:
+- only inherit if it is from the more fit parent.
+
+for a disjoint gene:
+- only inherit if it is from the more fit parent.
+
+for a gene occuring in both:
+- take the average weight
+
+## NEAT mutation
+1. a new link
+2. a link converted into a node
+3. enabling or disabling connections
+4. weight shifting, multiplying the weight with a random number between 0.8 and 1.2
+5. replace a weight with a new completely random weight
+
+### A link converted into a node
+Assume we have a link from 2 to 6 with weight a. After this mutation we have a link from 2 to the new node 7 with weight 1 and a link from 7 to 6 with weight a.
 
 ## Possible changes to NEAT
 To stop a constant growth of the genome:
