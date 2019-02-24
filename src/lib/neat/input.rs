@@ -1,8 +1,4 @@
-use crate::Terrain;
-
-pub struct Environment<'a> {
-    terrain: &'a Terrain,
-}
+use crate::brain::Environment;
 
 pub enum InputType {
     Eye(Eye),

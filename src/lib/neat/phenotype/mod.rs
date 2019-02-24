@@ -1,6 +1,6 @@
 mod generate;
 
-use super::input::{Environment, InputType};
+use super::input::InputType;
 use super::output::OutputType;
 
 // TODO: use unsafe pointers to speed things up
@@ -12,7 +12,7 @@ pub struct NeuralNet {
 }
 
 impl NeuralNet {
-    pub fn load_input(&mut self, env: &Environment) {
+    pub fn load_input(&mut self, env: &crate::brain::Environment) {
         for input in &self.inputs {
             input.load_into(&mut self.nodes, env);
         }
@@ -62,7 +62,7 @@ struct Input {
 }
 
 impl Input {
-    pub fn load_into(&self, nodes: &mut [Node], env: &Environment) {
+    pub fn load_into(&self, nodes: &mut [Node], env: &crate::brain::Environment) {
         let data = self.input_type.get_data(env);
         nodes[self.node_index].add_to_value(data);
     }
