@@ -63,7 +63,7 @@ impl super::NeuralNet for Brain {
         self.a_1[1] = env.this_body.get_energy();
 
         // The current mouth hue
-        // TODO but we need to move mouth_hue into Rock
+        self.a_1[2] = env.this_body.get_mouth_hue();
 
         // Look directly underneath the creature
         let pos = env.this_body.get_position();

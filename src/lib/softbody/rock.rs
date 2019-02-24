@@ -35,6 +35,8 @@ pub struct Rock {
     prev_sbip_max_y: usize,
     // Stats or info
     prev_energy: f64,
+    // Miscellanious
+    mouth_hue: f64,
 }
 
 impl Rock {
@@ -44,6 +46,7 @@ impl Rock {
         let mut thread_rng = rand::thread_rng();
         let px = thread_rng.gen::<f64>() * (board_width - 1) as f64;
         let py = thread_rng.gen::<f64>() * (board_height - 1) as f64;
+        let mouth_hue = thread_rng.gen::<f64>();
 
         Self {
             px,
@@ -67,6 +70,8 @@ impl Rock {
             prev_sbip_max_y: 0,
 
             prev_energy: energy,
+
+            mouth_hue,
         }
     }
 
@@ -82,6 +87,11 @@ impl Rock {
         });
         let rotation = parents.iter().fold(0.0, |acc, parent| {
             acc + parent.borrow().rotation / parent_amount as f64
+        });
+
+        // The hue is the mean of all parent hues
+        let mouth_hue = parents.iter().fold(0.0, |acc, parent| {
+            acc + parent.borrow().mouth_hue / parent_amount as f64
         });
 
         let density = parents[0].borrow().density;
@@ -108,6 +118,8 @@ impl Rock {
             prev_sbip_max_y: 0,
 
             prev_energy: energy,
+
+            mouth_hue,
         }
     }
 
@@ -297,6 +309,10 @@ impl Rock {
     pub fn add_vy(&mut self, value_to_add: f64) {
         self.vy += value_to_add;
     }
+
+    pub fn set_mouth_hue(&mut self, value: f64) {
+        self.mouth_hue = value.min(1.0).max(0.0);
+    }
 }
 
 // Here are all the functions to simply get a property.
@@ -315,5 +331,9 @@ impl Rock {
 
     pub fn get_position(&self) -> BoardPreciseCoordinate {
         BoardPreciseCoordinate(self.get_px(), self.get_py())
+    }
+
+    pub fn get_mouth_hue(&self) -> f64 {
+        return self.mouth_hue;
     }
 }

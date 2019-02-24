@@ -11,7 +11,6 @@ pub struct Creature {
     pub base: Rock,
     birth_time: f64,
     pub brain: Brain,
-    mouth_hue: f64,
 }
 
 impl std::ops::Deref for Creature {
@@ -35,14 +34,12 @@ impl Creature {
         let base = Rock::new_random(board_size, CREATURE_DENSITY, energy);
         let brain = Brain::new_random();
         let birth_time = time;
-        let mouth_hue = rand::random();
         // TODO: add id
 
         Creature {
             base,
             birth_time,
             brain,
-            mouth_hue,
         }
     }
 
@@ -83,7 +80,7 @@ impl Creature {
             tile.remove_food(food_to_eat);
             tile.update(time, climate);
 
-            let multiplier = tile.get_food_multiplier(self.mouth_hue).unwrap_or(0.0);
+            let multiplier = tile.get_food_multiplier(self.base.get_mouth_hue()).unwrap_or(0.0);
             if multiplier < 0.0 {
                 // Poison
                 self.base.lose_energy(food_to_eat * -multiplier);
@@ -100,23 +97,16 @@ impl Creature {
     // Create a new baby, it isn't in `SoftBodiesInPositions` so please fix that.
     // While you're at it, also add it to `Board.creatures`.
     pub fn new_baby(parents: Vec<HLSoftBody>, energy: f64, time: f64) -> Creature {
-        let parent_amount = parents.len();
-
         let brain = Brain::evolve(&parents);
         let base = Rock::new_from_parents(&parents, energy);
 
         // The current time
         let birth_time = time;
-        // The hue is the mean of all parent hues
-        let mouth_hue = parents.iter().fold(0.0, |acc, parent| {
-            acc + parent.borrow().mouth_hue / parent_amount as f64
-        });
 
         Creature {
             base,
             birth_time,
             brain,
-            mouth_hue,
         }
     }
 
@@ -137,13 +127,5 @@ impl Creature {
     /// More concretely: this function is equivalent to `time - self.get_birth_time()`.
     pub fn get_age(&self, time: f64) -> f64 {
         return time - self.birth_time;
-    }
-
-    pub fn get_mouth_hue(&self) -> f64 {
-        return self.mouth_hue;
-    }
-
-    pub fn set_mouth_hue(&mut self, value: f64) {
-        self.mouth_hue = value.min(1.0).max(0.0);
     }
 }
