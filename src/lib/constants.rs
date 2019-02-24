@@ -95,6 +95,9 @@ pub const FOOD_GROWTH_RATE: f64 = 1.0;
 pub const MAX_GROWTH_LEVEL: f64 = 3.0;
 pub const FOOD_SENSITIVITY: f64 = 0.3;
 
+pub const EAT_WHILE_MOVING_INEFFICIENCY_MULTIPLIER: f64 = 2.0;
+pub const EAT_SPEED: f64 = 0.5;
+
 // ********************** //
 // **** REPRODUCTION **** //
 // ********************** //

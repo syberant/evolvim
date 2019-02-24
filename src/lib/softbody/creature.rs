@@ -3,8 +3,6 @@ extern crate rand;
 use super::*;
 
 pub const MINIMUM_SURVIVABLE_SIZE: f64 = 0.06;
-const EAT_WHILE_MOVING_INEFFICIENCY_MULTIPLIER: f64 = 2.0;
-const EAT_SPEED: f64 = 0.5;
 
 #[derive(Serialize, Deserialize)]
 pub struct Creature {
@@ -55,43 +53,6 @@ impl Creature {
 
     pub fn should_die(&self) -> bool {
         return self.get_energy() < SAFE_SIZE;
-    }
-
-    pub fn eat(
-        &mut self,
-        attempted_amount: f64,
-        time_step: f64,
-        time: f64,
-        climate: &Climate,
-        tile: &mut super::terrain::tile::Tile,
-    ) {
-        let amount = attempted_amount
-            / (1.0 + self.base.get_total_velocity() * EAT_WHILE_MOVING_INEFFICIENCY_MULTIPLIER);
-        if amount < 0.0 {
-            // Vomit
-            // TODO: implement vomiting.
-        } else {
-            // Eat
-            let food_level = tile.get_food_level();
-
-            let mut food_to_eat = food_level * (1.0 - (1.0 - EAT_SPEED).powf(amount * time_step));
-            food_to_eat = food_to_eat.min(food_level);
-            // Remove eaten food from tile.
-            tile.remove_food(food_to_eat);
-            tile.update(time, climate);
-
-            let multiplier = tile.get_food_multiplier(self.base.get_mouth_hue()).unwrap_or(0.0);
-            if multiplier < 0.0 {
-                // Poison
-                self.base.lose_energy(food_to_eat * -multiplier);
-            } else {
-                // Healthy food
-                self.base.add_energy(food_to_eat * multiplier);
-            }
-
-            self.base
-                .lose_energy(attempted_amount * EAT_ENERGY * time_step);
-        }
     }
 
     // Create a new baby, it isn't in `SoftBodiesInPositions` so please fix that.

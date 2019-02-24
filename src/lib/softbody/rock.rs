@@ -140,6 +140,44 @@ impl Rock {
         return (self.vx.powi(2) + self.vy.powi(2)).sqrt();
     }
 
+    /// Eat
+    pub fn eat(
+        &mut self,
+        attempted_amount: f64,
+        time_step: f64,
+        time: f64,
+        climate: &Climate,
+        tile: &mut crate::terrain::tile::Tile,
+    ) {
+        use crate::constants::{EAT_WHILE_MOVING_INEFFICIENCY_MULTIPLIER, EAT_SPEED};
+        let amount = attempted_amount
+            / (1.0 + self.get_total_velocity() * EAT_WHILE_MOVING_INEFFICIENCY_MULTIPLIER);
+        if amount < 0.0 {
+            // Vomit
+            // TODO: implement vomiting.
+        } else {
+            // Eat
+            let food_level = tile.get_food_level();
+
+            let mut food_to_eat = food_level * (1.0 - (1.0 - EAT_SPEED).powf(amount * time_step));
+            food_to_eat = food_to_eat.min(food_level);
+            // Remove eaten food from tile.
+            tile.remove_food(food_to_eat);
+            tile.update(time, climate);
+
+            let multiplier = tile.get_food_multiplier(self.get_mouth_hue()).unwrap_or(0.0);
+            if multiplier < 0.0 {
+                // Poison
+                self.lose_energy(food_to_eat * -multiplier);
+            } else {
+                // Healthy food
+                self.add_energy(food_to_eat * multiplier);
+            }
+
+            self.lose_energy(attempted_amount * EAT_ENERGY * time_step);
+        }
+    }
+
     /// Accelerate
     ///
     /// Costs energy.
