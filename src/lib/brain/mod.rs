@@ -17,3 +17,7 @@ pub trait NeuralNet {
 
     fn use_output(&self, env: &mut EnvironmentMut, time_step: f64);
 }
+
+pub trait GenerateRandom {
+    fn new_random() -> Self;
+}

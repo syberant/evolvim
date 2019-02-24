@@ -110,6 +110,29 @@ impl super::NeuralNet for Brain {
     }
 }
 
+impl super::GenerateRandom for Brain {
+    /// Returns a brain with completely random weights.
+    fn new_random() -> Self {
+        let theta_1 = <MatrixMN<FPN, InputLayerSizePlusBias, HiddenLayerSize>>::new_random()
+            - <MatrixMN<FPN, InputLayerSizePlusBias, HiddenLayerSize>>::from_element(0.5);
+        let theta_2 = <MatrixMN<FPN, HiddenLayerSizePlusBias, OutputLayerSize>>::new_random()
+            - <MatrixMN<FPN, HiddenLayerSizePlusBias, OutputLayerSize>>::from_element(0.5);
+
+        Brain {
+            // Empty input
+            a_1: <RowVectorN<FPN, InputLayerSizePlusBias>>::zeros(),
+            // Initialize random weights between [-0.5, 0.5].
+            theta_1,
+            // Empty hidden layer
+            a_2: <RowVectorN<FPN, HiddenLayerSizePlusBias>>::zeros(),
+            // Initialize random weights between [-0.5, 0.5].
+            theta_2,
+            // Empty output
+            a_3: <RowVectorN<FPN, OutputLayerSize>>::zeros(),
+        }
+    }
+}
+
 impl Brain {
     /// # Processing equivalent
     /// *Brain.pde/outputs*, although here only a reference to the output values is returned instead of a copy.
@@ -134,27 +157,6 @@ impl Brain {
     {
         for v in matrix.iter_mut() {
             *v = 1.0 / (1.0 + (-*v).exp());
-        }
-    }
-
-    /// Returns a brain with completely random weights.
-    pub fn new_random() -> Self {
-        let theta_1 = <MatrixMN<FPN, InputLayerSizePlusBias, HiddenLayerSize>>::new_random()
-            - <MatrixMN<FPN, InputLayerSizePlusBias, HiddenLayerSize>>::from_element(0.5);
-        let theta_2 = <MatrixMN<FPN, HiddenLayerSizePlusBias, OutputLayerSize>>::new_random()
-            - <MatrixMN<FPN, HiddenLayerSizePlusBias, OutputLayerSize>>::from_element(0.5);
-
-        Brain {
-            // Empty input
-            a_1: <RowVectorN<FPN, InputLayerSizePlusBias>>::zeros(),
-            // Initialize random weights between [-0.5, 0.5].
-            theta_1,
-            // Empty hidden layer
-            a_2: <RowVectorN<FPN, HiddenLayerSizePlusBias>>::zeros(),
-            // Initialize random weights between [-0.5, 0.5].
-            theta_2,
-            // Empty output
-            a_3: <RowVectorN<FPN, OutputLayerSize>>::zeros(),
         }
     }
 
