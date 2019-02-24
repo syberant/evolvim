@@ -302,11 +302,6 @@ impl HLSoftBody {
 pub type SoftBody = Creature;
 
 impl SoftBody {
-    /// Wrapper function.
-    pub fn new_random_creature(board_size: BoardSize, time: f64) -> SoftBody {
-        Creature::new_random(board_size, time)
-    }
-
     /// Checks if the center is inside of the world, possibly corrects it and returns it.
     pub fn check_center_x(x: usize, board_width: usize) -> usize {
         return x.max(0).min(board_width - 1);

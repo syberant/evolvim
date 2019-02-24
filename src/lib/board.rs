@@ -289,7 +289,7 @@ impl Board {
     fn maintain_creature_minimum(&mut self) {
         while self.creatures.len() < self.creature_minimum {
             let board_size = self.get_board_size();
-            let creature = HLSoftBody::from(SoftBody::new_random_creature(board_size, self.year));
+            let creature = HLSoftBody::from(SoftBody::new_random(board_size, self.year));
 
             // Initialize in `SoftBodiesInPositions` as well.
             creature.set_sbip(&mut self.soft_bodies_in_positions, board_size);
