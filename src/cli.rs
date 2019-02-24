@@ -70,7 +70,11 @@ fn main() {
     };
 
     if let Some(years) = matches.value_of("iterations") {
-        let years: usize = years.parse().unwrap();
+        let mut years: usize = years.parse().unwrap();
+
+        if years == 0 {
+            years = std::usize::MAX;
+        }
 
         for _j in 0..years {
             if abort_reader.load(Ordering::SeqCst) {
