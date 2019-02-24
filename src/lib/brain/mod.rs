@@ -15,9 +15,5 @@ pub trait NeuralNet {
         self.run();
     }
 
-    // fn get_output(&self) -> T;
-}
-
-pub trait MotorCommands {
-    fn execute(&self, env: &EnvironmentMut);
+    fn use_output(&self, env: &mut EnvironmentMut, time_step: f64);
 }

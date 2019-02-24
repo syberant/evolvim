@@ -149,7 +149,7 @@ impl Rock {
         climate: &Climate,
         tile: &mut crate::terrain::tile::Tile,
     ) {
-        use crate::constants::{EAT_WHILE_MOVING_INEFFICIENCY_MULTIPLIER, EAT_SPEED};
+        use crate::constants::{EAT_SPEED, EAT_WHILE_MOVING_INEFFICIENCY_MULTIPLIER};
         let amount = attempted_amount
             / (1.0 + self.get_total_velocity() * EAT_WHILE_MOVING_INEFFICIENCY_MULTIPLIER);
         if amount < 0.0 {
@@ -165,7 +165,9 @@ impl Rock {
             tile.remove_food(food_to_eat);
             tile.update(time, climate);
 
-            let multiplier = tile.get_food_multiplier(self.get_mouth_hue()).unwrap_or(0.0);
+            let multiplier = tile
+                .get_food_multiplier(self.get_mouth_hue())
+                .unwrap_or(0.0);
             if multiplier < 0.0 {
                 // Poison
                 self.lose_energy(food_to_eat * -multiplier);

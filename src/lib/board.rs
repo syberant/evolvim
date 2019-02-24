@@ -222,13 +222,15 @@ impl Board {
         let use_output = true;
         if use_output {
             for c_rc in &self.creatures {
-                c_rc.borrow_mut().use_brain(
-                    time_step,
-                    time,
-                    board_size,
+                let creature: &mut SoftBody = &mut c_rc.borrow_mut();
+                let mut env = crate::brain::EnvironmentMut::new(
                     &mut self.terrain,
+                    &mut creature.base,
+                    board_size,
+                    time,
                     &self.climate,
                 );
+                creature.brain.use_output(&mut env, time_step);
             }
         }
     }

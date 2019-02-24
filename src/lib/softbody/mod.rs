@@ -327,38 +327,6 @@ impl SoftBody {
 
 // Here are all the functions only applicable to `Creature`s.
 impl SoftBody {
-    pub fn use_brain(
-        &mut self,
-        time_step: f64,
-        // The following are parts of a `Board`.
-        time: f64,
-        board_size: BoardSize,
-        terrain: &mut Terrain,
-        climate: &Climate,
-    ) {
-        let creature = self;
-
-        let acceleration = creature.brain.wants_acceleration();
-        creature.accelerate(acceleration, time_step);
-        let turning = creature.brain.wants_turning();
-        creature.turn(turning, time_step);
-
-        // TODO: clean this mess.
-        let tile_pos = creature.get_random_covered_tile(board_size);
-        let tile = terrain.get_tile_at_mut(tile_pos);
-
-        let eat_amount = creature.brain.wants_to_eat();
-        creature.eat(eat_amount, time_step, time, climate, tile);
-
-        // Fighting is done elsewhere
-        // .fight(fight_amount, time, time_step, sbip);
-
-        // Reproducing is done elsewhere
-
-        let mouth_hue = creature.brain.wants_mouth_hue();
-        creature.set_mouth_hue(mouth_hue);
-    }
-
     /// Performs the energy requirement to keep living.
     pub fn metabolize(&mut self, time_step: f64, time: f64) {
         // TODO: fix ugly code.

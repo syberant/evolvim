@@ -90,6 +90,24 @@ impl super::NeuralNet for Brain {
         // Don't need to add bias here.
         self.a_3 = z_3;
     }
+
+    fn use_output(&self, env: &mut super::EnvironmentMut, time_step: f64) {
+        let acceleration = self.wants_acceleration();
+        env.this_body.accelerate(acceleration, time_step);
+
+        let turning = self.wants_turning();
+        env.this_body.turn(turning, time_step);
+
+        // TODO: clean this mess.
+        let tile_pos = env.this_body.get_random_covered_tile(env.board_size);
+        let tile = env.terrain.get_tile_at_mut(tile_pos);
+        let eat_amount = self.wants_to_eat();
+        env.this_body
+            .eat(eat_amount, time_step, env.time, env.climate, tile);
+
+        let mouth_hue = self.wants_mouth_hue();
+        env.this_body.set_mouth_hue(mouth_hue);
+    }
 }
 
 impl Brain {
