@@ -54,27 +54,45 @@ pub struct Brain {
     a_3: RowVectorN<FPN, OutputLayerSize>,
 }
 
+impl super::NeuralNet for Brain {
+    fn load_input(&mut self, env: &super::Environment) {
+        // Load the memory
+        self.a_1[0] = self.get_memory();
+
+        // The current energy of the creature
+        self.a_1[1] = env.this_body.get_energy();
+
+        // The current mouth hue
+        // TODO but we need to move mouth_hue into Rock
+
+        // Look directly underneath the creature
+        let pos = env.this_body.get_position();
+        let tile = env.terrain.get_tile_at(pos.into());
+        let colors = tile.get_hsba_color();
+        self.a_1[3] = colors[0] as FPN;
+        self.a_1[4] = colors[1] as FPN;
+        self.a_1[5] = colors[2] as FPN;
+    }
+
+    /// Performs feed foward propagation on the neural network.
+    // TODO: see if I can speed this up a little with clever memory management.
+    fn run(&mut self) {
+        let mut z_2 = self.a_1 * self.theta_1;
+        // Perform sigmoid function
+        Brain::sigmoid(&mut z_2);
+        // Add bias.
+        self.a_2 = z_2.insert_column(0, 1.0);
+
+        let z_3 = self.a_2 * self.theta_2;
+        // // Perform sigmoid function, wasn't done in original Processing code.
+        // Brain::sigmoid(&mut z_3);
+
+        // Don't need to add bias here.
+        self.a_3 = z_3;
+    }
+}
+
 impl Brain {
-    /// # Processing equivalent
-    /// *Brain.pde/input*, with the first part (loading the input) being done with a call to `self.load_input()`
-    /// and the second part (feed-forward) being done by `self.feed_forward()`.
-    pub fn run(&mut self, input: BrainInput) {
-        // Load the input into the net.
-        self.load_input(input);
-
-        // Perform feed-forwarding.
-        self.feed_forward();
-    }
-
-    /// Loads all values from `input` into the neural network, also adds bias and memory.
-    pub fn load_input(&mut self, input: BrainInput) {
-        let memory = self.get_memory();
-        // TODO: fix this ugly code.
-        self.a_1 = <MatrixMN<FPN, U1, U9>>::from_row_slice(&input)
-            .insert_column(0, 1.0)
-            .insert_column(1, memory);
-    }
-
     /// # Processing equivalent
     /// *Brain.pde/outputs*, although here only a reference to the output values is returned instead of a copy.
     pub fn get_output(&self) -> BrainOutput {
@@ -89,23 +107,6 @@ impl Brain {
     /// Returns a reference to the input layer values.
     pub fn get_input_layer(&self) -> &[FPN] {
         self.a_1.as_slice()
-    }
-
-    /// Performs feed foward propagation on the neural network.
-    // TODO: see if I can speed this up a little with clever memory management.
-    pub fn feed_forward(&mut self) {
-        let mut z_2 = self.a_1 * self.theta_1;
-        // Perform sigmoid function
-        Brain::sigmoid(&mut z_2);
-        // Add bias.
-        self.a_2 = z_2.insert_column(0, 1.0);
-
-        let z_3 = self.a_2 * self.theta_2;
-        // // Perform sigmoid function, wasn't done in original Processing code.
-        // Brain::sigmoid(&mut z_3);
-
-        // Don't need to add bias here.
-        self.a_3 = z_3;
     }
 
     /// Performs the sigmoid function for every element in the matrix.

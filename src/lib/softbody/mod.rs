@@ -359,30 +359,6 @@ impl SoftBody {
         creature.set_mouth_hue(mouth_hue);
     }
 
-    pub fn update_brain(&mut self, env: &Terrain) {
-        let input = self.get_input(env);
-        self.brain.run(input);
-    }
-
-    /// Gets the input for the brain of the creature.
-    ///
-    /// TODO: improve!
-    fn get_input(&self, terrain: &Terrain) -> crate::brain::feed_forward::BrainInput {
-        let mut input = [0.0; 9];
-
-        let creature = self;
-        input[0] = creature.get_energy();
-        input[1] = creature.get_mouth_hue();
-        let pos = BoardPreciseCoordinate(self.get_px(), self.get_py()).into();
-        let tile = terrain.get_tile_at(pos);
-        let c = tile.get_hsba_color();
-        input[2] = c[0] as f64;
-        input[3] = c[1] as f64;
-        input[4] = c[2] as f64;
-
-        return input;
-    }
-
     /// Performs the energy requirement to keep living.
     pub fn metabolize(&mut self, time_step: f64, time: f64) {
         // TODO: fix ugly code.
@@ -392,12 +368,5 @@ impl SoftBody {
         creature.lose_energy(energy_to_lose);
 
         // Creature should die if it doesn't have enough energy, this is done by `Board`.
-    }
-}
-
-// Here are all the functions which merely call the same function on the underlying types.
-impl SoftBody {
-    pub fn get_position(&self) -> BoardPreciseCoordinate {
-        BoardPreciseCoordinate(self.get_px(), self.get_py())
     }
 }

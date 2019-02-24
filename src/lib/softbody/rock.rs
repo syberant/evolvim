@@ -312,4 +312,8 @@ impl Rock {
     pub fn get_py(&self) -> f64 {
         return self.py;
     }
+
+    pub fn get_position(&self) -> BoardPreciseCoordinate {
+        BoardPreciseCoordinate(self.get_px(), self.get_py())
+    }
 }

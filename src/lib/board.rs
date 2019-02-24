@@ -181,9 +181,14 @@ impl Board {
 
     #[cfg(not(multithreading))]
     fn update_brains(&mut self) {
-        self.creatures.iter().for_each(|c| {
-            c.borrow_mut().update_brain(&self.terrain);
-        });
+        self.creatures
+            .iter()
+            .map(|c| c.borrow_mut())
+            .for_each(|mut c| {
+                let creature: &mut SoftBody = &mut c;
+                let env = crate::brain::Environment::new(&self.terrain, &creature.base);
+                creature.brain.run_with(&env);
+            });
     }
 
     #[cfg(multithreading)]
@@ -192,7 +197,8 @@ impl Board {
             .map(|c| c.borrow_mut())
             .par_iter()
             .for_each(|c| {
-                c.update_brain(&self.terrain);
+                let env = crate::brain::Environment::new(&self.terrain, &c.base);
+                c.brain.run_with(&env);
             });
     }
 

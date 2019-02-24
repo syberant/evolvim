@@ -8,7 +8,7 @@ const EAT_SPEED: f64 = 0.5;
 
 #[derive(Serialize, Deserialize)]
 pub struct Creature {
-    base: Rock,
+    pub base: Rock,
     birth_time: f64,
     pub brain: Brain,
     mouth_hue: f64,
