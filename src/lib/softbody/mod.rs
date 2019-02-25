@@ -151,7 +151,7 @@ impl HLSoftBody {
 
             for collider in colliders {
                 let mut col = collider.borrow_mut();
-                let distance = SoftBody::distance(self_x, self_y, col.get_px(), col.get_py());
+                let distance = distance(self_x, self_y, col.get_px(), col.get_py());
                 let combined_radius = creature.get_radius() * FIGHT_RANGE + col.get_radius();
 
                 if distance < combined_radius {
@@ -180,7 +180,7 @@ impl HLSoftBody {
             let collider = collider_rc.borrow();
 
             let (collider_px, collider_py) = (collider.get_px(), collider.get_py());
-            let distance = SoftBody::distance(self_px, self_py, collider_px, collider_py);
+            let distance = distance(self_px, self_py, collider_px, collider_py);
 
             let combined_radius = self_radius + collider.get_radius();
 
@@ -252,7 +252,7 @@ impl HLSoftBody {
                 .into_iter()
                 .filter(|rc_soft| {
                     let c = rc_soft.borrow();
-                    let dist = SoftBody::distance(self_px, self_py, c.get_px(), c.get_py());
+                    let dist = distance(self_px, self_py, c.get_px(), c.get_py());
                     let combined_radius = self_radius * FIGHT_RANGE + c.get_radius();
 
                     c.brain.wants_help_birth() > -1.0 // must be a willing creature
@@ -299,29 +299,10 @@ impl HLSoftBody {
     }
 }
 
-pub type SoftBody = Creature;
-
-impl SoftBody {
-    /// Checks if the center is inside of the world, possibly corrects it and returns it.
-    pub fn check_center_x(x: usize, board_width: usize) -> usize {
-        return x.max(0).min(board_width - 1);
-    }
-
-    /// Checks if the center is inside of the world, possibly corrects it and returns it.
-    pub fn check_center_y(y: usize, board_height: usize) -> usize {
-        return y.max(0).min(board_height - 1);
-    }
-
-    /// Returns the distance between two points.
-    ///
-    /// Uses the Pythagorean theorem: A^2 + B^2 = C^2.
-    pub fn distance(x1: f64, y1: f64, x2: f64, y2: f64) -> f64 {
-        ((x1 - x2).powi(2) + (y1 - y2).powi(2)).sqrt()
-    }
-}
+pub type SoftBody<B = Brain> = Creature<B>;
 
 // Here are all the functions only applicable to `Creature`s.
-impl SoftBody {
+impl<B: NeuralNet> SoftBody<B> {
     /// Performs the energy requirement to keep living.
     pub fn metabolize(&mut self, time_step: f64, time: f64) {
         // TODO: fix ugly code.

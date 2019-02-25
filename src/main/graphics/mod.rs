@@ -161,7 +161,7 @@ pub fn draw_terrain<C, G>(
 }
 
 pub fn draw_creature<G: Graphics>(
-    creature: &Creature,
+    creature: &Creature<Brain>,
     context: Context,
     graphics: &mut G,
     view: &View,
@@ -188,7 +188,7 @@ pub fn draw_creature<G: Graphics>(
 }
 
 pub fn draw_details_creature<C, G>(
-    creature: &Creature,
+    creature: &Creature<Brain>,
     context: Context,
     graphics: &mut G,
     glyphs: &mut C,

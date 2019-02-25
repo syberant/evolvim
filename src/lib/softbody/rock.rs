@@ -246,13 +246,13 @@ impl Rock {
         let radius = self.get_radius();
         let mut choice_x = 0.0;
         let mut choice_y = 0.0;
-        while SoftBody::distance(self.px, self.py, choice_x, choice_y) > radius {
+        while distance(self.px, self.py, choice_x, choice_y) > radius {
             choice_x = rand::random::<f64>() * 2.0 * radius - radius + self.px;
             choice_y = rand::random::<f64>() * 2.0 * radius - radius + self.py;
         }
 
-        let choice_x = SoftBody::check_center_x(choice_x.floor() as usize, board_size.0);
-        let choice_y = SoftBody::check_center_y(choice_y.floor() as usize, board_size.1);
+        let choice_x = check_center_x(choice_x.floor() as usize, board_size.0);
+        let choice_y = check_center_y(choice_y.floor() as usize, board_size.1);
 
         return (choice_x, choice_y);
     }
@@ -285,10 +285,10 @@ impl Rock {
         // use this to overcome the borrow checker
         let px = self.px;
         let py = self.py;
-        self.sbip_min_x = SoftBody::check_center_x((px - radius).floor() as usize, board_width);
-        self.sbip_min_y = SoftBody::check_center_y((py - radius).floor() as usize, board_height);
-        self.sbip_max_x = SoftBody::check_center_x((px + radius).floor() as usize, board_width);
-        self.sbip_max_y = SoftBody::check_center_y((py + radius).floor() as usize, board_height);
+        self.sbip_min_x = check_center_x((px - radius).floor() as usize, board_width);
+        self.sbip_min_y = check_center_y((py - radius).floor() as usize, board_height);
+        self.sbip_max_x = check_center_x((px + radius).floor() as usize, board_width);
+        self.sbip_max_y = check_center_y((py + radius).floor() as usize, board_height);
     }
 
     pub fn previous_x_range(&self) -> Range<usize> {
@@ -376,4 +376,21 @@ impl Rock {
     pub fn get_mouth_hue(&self) -> f64 {
         return self.mouth_hue;
     }
+}
+
+/// Checks if the center is inside of the world, possibly corrects it and returns it.
+pub fn check_center_x(x: usize, board_width: usize) -> usize {
+    return x.max(0).min(board_width - 1);
+}
+
+/// Checks if the center is inside of the world, possibly corrects it and returns it.
+pub fn check_center_y(y: usize, board_height: usize) -> usize {
+    return y.max(0).min(board_height - 1);
+}
+
+/// Returns the distance between two points.
+///
+/// Uses the Pythagorean theorem: A^2 + B^2 = C^2.
+pub fn distance(x1: f64, y1: f64, x2: f64, y2: f64) -> f64 {
+    ((x1 - x2).powi(2) + (y1 - y2).powi(2)).sqrt()
 }

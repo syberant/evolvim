@@ -77,7 +77,7 @@ impl View {
                 let py = c.get_py();
                 let radius = c.get_radius();
 
-                let dist = SoftBody::distance(exact_pos.0, exact_pos.1, px, py);
+                let dist = lib_evolvim::softbody::distance(exact_pos.0, exact_pos.1, px, py);
 
                 if dist < radius {
                     self.board.selected_creature.select(c_ref.clone());

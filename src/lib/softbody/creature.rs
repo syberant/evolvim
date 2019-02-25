@@ -5,13 +5,13 @@ use super::*;
 pub const MINIMUM_SURVIVABLE_SIZE: f64 = 0.06;
 
 #[derive(Serialize, Deserialize)]
-pub struct Creature {
+pub struct Creature<B: NeuralNet> {
     pub base: Rock,
     birth_time: f64,
-    pub brain: Brain,
+    pub brain: B,
 }
 
-impl std::ops::Deref for Creature {
+impl<B: NeuralNet> std::ops::Deref for Creature<B> {
     type Target = Rock;
 
     fn deref(&self) -> &Rock {
@@ -19,13 +19,13 @@ impl std::ops::Deref for Creature {
     }
 }
 
-impl std::ops::DerefMut for Creature {
+impl<B: NeuralNet> std::ops::DerefMut for Creature<B> {
     fn deref_mut(&mut self) -> &mut Rock {
         &mut self.base
     }
 }
 
-impl Creature {
+impl Creature<Brain> {
     pub fn new_random(board_size: BoardSize, time: f64) -> Self {
         let energy = CREATURE_MIN_ENERGY
             + rand::random::<f64>() * (CREATURE_MAX_ENERGY - CREATURE_MIN_ENERGY);
@@ -57,7 +57,7 @@ impl Creature {
 
     // Create a new baby, it isn't in `SoftBodiesInPositions` so please fix that.
     // While you're at it, also add it to `Board.creatures`.
-    pub fn new_baby(parents: Vec<HLSoftBody>, energy: f64, time: f64) -> Creature {
+    pub fn new_baby(parents: Vec<HLSoftBody>, energy: f64, time: f64) -> Creature<Brain> {
         let brain = Brain::evolve(&parents);
         let base = Rock::new_from_parents(&parents, energy);
 
@@ -77,7 +77,7 @@ impl Creature {
 }
 
 // Functions returning properties.
-impl Creature {
+impl<B: NeuralNet> Creature<B> {
     /// Returns the time when this creature was born.
     pub fn get_birth_time(&self) -> f64 {
         return self.birth_time;

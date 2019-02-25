@@ -478,7 +478,7 @@ impl<'de> serde::Deserialize<'de> for Board {
                 let creature_minimum = seq
                     .next_element()?
                     .ok_or_else(|| Error::invalid_length(2, &self))?;
-                let creatures_ir: Vec<Creature> = seq
+                let creatures_ir: Vec<Creature<Brain>> = seq
                     .next_element()?
                     .ok_or_else(|| Error::invalid_length(3, &self))?;
                 let creature_id_up_to = seq
