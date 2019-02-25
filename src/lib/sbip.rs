@@ -9,16 +9,16 @@
 use super::*;
 use std::ops::Range;
 
-pub trait SoftBodyBucket {
-    fn remove_softbody(&mut self, body: HLSoftBody);
+pub trait SoftBodyBucket<B: NeuralNet> {
+    fn remove_softbody(&mut self, body: HLSoftBody<B>);
 
-    fn add_softbody(&mut self, body: HLSoftBody);
+    fn add_softbody(&mut self, body: HLSoftBody<B>);
 }
 
-pub type SoftBodiesAt = Vec<HLSoftBody>;
+pub type SoftBodiesAt<B> = Vec<HLSoftBody<B>>;
 
-impl SoftBodyBucket for SoftBodiesAt {
-    fn remove_softbody(&mut self, body: HLSoftBody) {
+impl<B: NeuralNet> SoftBodyBucket<B> for SoftBodiesAt<B> {
+    fn remove_softbody(&mut self, body: HLSoftBody<B>) {
         // WARNING: Only removes one instance
         for i in 0..self.len() {
             if self[i] == body {
@@ -29,7 +29,7 @@ impl SoftBodyBucket for SoftBodiesAt {
     }
 
     /// Adds the given `HLSoftBody`, prevents duplicates.
-    fn add_softbody(&mut self, body: HLSoftBody) {
+    fn add_softbody(&mut self, body: HLSoftBody<B>) {
         for i in 0..self.len() {
             if self[i] == body {
                 return;
@@ -41,16 +41,16 @@ impl SoftBodyBucket for SoftBodiesAt {
 }
 
 /// Contains a list of every `SoftBody` in a given coordinate.
-pub struct SoftBodiesInPositions(Vec<Vec<SoftBodiesAt>>);
+pub struct SoftBodiesInPositions<B: NeuralNet = Brain>(Vec<Vec<SoftBodiesAt<B>>>);
 
-impl SoftBodiesInPositions {
+impl<B: NeuralNet> SoftBodiesInPositions<B> {
     pub fn new_allocated(board_size: BoardSize) -> Self {
         let (board_width, board_height) = board_size;
 
         let allocated_cell = SoftBodiesAt::with_capacity(2);
         let allocated_column = std::iter::repeat(allocated_cell)
             .take(board_height)
-            .collect::<Vec<SoftBodiesAt>>();
+            .collect::<Vec<SoftBodiesAt<B>>>();
         let allocated_rows = std::iter::repeat(allocated_column)
             .take(board_width)
             .collect();
@@ -58,20 +58,20 @@ impl SoftBodiesInPositions {
         return SoftBodiesInPositions(allocated_rows);
     }
 
-    pub fn get_soft_bodies_at(&self, x: usize, y: usize) -> &SoftBodiesAt {
+    pub fn get_soft_bodies_at(&self, x: usize, y: usize) -> &SoftBodiesAt<B> {
         return &self.0[x][y];
     }
 
-    pub fn add_soft_body_at(&mut self, x: usize, y: usize, body: HLSoftBody) {
+    pub fn add_soft_body_at(&mut self, x: usize, y: usize, body: HLSoftBody<B>) {
         self.0[x][y].push(body);
     }
 
     /// NOTE: only removes one instance of `body`.
-    pub fn remove_soft_body_at(&mut self, x: usize, y: usize, body: HLSoftBody) {
+    pub fn remove_soft_body_at(&mut self, x: usize, y: usize, body: HLSoftBody<B>) {
         self.0[x][y].remove_softbody(body);
     }
 
-    pub fn get_soft_bodies_in(&self, x_range: Range<usize>, y_range: Range<usize>) -> SoftBodiesAt {
+    pub fn get_soft_bodies_in(&self, x_range: Range<usize>, y_range: Range<usize>) -> SoftBodiesAt<B> {
         let mut soft_body_bucket = Vec::new();
 
         for x in x_range {

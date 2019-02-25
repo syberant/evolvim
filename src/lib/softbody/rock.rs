@@ -268,7 +268,7 @@ impl Rock {
 
 // All functions related to `SoftBodiesInPositions`
 impl Rock {
-    pub fn get_colliders(&self, sbip: &SoftBodiesInPositions) -> SoftBodiesAt {
+    pub fn get_colliders<B: NeuralNet>(&self, sbip: &SoftBodiesInPositions<B>) -> SoftBodiesAt<B> {
         sbip.get_soft_bodies_in(self.current_x_range(), self.current_y_range())
     }
 

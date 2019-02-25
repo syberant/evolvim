@@ -28,7 +28,7 @@ const MATURE_AGE: f64 = 0.01;
 /// This is a wrapper struct providing some useful functions.
 ///
 /// TODO: come up with a better name.
-pub struct HLSoftBody(ReferenceCounter<MutPoint<SoftBody>>);
+pub struct HLSoftBody<B: NeuralNet = Brain>(ReferenceCounter<MutPoint<SoftBody<B>>>);
 
 impl From<SoftBody> for HLSoftBody {
     fn from(sb: SoftBody) -> HLSoftBody {
@@ -36,14 +36,14 @@ impl From<SoftBody> for HLSoftBody {
     }
 }
 
-impl Clone for HLSoftBody {
+impl<B: NeuralNet> Clone for HLSoftBody<B> {
     fn clone(&self) -> Self {
         HLSoftBody(ReferenceCounter::clone(&self.0))
     }
 }
 
-impl PartialEq<HLSoftBody> for HLSoftBody {
-    fn eq(&self, rhs: &HLSoftBody) -> bool {
+impl<B: NeuralNet> PartialEq<HLSoftBody<B>> for HLSoftBody<B> {
+    fn eq(&self, rhs: &HLSoftBody<B>) -> bool {
         ReferenceCounter::ptr_eq(&self.0, &rhs.0)
     }
 }
