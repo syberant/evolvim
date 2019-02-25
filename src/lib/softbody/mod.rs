@@ -48,24 +48,24 @@ impl<B: NeuralNet> PartialEq<HLSoftBody<B>> for HLSoftBody<B> {
     }
 }
 
-impl HLSoftBody {
+impl<B: NeuralNet> HLSoftBody<B> {
     /// Wrapper function
     #[cfg(multithreading)]
-    pub fn borrow(&self) -> RwLockReadGuard<SoftBody> {
+    pub fn borrow(&self) -> RwLockReadGuard<SoftBody<B>> {
         return self.0.read().unwrap();
     }
     #[cfg(not(multithreading))]
-    pub fn borrow(&self) -> Ref<SoftBody> {
+    pub fn borrow(&self) -> Ref<SoftBody<B>> {
         return self.0.borrow();
     }
 
     /// Wrapper function
     #[cfg(multithreading)]
-    pub fn borrow_mut(&self) -> RwLockWriteGuard<SoftBody> {
+    pub fn borrow_mut(&self) -> RwLockWriteGuard<SoftBody<B>> {
         return self.0.write().unwrap();
     }
     #[cfg(not(multithreading))]
-    pub fn borrow_mut(&self) -> RefMut<SoftBody> {
+    pub fn borrow_mut(&self) -> RefMut<SoftBody<B>> {
         return self.0.borrow_mut();
     }
 
@@ -85,7 +85,7 @@ impl HLSoftBody {
         time_step: f64,
         board_size: BoardSize,
         terrain: &Terrain,
-        sbip: &mut SoftBodiesInPositions,
+        sbip: &mut SoftBodiesInPositions<B>,
     ) {
         use std::ops::DerefMut;
 
@@ -97,7 +97,7 @@ impl HLSoftBody {
     }
 
     /// Updates `SoftBodiesInPositions` and updates itself by calling `update_sbip_variables()`.
-    pub fn set_sbip(&self, sbip: &mut SoftBodiesInPositions, board_size: BoardSize) {
+    pub fn set_sbip(&self, sbip: &mut SoftBodiesInPositions<B>, board_size: BoardSize) {
         // TODO: Look for optimizations here by cleaning and filling sbip more intelligently.
 
         let mut self_borrow = self.borrow_mut();
@@ -128,7 +128,7 @@ impl HLSoftBody {
     /// Completely removes this `HLSoftBody` from `sbip`.
     ///
     /// NOTE: `HLSoftBody` is added again when `set_sbip` is called.
-    pub fn remove_from_sbip(&mut self, sbip: &mut SoftBodiesInPositions) {
+    pub fn remove_from_sbip(&mut self, sbip: &mut SoftBodiesInPositions<B>) {
         for x in self.borrow().current_x_range() {
             for y in self.borrow().current_y_range() {
                 sbip.remove_soft_body_at(x, y, self.clone());
@@ -136,7 +136,13 @@ impl HLSoftBody {
         }
     }
 
-    pub fn fight(&mut self, amount: f64, time: f64, time_step: f64, sbip: &SoftBodiesInPositions) {
+    pub fn fight(
+        &mut self,
+        amount: f64,
+        time: f64,
+        time_step: f64,
+        sbip: &SoftBodiesInPositions<B>,
+    ) {
         let mut creature = self.borrow_mut();
         if amount > 0.0 && creature.get_age(time) >= MATURE_AGE {
             creature.lose_energy(amount * time_step * FIGHT_ENERGY);
@@ -165,7 +171,7 @@ impl HLSoftBody {
     /// Checks for collision and adjusts velocity if that's the case.
     ///
     /// TODO: clean up the many uses of `borrow()`
-    pub fn collide(&self, sbip: &SoftBodiesInPositions) {
+    pub fn collide(&self, sbip: &SoftBodiesInPositions<B>) {
         let mut colliders = self.borrow().get_colliders(sbip);
 
         // Remove self
@@ -205,7 +211,7 @@ impl HLSoftBody {
         board_size: BoardSize,
         terrain: &mut Terrain,
         climate: &Climate,
-        sbip: &mut SoftBodiesInPositions,
+        sbip: &mut SoftBodiesInPositions<B>,
     ) {
         // To keep the borrowchecker happy.
         {
@@ -221,7 +227,9 @@ impl HLSoftBody {
 
         self.remove_from_sbip(sbip);
     }
+}
 
+impl HLSoftBody<Brain> {
     fn wants_primary_birth(&self, time: f64) -> bool {
         let temp = self.borrow();
 

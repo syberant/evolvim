@@ -25,12 +25,12 @@ impl<B: NeuralNet> std::ops::DerefMut for Creature<B> {
     }
 }
 
-impl Creature<Brain> {
+impl<B: NeuralNet + GenerateRandom> Creature<B> {
     pub fn new_random(board_size: BoardSize, time: f64) -> Self {
         let energy = CREATURE_MIN_ENERGY
             + rand::random::<f64>() * (CREATURE_MAX_ENERGY - CREATURE_MIN_ENERGY);
         let base = Rock::new_random(board_size, CREATURE_DENSITY, energy);
-        let brain = Brain::new_random();
+        let brain = B::new_random();
         let birth_time = time;
         // TODO: add id
 
@@ -40,21 +40,9 @@ impl Creature<Brain> {
             brain,
         }
     }
+}
 
-    // The `Creature` version of `apply_motions`, this is different to the `Rock` version.
-    pub fn apply_motions(&mut self, time_step: f64, terrain: &Terrain, board_size: BoardSize) {
-        if self.is_on_water(terrain, board_size) {
-            let energy_to_lose = time_step * SWIM_ENERGY * self.get_energy();
-            self.lose_energy(energy_to_lose);
-        }
-
-        self.base.apply_motions(time_step, board_size);
-    }
-
-    pub fn should_die(&self) -> bool {
-        return self.get_energy() < SAFE_SIZE;
-    }
-
+impl Creature<Brain> {
     // Create a new baby, it isn't in `SoftBodiesInPositions` so please fix that.
     // While you're at it, also add it to `Board.creatures`.
     pub fn new_baby(parents: Vec<HLSoftBody>, energy: f64, time: f64) -> Creature<Brain> {
@@ -69,6 +57,22 @@ impl Creature<Brain> {
             birth_time,
             brain,
         }
+    }
+}
+
+impl<B: NeuralNet> Creature<B> {
+    // The `Creature` version of `apply_motions`, this is different to the `Rock` version.
+    pub fn apply_motions(&mut self, time_step: f64, terrain: &Terrain, board_size: BoardSize) {
+        if self.is_on_water(terrain, board_size) {
+            let energy_to_lose = time_step * SWIM_ENERGY * self.get_energy();
+            self.lose_energy(energy_to_lose);
+        }
+
+        self.base.apply_motions(time_step, board_size);
+    }
+
+    pub fn should_die(&self) -> bool {
+        return self.get_energy() < SAFE_SIZE;
     }
 
     pub fn get_baby_energy(&self) -> f64 {
