@@ -71,7 +71,11 @@ impl<B: NeuralNet> SoftBodiesInPositions<B> {
         self.0[x][y].remove_softbody(body);
     }
 
-    pub fn get_soft_bodies_in(&self, x_range: Range<usize>, y_range: Range<usize>) -> SoftBodiesAt<B> {
+    pub fn get_soft_bodies_in(
+        &self,
+        x_range: Range<usize>,
+        y_range: Range<usize>,
+    ) -> SoftBodiesAt<B> {
         let mut soft_body_bucket = Vec::new();
 
         for x in x_range {
