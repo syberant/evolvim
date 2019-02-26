@@ -149,6 +149,78 @@ impl<B: NeuralNet + GenerateRandom> Board<B> {
 
         return board;
     }
+
+    /// Maintains the creature minimum by adding random creatures until there are at least `self.creature_minimum` creatures.
+    ///
+    /// # Processing equivalent
+    /// This function is the equivalent of *Board.pde/maintainCreatureMinimum* with *choosePreexisting* set to false.
+    fn maintain_creature_minimum(&mut self) {
+        while self.creatures.len() < self.creature_minimum {
+            let board_size = self.get_board_size();
+            let creature = HLSoftBody::from(SoftBody::new_random(board_size, self.year));
+
+            // Initialize in `SoftBodiesInPositions` as well.
+            creature.set_sbip(&mut self.soft_bodies_in_positions, board_size);
+            // Just to set the prevSBIP variables.
+            creature.set_sbip(&mut self.soft_bodies_in_positions, board_size);
+
+            self.creatures.push(creature);
+            self.creature_id_up_to += 1;
+        }
+    }
+}
+
+impl<B: NeuralNet + RecombinationInfinite + GenerateRandom> Board<B> {
+    pub fn update(&mut self, time_step: f64) {
+        self.year += time_step;
+        self.climate.update(self.year);
+
+        let temp_change_into_frame =
+            self.climate.get_temperature() - self.climate.get_growth_rate(self.year - time_step);
+        let temp_change_out_of_frame =
+            self.climate.get_growth_rate(self.year + time_step) - self.climate.get_temperature();
+
+        if temp_change_into_frame * temp_change_out_of_frame < 0.0 {
+            // Temperature change flipped direction
+            self.terrain.update_all(self.year, &self.climate);
+        }
+
+        self.update_creatures(time_step);
+
+        // Kill weak creatures.
+        self.remove_dead_creatures();
+
+        // Let creatures reproduce
+        self.creatures_reproduce();
+
+        // Experimental: this was moved from above to always keep the creature minimum.
+        self.maintain_creature_minimum();
+
+        // Move the creatures around on the board
+        self.move_creatures(time_step);
+    }
+}
+
+impl<B: NeuralNet + RecombinationInfinite> Board<B> {
+    fn creatures_reproduce(&mut self) {
+        let mut babies = Vec::new();
+
+        // Keep the borrow checker happy
+        {
+            let time = self.get_time();
+            let board_size = self.get_board_size();
+            let sbip = &mut self.soft_bodies_in_positions;
+
+            for c in &mut self.creatures {
+                let maybe_baby = c.try_reproduce(time, sbip, board_size);
+                if let Some(baby) = maybe_baby {
+                    babies.push(baby);
+                }
+            }
+        }
+
+        babies.into_iter().for_each(|c| self.creatures.push(c));
+    }
 }
 
 impl<B: NeuralNet> Board<B> {
@@ -233,40 +305,7 @@ impl<B: NeuralNet> Board<B> {
             }
         }
     }
-}
-
-impl<B: NeuralNet + RecombinationInfinite + GenerateRandom> Board<B> {
-    pub fn update(&mut self, time_step: f64) {
-        self.year += time_step;
-        self.climate.update(self.year);
-
-        let temp_change_into_frame =
-            self.climate.get_temperature() - self.climate.get_growth_rate(self.year - time_step);
-        let temp_change_out_of_frame =
-            self.climate.get_growth_rate(self.year + time_step) - self.climate.get_temperature();
-
-        if temp_change_into_frame * temp_change_out_of_frame < 0.0 {
-            // Temperature change flipped direction
-            self.terrain.update_all(self.year, &self.climate);
-        }
-
-        self.update_creatures(time_step);
-
-        // Kill weak creatures.
-        self.remove_dead_creatures();
-
-        // Let creatures reproduce
-        self.creatures_reproduce();
-
-        // Experimental: this was moved from above to always keep the creature minimum.
-        self.maintain_creature_minimum();
-
-        // Move the creatures around on the board
-        self.move_creatures(time_step);
-    }
-}
-
-impl<B: NeuralNet> Board<B> {
+    
     // #[cfg(multithreading)]
     pub fn move_creatures(&mut self, time_step: f64) {
         let board_size = self.get_board_size();
@@ -284,52 +323,7 @@ impl<B: NeuralNet> Board<B> {
     pub fn prepare_for_drawing(&mut self) {
         self.terrain.update_all(self.year, &self.climate);
     }
-}
-
-impl<B: NeuralNet + GenerateRandom> Board<B> {
-    /// Maintains the creature minimum by adding random creatures until there are at least `self.creature_minimum` creatures.
-    ///
-    /// # Processing equivalent
-    /// This function is the equivalent of *Board.pde/maintainCreatureMinimum* with *choosePreexisting* set to false.
-    fn maintain_creature_minimum(&mut self) {
-        while self.creatures.len() < self.creature_minimum {
-            let board_size = self.get_board_size();
-            let creature = HLSoftBody::from(SoftBody::new_random(board_size, self.year));
-
-            // Initialize in `SoftBodiesInPositions` as well.
-            creature.set_sbip(&mut self.soft_bodies_in_positions, board_size);
-            // Just to set the prevSBIP variables.
-            creature.set_sbip(&mut self.soft_bodies_in_positions, board_size);
-
-            self.creatures.push(creature);
-            self.creature_id_up_to += 1;
-        }
-    }
-}
-
-impl<B: NeuralNet + RecombinationInfinite> Board<B> {
-    fn creatures_reproduce(&mut self) {
-        let mut babies = Vec::new();
-
-        // Keep the borrow checker happy
-        {
-            let time = self.get_time();
-            let board_size = self.get_board_size();
-            let sbip = &mut self.soft_bodies_in_positions;
-
-            for c in &mut self.creatures {
-                let maybe_baby = c.try_reproduce(time, sbip, board_size);
-                if let Some(baby) = maybe_baby {
-                    babies.push(baby);
-                }
-            }
-        }
-
-        babies.into_iter().for_each(|c| self.creatures.push(c));
-    }
-}
-
-impl<B: NeuralNet> Board<B> {
+    
     /// Checks for all creatures whether they are fit enough to live and kills them off if they're not.
     ///
     /// Utilizes the `should_die` function of `SoftBody`.
@@ -393,6 +387,21 @@ impl<B: NeuralNet> Board<B> {
     pub fn get_board_height(&self) -> usize {
         return self.board_height;
     }
+    
+    /// Gets the size of the current population; i.e. how many creatures are currently alive.
+    pub fn get_population_size(&self) -> usize {
+        return self.creatures.len();
+    }
+
+    /// Returns a `String` representing the current season.
+    ///
+    /// Can be either "Winter", "Spring", "Summer" or "Autumn".
+    pub fn get_season(&self) -> String {
+        const SEASONS: [&str; 4] = ["Winter", "Spring", "Summer", "Autumn"];
+        let season: usize = ((self.year % 1.0) * 4.0).floor() as usize;
+
+        return SEASONS[season].to_string();
+    }
 }
 
 impl Board {
@@ -409,23 +418,6 @@ impl Board {
         bincode::serialize_into(file, self)?;
 
         Ok(())
-    }
-}
-
-impl<B: NeuralNet> Board<B> {
-    /// Gets the size of the current population; i.e. how many creatures are currently alive.
-    pub fn get_population_size(&self) -> usize {
-        return self.creatures.len();
-    }
-
-    /// Returns a `String` representing the current season.
-    ///
-    /// Can be either "Winter", "Spring", "Summer" or "Autumn".
-    pub fn get_season(&self) -> String {
-        const SEASONS: [&str; 4] = ["Winter", "Spring", "Summer", "Autumn"];
-        let season: usize = ((self.year % 1.0) * 4.0).floor() as usize;
-
-        return SEASONS[season].to_string();
     }
 }
 
