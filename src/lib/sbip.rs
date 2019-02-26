@@ -41,7 +41,7 @@ impl<B: NeuralNet> SoftBodyBucket<B> for SoftBodiesAt<B> {
 }
 
 /// Contains a list of every `SoftBody` in a given coordinate.
-pub struct SoftBodiesInPositions<B: NeuralNet = Brain>(Vec<Vec<SoftBodiesAt<B>>>);
+pub struct SoftBodiesInPositions<B: NeuralNet>(Vec<Vec<SoftBodiesAt<B>>>);
 
 impl<B: NeuralNet> SoftBodiesInPositions<B> {
     pub fn new_allocated(board_size: BoardSize) -> Self {

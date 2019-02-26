@@ -5,7 +5,7 @@ use lib_evolvim::*;
 use piston_window::*;
 
 fn main() {
-    let mut board = Board::default();
+    let mut board = Board::<Brain>::default();
 
     let mut window: PistonWindow = WindowSettings::new("Hello Piston!", [1000, 800])
         .exit_on_esc(true)
