@@ -42,11 +42,11 @@ impl<B: NeuralNet + GenerateRandom> Creature<B> {
     }
 }
 
-impl Creature<Brain> {
+impl<B: NeuralNet + RecombinationInfinite> Creature<B> {
     // Create a new baby, it isn't in `SoftBodiesInPositions` so please fix that.
     // While you're at it, also add it to `Board.creatures`.
-    pub fn new_baby(parents: Vec<HLSoftBody>, energy: f64, time: f64) -> Creature<Brain> {
-        let brain = Brain::evolve(&parents);
+    pub fn new_baby(parents: Vec<HLSoftBody<B>>, energy: f64, time: f64) -> Creature<B> {
+        let brain = B::recombination_infinite_parents(&parents);
         let base = Rock::new_from_parents(&parents, energy);
 
         // The current time

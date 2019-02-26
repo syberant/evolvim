@@ -21,3 +21,9 @@ pub trait NeuralNet {
 pub trait GenerateRandom {
     fn new_random() -> Self;
 }
+
+pub trait RecombinationInfinite {
+    fn recombination_infinite_parents(parents: &Vec<crate::softbody::HLSoftBody<Self>>) -> Self
+    where
+        Self: NeuralNet + std::marker::Sized;
+}

@@ -159,14 +159,16 @@ impl Brain {
             *v = 1.0 / (1.0 + (-*v).exp());
         }
     }
+}
 
+impl super::RecombinationInfinite for Brain {
     /// # Processing equivalent
     /// *Brain.pde/evolve*, although the structure of the brain is different and there are no calls to `Axon`s here.
     /// Everything is done in this function.
     ///
     /// TODO: improve performance via vectorization.
     /// TODO: understand formulae and improve them or come up with my own
-    pub fn evolve(parents: &Vec<crate::softbody::HLSoftBody>) -> Self {
+    fn recombination_infinite_parents(parents: &Vec<crate::softbody::HLSoftBody<Brain>>) -> Self {
         let a_1 = <RowVectorN<FPN, InputLayerSizePlusBias>>::zeros();
         let a_2 = <RowVectorN<FPN, HiddenLayerSizePlusBias>>::zeros();
         let a_3 = <RowVectorN<FPN, OutputLayerSize>>::zeros();
@@ -222,7 +224,9 @@ impl Brain {
             a_3,
         }
     }
+}
 
+impl Brain {
     /// # Processing equivalent
     /// Returns *Brain.pde/outputLabels*.
     pub fn intentions(&self) -> Vec<String> {
