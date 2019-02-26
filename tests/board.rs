@@ -5,12 +5,12 @@ use lib_evolvim::*;
 
 #[test]
 fn test_board_update() {
-    let mut board = Board::default();
+    let mut board = Board::<Brain>::default();
 
     board.update(0.001);
 }
 
 #[test]
 fn test_board_default_intialise() {
-    let _board = Board::default();
+    let _board = Board::<Brain>::default();
 }
