@@ -23,7 +23,8 @@ The original version has since also [been converted](https://github.com/evolvio/
 - [install Rust]
 - clone the repository with `git clone https://github.com/syberant/evolvim`
 - `cd evolvim` into the repository
-- run my graphical implementation with `cargo run --release --bin evolvim` (`--release` optimizes the code and `--bin evolvim` specifies what to run)
+- `cargo build --release` to compile the project
+- proceed to [Usage](#usage) and start simulating some life!
 
 ## Running benchmarks
 Use `cargo bench --features=bench` to run all benchmarks, please do note that you have to be using [nightly] for this.
@@ -31,7 +32,26 @@ Use `cargo bench --features=bench` to run all benchmarks, please do note that yo
 # Usage
 You can use the internal logic and make your own graphics-frontend or use mine (which is pretty crappy).
 
-## Controls for example frontend
+## My crappy frontend
+This is in `target/release/evolvim` so to get the following help message type `target/release/evolvim --help`:
+```
+Evolvim - GUI launched via CLI 0.2.0
+Sybrand Aarnoutse
+
+USAGE:
+    evolvim [FLAGS] [OPTIONS]
+
+FLAGS:
+    -h, --help       Prints help information
+    -s, --save       Saves to the input file when done
+    -V, --version    Prints version information
+
+OPTIONS:
+    -i, --input <FILE>     The input file, start with this as board
+    -o, --output <FILE>    The output file, save to this when done
+```
+
+### Controls for my crappy frontend
 - click on a creature to select it
 - `b` to select the biggest creature
 - `o` to select the oldest creature
@@ -39,6 +59,26 @@ You can use the internal logic and make your own graphics-frontend or use mine (
 - `Up` to speed up time
 - `Down` to slow down time
 
+## The CLI implementation (use this for speed and to get a quick overview)
+This is in `target/release/evolvim_cli` so to get the following help message type `target/release/evolvim_cli --help`:
+```
+Evolvim - cli 0.2.0
+Sybrand Aarnoutse
+
+USAGE:
+    evolvim_cli [FLAGS] [OPTIONS]
+
+FLAGS:
+    -h, --help       Prints help information
+        --info       Output a summary of this world
+    -s, --save       Saves to the input file when done
+    -V, --version    Prints version information
+
+OPTIONS:
+    -i, --input <FILE>       The input file, start with this as board
+    -u, --updates <YEARS>    Amount of years to simulate
+    -o, --output <FILE>      The output file, save to this when done
+```
 
 # Documentation
 As this project is very young it doesn't have good documentation yet, some can be found however by typing `cargo doc --no-deps --open`. Any further documentation is located in the "self-documenting" code...
