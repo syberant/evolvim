@@ -4,8 +4,7 @@ pub use feed_forward::Brain;
 mod environment;
 pub use environment::{Environment, EnvironmentMut};
 
-// pub trait NeuralNet<T: MotorCommands> {
-pub trait NeuralNet {
+pub trait NeuralNet: Intentions {
     fn load_input(&mut self, env: &Environment);
 
     fn run(&mut self);
@@ -16,6 +15,11 @@ pub trait NeuralNet {
     }
 
     fn use_output(&self, env: &mut EnvironmentMut, time_step: f64);
+}
+
+pub trait Intentions {
+    fn wants_birth(&self) -> f64;
+    fn wants_help_birth(&self) -> f64;
 }
 
 pub trait GenerateRandom {

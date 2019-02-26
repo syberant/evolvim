@@ -245,6 +245,16 @@ impl Brain {
     }
 }
 
+impl super::Intentions for Brain {
+    fn wants_birth(&self) -> f64 {
+        self.get_output()[4]
+    }
+
+    fn wants_help_birth(&self) -> f64 {
+        self.get_output()[6]
+    }
+}
+
 #[allow(missing_docs)]
 // All functions to retrieve intentions
 impl Brain {
@@ -264,16 +274,8 @@ impl Brain {
         self.get_output()[3]
     }
 
-    pub fn wants_birth(&self) -> f64 {
-        self.get_output()[4]
-    }
-
     pub fn wants_mouth_hue(&self) -> f64 {
         self.get_output()[5]
-    }
-
-    pub fn wants_help_birth(&self) -> f64 {
-        self.get_output()[6]
     }
 }
 

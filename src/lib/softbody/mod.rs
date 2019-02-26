@@ -30,8 +30,8 @@ const MATURE_AGE: f64 = 0.01;
 /// TODO: come up with a better name.
 pub struct HLSoftBody<B: NeuralNet = Brain>(ReferenceCounter<MutPoint<SoftBody<B>>>);
 
-impl From<SoftBody> for HLSoftBody {
-    fn from(sb: SoftBody) -> HLSoftBody {
+impl<B: NeuralNet> From<SoftBody<B>> for HLSoftBody<B> {
+    fn from(sb: SoftBody<B>) -> HLSoftBody<B> {
         HLSoftBody(ReferenceCounter::new(MutPoint::new(sb)))
     }
 }
@@ -229,7 +229,7 @@ impl<B: NeuralNet> HLSoftBody<B> {
     }
 }
 
-impl HLSoftBody<Brain> {
+impl<B: NeuralNet + Intentions + RecombinationInfinite> HLSoftBody<B> {
     fn wants_primary_birth(&self, time: f64) -> bool {
         let temp = self.borrow();
 
@@ -243,9 +243,9 @@ impl HLSoftBody<Brain> {
     pub fn try_reproduce(
         &mut self,
         time: f64,
-        sbip: &mut SoftBodiesInPositions,
+        sbip: &mut SoftBodiesInPositions<B>,
         board_size: BoardSize,
-    ) -> Option<HLSoftBody> {
+    ) -> Option<HLSoftBody<B>> {
         if self.wants_primary_birth(time) {
             let self_px = self.borrow().get_px();
             let self_py = self.borrow().get_py();
@@ -256,7 +256,7 @@ impl HLSoftBody<Brain> {
             // Remove self
             colliders.remove_softbody(self.clone());
 
-            let mut parents: Vec<HLSoftBody> = colliders
+            let mut parents: Vec<HLSoftBody<B>> = colliders
                 .into_iter()
                 .filter(|rc_soft| {
                     let c = rc_soft.borrow();
