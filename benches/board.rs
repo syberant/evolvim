@@ -16,7 +16,7 @@ mod benches {
 
     #[bench]
     fn bench_board_new_default(b: &mut Bencher) {
-        b.iter(|| Board::default());
+        b.iter(|| Board::<Brain>::default());
     }
 
     #[bench]

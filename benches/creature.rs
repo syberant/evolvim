@@ -14,7 +14,7 @@ mod benches {
 
     #[bench]
     fn bench_creature_new_baby_1_parent(b: &mut Bencher) {
-        let parents = vec![HLSoftBody::from(SoftBody::new_random_creature(
+        let parents = vec![HLSoftBody::<Brain>::from(SoftBody::new_random(
             TEST_BOARD_SIZE,
             TEST_TIME,
         ))];
@@ -25,8 +25,8 @@ mod benches {
     #[bench]
     fn bench_creature_new_baby_2_parents(b: &mut Bencher) {
         let parents = vec![
-            HLSoftBody::from(SoftBody::new_random_creature(TEST_BOARD_SIZE, TEST_TIME)),
-            HLSoftBody::from(SoftBody::new_random_creature(TEST_BOARD_SIZE, TEST_TIME)),
+            HLSoftBody::<Brain>::from(SoftBody::new_random(TEST_BOARD_SIZE, TEST_TIME)),
+            HLSoftBody::<Brain>::from(SoftBody::new_random(TEST_BOARD_SIZE, TEST_TIME)),
         ];
 
         b.iter(|| Creature::new_baby(parents.clone(), TEST_ENERGY, TEST_TIME));
