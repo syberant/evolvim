@@ -305,7 +305,7 @@ impl<B: NeuralNet> Board<B> {
             }
         }
     }
-    
+
     // #[cfg(multithreading)]
     pub fn move_creatures(&mut self, time_step: f64) {
         let board_size = self.get_board_size();
@@ -323,7 +323,7 @@ impl<B: NeuralNet> Board<B> {
     pub fn prepare_for_drawing(&mut self) {
         self.terrain.update_all(self.year, &self.climate);
     }
-    
+
     /// Checks for all creatures whether they are fit enough to live and kills them off if they're not.
     ///
     /// Utilizes the `should_die` function of `SoftBody`.
@@ -387,7 +387,7 @@ impl<B: NeuralNet> Board<B> {
     pub fn get_board_height(&self) -> usize {
         return self.board_height;
     }
-    
+
     /// Gets the size of the current population; i.e. how many creatures are currently alive.
     pub fn get_population_size(&self) -> usize {
         return self.creatures.len();
@@ -449,20 +449,27 @@ impl serde::Serialize for Board {
     }
 }
 
-impl<'de> serde::Deserialize<'de> for Board {
-    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+// TODO: write some documentation for these seemingly magic lifetimes and generics. Spoiler: they're not.
+impl<'de, B: 'de + NeuralNet + serde::Deserialize<'de>> serde::Deserialize<'de> for Board<B> {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Board<B>, D::Error> {
         use serde::de::*;
 
-        struct BoardVisitor;
+        struct BoardVisitor<'a, B: NeuralNet + serde::Deserialize<'a>>(std::marker::PhantomData<&'a B>);
 
-        impl<'de> Visitor<'de> for BoardVisitor {
-            type Value = Board;
+        impl<'a, B: NeuralNet + serde::Deserialize<'a>> Default for BoardVisitor<'a, B> {
+            fn default() -> Self {
+                BoardVisitor(std::marker::PhantomData)
+            }
+        }
+
+        impl<'de, B: NeuralNet + serde::Deserialize<'de>> Visitor<'de> for BoardVisitor<'de, B> {
+            type Value = Board<B>;
 
             fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
                 formatter.write_str("struct Board")
             }
 
-            fn visit_seq<V: SeqAccess<'de>>(self, mut seq: V) -> Result<Board, V::Error> {
+            fn visit_seq<V: SeqAccess<'de>>(self, mut seq: V) -> Result<Board<B>, V::Error> {
                 let file_version: Version = seq
                     .next_element()?
                     .ok_or_else(|| Error::invalid_length(0, &self))?;
@@ -481,7 +488,7 @@ impl<'de> serde::Deserialize<'de> for Board {
                 let creature_minimum = seq
                     .next_element()?
                     .ok_or_else(|| Error::invalid_length(2, &self))?;
-                let creatures_ir: Vec<Creature<Brain>> = seq
+                let creatures_ir: Vec<Creature<B>> = seq
                     .next_element()?
                     .ok_or_else(|| Error::invalid_length(3, &self))?;
                 let creature_id_up_to = seq
@@ -496,7 +503,7 @@ impl<'de> serde::Deserialize<'de> for Board {
 
                 let board_size = (terrain.get_width(), terrain.get_height());
                 let mut soft_bodies_in_positions = SoftBodiesInPositions::new_allocated(board_size);
-                let mut creatures: Vec<HLSoftBody> = creatures_ir
+                let mut creatures: Vec<HLSoftBody<B>> = creatures_ir
                     .into_iter()
                     .map(|c| HLSoftBody::from(c))
                     .collect();
@@ -539,6 +546,6 @@ impl<'de> serde::Deserialize<'de> for Board {
             "year",
             "climate",
         ];
-        deserializer.deserialize_struct("Board", FIELDS, BoardVisitor)
+        deserializer.deserialize_struct::<BoardVisitor<B>>("Board", FIELDS, BoardVisitor::<B>::default())
     }
 }
