@@ -421,7 +421,7 @@ impl Board {
     }
 }
 
-impl serde::Serialize for Board {
+impl<B: NeuralNet + serde::Serialize> serde::Serialize for Board<B> {
     fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         use serde::ser::SerializeStruct;
 
@@ -437,9 +437,9 @@ impl serde::Serialize for Board {
         state.serialize_field("terrain", &self.terrain)?;
 
         state.serialize_field("creature_minimum", &self.creature_minimum)?;
-        let sb_cr: Vec<ReadPtr<SoftBody>> = self.creatures.iter().map(|c| c.borrow()).collect();
+        let sb_cr: Vec<ReadPtr<SoftBody<B>>> = self.creatures.iter().map(|c| c.borrow()).collect();
         let cr = sb_cr.iter().map(|c| &**c);
-        state.serialize_field::<Vec<&SoftBody>>("creatures", &cr.collect())?;
+        state.serialize_field::<Vec<&SoftBody<B>>>("creatures", &cr.collect())?;
 
         state.serialize_field("creature_id_up_to", &self.creature_id_up_to)?;
         state.serialize_field("year", &self.year)?;
