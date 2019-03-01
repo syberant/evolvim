@@ -1,3 +1,4 @@
+#[derive(Clone, Debug)]
 pub enum OutputType {
     MouthHue,
     Eating,

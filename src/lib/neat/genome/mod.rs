@@ -12,7 +12,7 @@ pub use self::gene::{Id, NodeType};
 use rand::Rng;
 
 const AMOUNT_INPUT: usize = 3;
-const AMOUNT_OUTPUT: usize = 2;
+const AMOUNT_OUTPUT: usize = 4;
 static mut INNOVATION_NUMBER: usize = AMOUNT_INPUT * AMOUNT_OUTPUT;
 static mut NODE_NUMBER: Id = AMOUNT_INPUT + AMOUNT_OUTPUT;
 
@@ -94,8 +94,15 @@ impl Genome {
         }
 
         let mut con_counter = 1;
-        for _i in 0..AMOUNT_OUTPUT {
-            genome.add_node(NodeType::Output, node_counter);
+        use crate::neat::output::OutputType;
+        const OUTPUT_NODES: [NodeType; 4] = [
+            NodeType::Output(OutputType::Turning),
+            NodeType::Output(OutputType::Accelerating),
+            NodeType::Output(OutputType::MouthHue),
+            NodeType::Output(OutputType::Eating),
+        ];
+        for i in 0..AMOUNT_OUTPUT {
+            genome.add_node(OUTPUT_NODES[i].clone(), node_counter);
             node_counter += 1;
 
             let to = genome.node_genome.last().unwrap().id;

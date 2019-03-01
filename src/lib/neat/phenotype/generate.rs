@@ -17,15 +17,15 @@ impl From<&Genome> for NeuralNet {
         for i in node_gen {
             lookup.insert(i.id, counter);
 
-            match i.node_type {
+            match &i.node_type {
                 NodeType::Sensor => {
                     inputs.push(super::Input::new(
                         counter,
                         super::super::input::InputType::Bias(1.0),
                     ));
                 }
-                NodeType::Output => {
-                    outputs.push(super::Output::new(counter, unimplemented!()));
+                NodeType::Output(out_type) => {
+                    outputs.push(super::Output::new(counter, out_type.clone()));
                 }
                 _ => {}
             }
