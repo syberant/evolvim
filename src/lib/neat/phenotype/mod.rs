@@ -3,7 +3,7 @@ mod generate;
 use super::input::InputType;
 use super::output::OutputType;
 
-// TODO: use unsafe pointers to speed things up
+// TODO: use unsafe pointers or something to speed things up
 pub struct NeuralNet {
     nodes: Vec<Node>,
 
@@ -18,8 +18,10 @@ impl NeuralNet {
         }
     }
 
-    pub fn get_output(&self) -> &[Output] {
-        unimplemented!()
+    pub fn use_output(&self, env: &mut crate::brain::EnvironmentMut, time_step: f64) {
+        for output in &self.outputs {
+            output.use_output(&self.nodes, env, time_step);
+        }
     }
 
     pub fn run_calculations(&mut self) {
@@ -42,12 +44,17 @@ impl NeuralNet {
     }
 }
 
-pub struct Output {
+struct Output {
     node_index: usize,
     output_type: OutputType,
 }
 
 impl Output {
+    fn use_output(&self, nodes: &[Node], env: &mut crate::brain::EnvironmentMut, time_step: f64) {
+        let value = nodes[self.node_index].value;
+        self.output_type.use_output(value, env, time_step);
+    }
+
     pub fn new(node_index: usize, output_type: OutputType) -> Self {
         Output {
             node_index,
