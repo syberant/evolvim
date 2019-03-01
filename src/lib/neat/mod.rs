@@ -3,7 +3,7 @@ mod input;
 mod output;
 mod phenotype;
 
-use genome::Genome;
+pub use genome::Genome;
 use phenotype::NeuralNet;
 
 pub struct NeatBrain {
