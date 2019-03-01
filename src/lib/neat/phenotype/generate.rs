@@ -25,10 +25,7 @@ impl From<&Genome> for NeuralNet {
                     ));
                 }
                 NodeType::Output => {
-                    outputs.push(super::Output::new(
-                        counter,
-                        unimplemented!()
-                    ));
+                    outputs.push(super::Output::new(counter, unimplemented!()));
                 }
                 _ => {}
             }

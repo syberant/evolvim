@@ -454,7 +454,9 @@ impl<'de, B: 'de + NeuralNet + serde::Deserialize<'de>> serde::Deserialize<'de> 
     fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Board<B>, D::Error> {
         use serde::de::*;
 
-        struct BoardVisitor<'a, B: NeuralNet + serde::Deserialize<'a>>(std::marker::PhantomData<&'a B>);
+        struct BoardVisitor<'a, B: NeuralNet + serde::Deserialize<'a>>(
+            std::marker::PhantomData<&'a B>,
+        );
 
         impl<'a, B: NeuralNet + serde::Deserialize<'a>> Default for BoardVisitor<'a, B> {
             fn default() -> Self {
@@ -546,6 +548,10 @@ impl<'de, B: 'de + NeuralNet + serde::Deserialize<'de>> serde::Deserialize<'de> 
             "year",
             "climate",
         ];
-        deserializer.deserialize_struct::<BoardVisitor<B>>("Board", FIELDS, BoardVisitor::<B>::default())
+        deserializer.deserialize_struct::<BoardVisitor<B>>(
+            "Board",
+            FIELDS,
+            BoardVisitor::<B>::default(),
+        )
     }
 }

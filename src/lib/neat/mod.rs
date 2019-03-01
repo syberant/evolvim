@@ -15,10 +15,7 @@ impl From<Genome> for NeatBrain {
     fn from(genome: Genome) -> Self {
         let net = (&genome).into();
 
-        NeatBrain {
-            genome,
-            net
-        }
+        NeatBrain { genome, net }
     }
 }
 
@@ -74,7 +71,10 @@ impl crate::brain::RecombinationInfinite for NeatBrain {
             // Generate a phenotype and return a NeatBrain
             genome.into()
         } else {
-            NeatBrain::recombination_two_parents(&parents[0].borrow().brain, &parents[1].borrow().brain)
+            NeatBrain::recombination_two_parents(
+                &parents[0].borrow().brain,
+                &parents[1].borrow().brain,
+            )
         }
     }
 }
