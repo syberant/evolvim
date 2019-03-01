@@ -30,7 +30,7 @@ pub fn get_next_node_id() -> Id {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Genome {
     node_genome: Vec<NodeGene>,
     connection_genome: Vec<ConnectionGene>,

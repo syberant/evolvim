@@ -4,6 +4,7 @@ use super::input::InputType;
 use super::output::OutputType;
 
 // TODO: use unsafe pointers or something to speed things up
+#[derive(Debug)]
 pub struct NeuralNet {
     nodes: Vec<Node>,
 
@@ -44,6 +45,7 @@ impl NeuralNet {
     }
 }
 
+#[derive(Debug)]
 struct Output {
     node_index: usize,
     output_type: OutputType,
@@ -63,6 +65,7 @@ impl Output {
     }
 }
 
+#[derive(Debug)]
 struct Input {
     node_index: usize,
     input_type: InputType,
@@ -82,7 +85,7 @@ impl Input {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 struct Node {
     pub value: f64,
     pub connections: Vec<Connection>,
@@ -105,7 +108,7 @@ impl Node {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 struct Connection {
     to_index: usize,
     weight: f64,

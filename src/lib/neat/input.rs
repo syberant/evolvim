@@ -1,5 +1,6 @@
 use crate::brain::Environment;
 
+#[derive(Debug)]
 pub enum InputType {
     Eye(Eye),
     Bias(f64),
@@ -16,12 +17,14 @@ impl InputType {
     }
 }
 
+#[derive(Debug)]
 struct Eye {
     relative_distance: f64,
     angle: f64,
     what_to_look_for: EyeType,
 }
 
+#[derive(Debug)]
 enum EyeType {
     FoodLevel,
     FoodColor,

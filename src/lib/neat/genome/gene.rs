@@ -7,13 +7,13 @@ pub enum NodeType {
     Output(crate::neat::output::OutputType),
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct NodeGene {
     pub node_type: NodeType,
     pub id: Id,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct ConnectionGene {
     pub from: Id,
     pub to: Id,

@@ -6,6 +6,7 @@ mod phenotype;
 pub use genome::Genome;
 use phenotype::NeuralNet;
 
+#[derive(Debug)]
 pub struct NeatBrain {
     genome: Genome,
     net: NeuralNet,
