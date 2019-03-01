@@ -26,6 +26,12 @@ pub trait GenerateRandom {
     fn new_random() -> Self;
 }
 
+pub trait RecombinationTwoParents {
+    fn recombination_two_parents(parent_a: &Self, parent_b: &Self) -> Self
+    where
+        Self: NeuralNet + std::marker::Sized;
+}
+
 pub trait RecombinationInfinite {
     fn recombination_infinite_parents(parents: &Vec<crate::softbody::HLSoftBody<Self>>) -> Self
     where
