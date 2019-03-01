@@ -27,7 +27,7 @@ impl From<&Genome> for NeuralNet {
                 NodeType::Output => {
                     outputs.push(super::Output::new(
                         counter,
-                        super::super::output::OutputType::Test,
+                        unimplemented!()
                     ));
                 }
                 _ => {}
