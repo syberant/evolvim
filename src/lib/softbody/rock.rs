@@ -369,6 +369,10 @@ impl Rock {
         return self.py;
     }
 
+    pub fn get_rotation(&self) -> f64 {
+        return self.rotation;
+    }
+
     pub fn get_position(&self) -> BoardPreciseCoordinate {
         BoardPreciseCoordinate(self.get_px(), self.get_py())
     }
