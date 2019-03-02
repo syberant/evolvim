@@ -1,6 +1,6 @@
 use crate::brain::Environment;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum InputType {
     Eye(Eye),
     Bias(f64),
@@ -21,14 +21,14 @@ impl InputType {
     }
 }
 
-#[derive(Debug)]
-struct Eye {
+#[derive(Debug, Clone)]
+pub struct Eye {
     relative_distance: f64,
     angle: f64,
     what_to_look_for: EyeType,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 enum EyeType {
     FoodLevel,
     FoodColor,
@@ -51,5 +51,25 @@ impl Eye {
             FoodColor => tile.get_food_type(),
             TileFertility => tile.get_fertility(),
         }
+    }
+
+    pub const fn get_all_three(relative_distance: f64, angle: f64) -> [Self; 3] {
+        [
+            Eye {
+                relative_distance,
+                angle,
+                what_to_look_for: EyeType::FoodLevel,
+            },
+            Eye {
+                relative_distance,
+                angle,
+                what_to_look_for: EyeType::FoodColor,
+            },
+            Eye {
+                relative_distance,
+                angle,
+                what_to_look_for: EyeType::TileFertility,
+            },
+        ]
     }
 }

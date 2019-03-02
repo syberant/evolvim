@@ -11,7 +11,7 @@ use self::gene::{ConnectionGene, NodeGene};
 pub use self::gene::{Id, NodeType};
 use rand::Rng;
 
-const AMOUNT_INPUT: usize = 3;
+const AMOUNT_INPUT: usize = 6;
 const AMOUNT_OUTPUT: usize = 4;
 static mut INNOVATION_NUMBER: usize = AMOUNT_INPUT * AMOUNT_OUTPUT;
 static mut NODE_NUMBER: Id = AMOUNT_INPUT + AMOUNT_OUTPUT;
@@ -88,8 +88,19 @@ impl Genome {
         };
         let mut node_counter = 1;
 
-        for _i in 0..AMOUNT_INPUT {
-            genome.add_node(NodeType::Sensor, node_counter);
+        use crate::neat::input::Eye;
+        use crate::neat::input::InputType;
+        const EYE: [Eye; 3] = Eye::get_all_three(0.0, 0.0);
+        let input_nodes: [InputType; 6] = [
+            InputType::Bias(1.0),
+            InputType::MouthHue,
+            InputType::Energy,
+            InputType::Eye(EYE[0]).clone(),
+            InputType::Eye(EYE[1]).clone(),
+            InputType::Eye(EYE[2]).clone(),
+        ];
+        for i in 0..AMOUNT_INPUT {
+            genome.add_node(NodeType::Sensor(input_nodes[i].clone()), node_counter);
             node_counter += 1;
         }
 

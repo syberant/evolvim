@@ -30,10 +30,10 @@ impl From<&Genome> for NeuralNet {
             lookup.insert(i.id, counter);
 
             match &i.node_type {
-                NodeType::Sensor => {
+                NodeType::Sensor(in_type) => {
                     inputs.push(super::Input::new(
                         counter,
-                        super::super::input::InputType::Bias(1.0),
+                        in_type.clone(),
                     ));
                 }
                 NodeType::Output(out_type) => {

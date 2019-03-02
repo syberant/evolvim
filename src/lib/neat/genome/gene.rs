@@ -2,7 +2,7 @@ pub type Id = usize;
 
 #[derive(Debug, Clone)]
 pub enum NodeType {
-    Sensor,
+    Sensor(crate::neat::input::InputType),
     Hidden,
     Output(crate::neat::output::OutputType),
 }
