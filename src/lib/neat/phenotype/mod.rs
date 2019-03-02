@@ -21,11 +21,16 @@ impl NeuralNet {
 
     pub fn use_output(&self, env: &mut crate::brain::EnvironmentMut, time_step: f64) {
         for output in &self.outputs {
-            output.use_output(&self.nodes, env, time_step);
+            output.use_output(env, time_step);
         }
     }
 
     pub fn run_calculations(&mut self) {
+        for n in &mut self.outputs {
+            // Reset the value to 0
+            n.value = 0.0;
+        }
+
         for n in &mut self.nodes {
             n.calc();
         }
@@ -40,9 +45,8 @@ struct Output {
 }
 
 impl Output {
-    fn use_output(&self, _nodes: &[Node], env: &mut crate::brain::EnvironmentMut, time_step: f64) {
+    fn use_output(&self, env: &mut crate::brain::EnvironmentMut, time_step: f64) {
         self.output_type.use_output(self.value, env, time_step);
-        // self.value = 0.0;
     }
 
     pub fn new(node_index: usize, output_type: OutputType) -> Self {
