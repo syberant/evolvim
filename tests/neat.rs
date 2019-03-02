@@ -68,3 +68,17 @@ fn test_genetical_distance() {
         distance
     );
 }
+
+#[test]
+fn test_generate_phenotype() {
+    let gen = neat::Genome::new_fully_linked();
+    let _phen: neat::NeuralNet = (&gen).into();
+}
+
+#[test]
+fn test_run_phenotype() {
+    let gen = neat::Genome::new_fully_linked();
+    let mut phen: neat::NeuralNet = (&gen).into();
+
+    phen.run_calculations();
+}
