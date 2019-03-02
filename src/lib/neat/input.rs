@@ -4,6 +4,8 @@ use crate::brain::Environment;
 pub enum InputType {
     Eye(Eye),
     Bias(f64),
+    MouthHue,
+    Energy,
 }
 
 impl InputType {
@@ -13,6 +15,8 @@ impl InputType {
         match &self {
             Bias(v) => *v,
             Eye(s) => s.get_data(env),
+            MouthHue => env.this_body.get_mouth_hue(),
+            Energy => env.this_body.get_energy(),
         }
     }
 }
