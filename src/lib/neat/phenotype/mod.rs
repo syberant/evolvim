@@ -26,21 +26,8 @@ impl NeuralNet {
     }
 
     pub fn run_calculations(&mut self) {
-        for i in 0..self.nodes.len() {
-            self.calc_neuron(i);
-        }
-    }
-
-    fn calc_neuron(&mut self, id: usize) {
-        let value = self.nodes[id].perform_sigmoid();
-
-        // Reset counter
-        self.nodes[id].value = 0.0;
-
-        // unsafe here is necessary
-        // it is safe because we use .connections with the immutable reference and .value with the mutable one
-        for i in unsafe { &(*(&self.nodes[id] as *const Node)).connections } {
-            self.nodes[i.to_index].value += value * i.weight;
+        for n in &mut self.nodes {
+            n.calc();
         }
     }
 }
@@ -48,18 +35,20 @@ impl NeuralNet {
 #[derive(Debug)]
 struct Output {
     node_index: usize,
+    value: f64,
     output_type: OutputType,
 }
 
 impl Output {
-    fn use_output(&self, nodes: &[Node], env: &mut crate::brain::EnvironmentMut, time_step: f64) {
-        let value = nodes[self.node_index].value;
-        self.output_type.use_output(value, env, time_step);
+    fn use_output(&self, _nodes: &[Node], env: &mut crate::brain::EnvironmentMut, time_step: f64) {
+        self.output_type.use_output(self.value, env, time_step);
+        // self.value = 0.0;
     }
 
     pub fn new(node_index: usize, output_type: OutputType) -> Self {
         Output {
             node_index,
+            value: 0.0,
             output_type,
         }
     }
@@ -100,6 +89,18 @@ impl Node {
         return sigmoid(self.value);
     }
 
+    pub fn calc(&mut self) {
+        let sig_value = self.perform_sigmoid();
+
+        self.value = 0.0;
+
+        for c in &self.connections {
+            unsafe {
+                *c.to += c.weight * sig_value;
+            }
+        }
+    }
+
     pub fn empty() -> Self {
         Node {
             value: 0.0,
@@ -110,13 +111,17 @@ impl Node {
 
 #[derive(Clone, Debug)]
 struct Connection {
-    to_index: usize,
+    to: *mut f64,
     weight: f64,
 }
 
 impl Connection {
-    pub fn new(to_index: usize, weight: f64) -> Self {
-        Connection { to_index, weight }
+    /// Weighted connection to another point in memory
+    ///
+    /// This is unsafe, to use this you must manually guarantee that the pointer stays valid
+    /// at least until we destroy this Neural Network struct.
+    pub unsafe fn new(to: *mut f64, weight: f64) -> Self {
+        Connection { to, weight }
     }
 }
 

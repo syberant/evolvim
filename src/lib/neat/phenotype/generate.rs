@@ -10,7 +10,19 @@ impl From<&Genome> for NeuralNet {
             .take(node_gen.len())
             .collect();
         let mut inputs = Vec::new();
-        let mut outputs = Vec::new();
+        // Preallocate the memory so we don't have to reallocate and make the *mut-pointers invalid.
+        let mut outputs = Vec::with_capacity(
+            node_gen
+                .iter()
+                .filter(|node| {
+                    if let NodeType::Output(_) = node.node_type {
+                        true
+                    } else {
+                        false
+                    }
+                })
+                .count(),
+        );
         let mut lookup: HashMap<Id, usize> = HashMap::new();
 
         let mut counter = 0;
@@ -26,6 +38,10 @@ impl From<&Genome> for NeuralNet {
                 }
                 NodeType::Output(out_type) => {
                     outputs.push(super::Output::new(counter, out_type.clone()));
+                    let to: *mut f64 = &mut outputs.last_mut().unwrap().value;
+                    nodes[counter]
+                        .connections
+                        .push(unsafe { Connection::new(to, 1.0) });
                 }
                 _ => {}
             }
@@ -35,11 +51,11 @@ impl From<&Genome> for NeuralNet {
 
         for con in genome.get_connection_genome().iter().filter(|c| c.enabled) {
             let from = get_usize_from_id(&lookup, con.from);
-            let to = get_usize_from_id(&lookup, con.to);
+            let to = &mut nodes[get_usize_from_id(&lookup, con.to)].value as *mut f64;
 
             nodes[from]
                 .connections
-                .push(Connection::new(to, con.weight));
+                .push(unsafe { Connection::new(to, con.weight) });
         }
 
         NeuralNet {
