@@ -64,7 +64,7 @@ fn main() {
 
     window.set_max_fps(20);
 
-    let byte_font = include_bytes!("../../assets/default-font.ttf");
+    let byte_font = include_bytes!("../../../assets/default-font.ttf");
     let factory = window.factory.clone();
     let text_settings = TextureSettings::new();
     let mut glyphs = Glyphs::from_bytes(byte_font, factory, text_settings).unwrap();
