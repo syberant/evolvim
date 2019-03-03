@@ -160,8 +160,8 @@ pub fn draw_terrain<C, G>(
     }
 }
 
-pub fn draw_creature<G: Graphics>(
-    creature: &Creature<Brain>,
+pub fn draw_creature<B: lib_evolvim::brain::NeuralNet, G: Graphics>(
+    creature: &Creature<B>,
     context: Context,
     graphics: &mut G,
     view: &View,
@@ -187,13 +187,14 @@ pub fn draw_creature<G: Graphics>(
     ellipse.draw(rect, &context.draw_state, transform, graphics);
 }
 
-pub fn draw_details_creature<C, G>(
-    creature: &Creature<Brain>,
+pub fn draw_details_creature<B, C, G>(
+    creature: &Creature<B>,
     context: Context,
     graphics: &mut G,
     glyphs: &mut C,
     view: &View,
 ) where
+    B: lib_evolvim::brain::NeuralNet + DrawableBrain,
     C: CharacterCache,
     C::Error: Debug,
     G: Graphics<Texture = C::Texture>,
@@ -228,7 +229,7 @@ pub fn draw_details_creature<C, G>(
         graphics,
     );
 
-    draw_brain(&creature.brain, context, graphics, glyphs);
+    creature.brain.draw_brain(context, graphics, glyphs);
 
     let size = view.get_tile_size();
     let transform = context
@@ -251,56 +252,77 @@ pub fn draw_details_creature<C, G>(
     ellipse.draw(rect, &context.draw_state, transform, graphics);
 }
 
-pub fn draw_brain<C, G>(brain: &Brain, context: Context, graphics: &mut G, glyphs: &mut C)
-where
-    C: CharacterCache,
-    C::Error: Debug,
-    G: Graphics<Texture = C::Texture>,
-{
-    let text = Text::new(18);
-    let output = brain
-        .get_output()
-        .iter()
-        .map(|value| format!("{:.3}", value))
-        .collect();
-    let hidden = brain
-        .get_hidden_layer()
-        .iter()
-        .map(|val| format!("{:.3}", val))
-        .collect();
-    let input = brain
-        .get_input_layer()
-        .iter()
-        .map(|val| format!("{:.3}", val))
-        .collect();
-    let info = brain.intentions();
+pub trait DrawableBrain {
+    fn draw_brain<C, G>(&self, context: Context, graphics: &mut G, glyphs: &mut C)
+    where
+        C: CharacterCache,
+        C::Error: Debug,
+        G: Graphics<Texture = C::Texture>;
+}
 
-    draw_lines(input, 20.0, 100.0, context, text, glyphs, graphics);
-    draw_lines(
-        hidden,
-        20.0,
-        100.0,
-        context.trans(120.0, 0.0),
-        text,
-        glyphs,
-        graphics,
-    );
-    draw_lines(
-        output,
-        20.0,
-        100.0,
-        context.trans(240.0, 0.0),
-        text,
-        glyphs,
-        graphics,
-    );
-    draw_lines(
-        info,
-        20.0,
-        100.0,
-        context.trans(360.0, 0.0),
-        text,
-        glyphs,
-        graphics,
-    );
+impl DrawableBrain for lib_evolvim::neat::NeatBrain {
+    fn draw_brain<C, G>(&self, _context: Context, _graphics: &mut G, _glyphs: &mut C)
+    where
+        C: CharacterCache,
+        C::Error: Debug,
+        G: Graphics<Texture = C::Texture>,
+    {
+        unimplemented!();
+    }
+}
+
+impl DrawableBrain for Brain {
+    fn draw_brain<C, G>(&self, context: Context, graphics: &mut G, glyphs: &mut C)
+    where
+        C: CharacterCache,
+        C::Error: Debug,
+        G: Graphics<Texture = C::Texture>,
+    {
+        let text = Text::new(18);
+        let output = self
+            .get_output()
+            .iter()
+            .map(|value| format!("{:.3}", value))
+            .collect();
+        let hidden = self
+            .get_hidden_layer()
+            .iter()
+            .map(|val| format!("{:.3}", val))
+            .collect();
+        let input = self
+            .get_input_layer()
+            .iter()
+            .map(|val| format!("{:.3}", val))
+            .collect();
+        let info = self.intentions();
+
+        draw_lines(input, 20.0, 100.0, context, text, glyphs, graphics);
+        draw_lines(
+            hidden,
+            20.0,
+            100.0,
+            context.trans(120.0, 0.0),
+            text,
+            glyphs,
+            graphics,
+        );
+        draw_lines(
+            output,
+            20.0,
+            100.0,
+            context.trans(240.0, 0.0),
+            text,
+            glyphs,
+            graphics,
+        );
+        draw_lines(
+            info,
+            20.0,
+            100.0,
+            context.trans(360.0, 0.0),
+            text,
+            glyphs,
+            graphics,
+        );
+    }
 }
