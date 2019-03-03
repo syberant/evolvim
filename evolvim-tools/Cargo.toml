@@ -18,16 +18,11 @@ name = "check_terrain_gen"
 path = "./src/checkTerrainGen.rs"
 
 [dependencies]
-bincode = "1.1.1"
 clap = "2.32.0"
 ctrlc = "3.1.1"
 evolvim-lib = { path = "../evolvim-lib" }
-noise = "0.5.1"
 piston2d-gfx_graphics = "0.56.0"
 piston_window = "0.89.0"
-rand = "0.6.5"
-serde = "1.0.87"
-serde_derive = "1.0.87"
 
 [dependencies.piston2d-graphics]
 features = ["glyph_cache_rusttype"]
