@@ -1,19 +1,19 @@
 pub type Id = usize;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum NodeType {
     Sensor(crate::neat::input::InputType),
     Hidden,
     Output(crate::neat::output::OutputType),
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct NodeGene {
     pub node_type: NodeType,
     pub id: Id,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct ConnectionGene {
     pub from: Id,
     pub to: Id,
