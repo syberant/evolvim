@@ -79,3 +79,48 @@ impl crate::brain::RecombinationInfinite for NeatBrain {
         }
     }
 }
+
+// TODO: serialize the values of the nodes (which allows for memory)
+impl serde::Serialize for NeatBrain {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        use serde::ser::SerializeStruct;
+
+        let mut state = serializer.serialize_struct("NeatBrain", 1)?;
+
+        state.serialize_field("genome", &self.genome)?;
+
+        state.end()
+    }
+}
+
+// TODO: deserialize the values of the nodes (which allows for memory)
+impl<'de> serde::Deserialize<'de> for NeatBrain {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<NeatBrain, D::Error> {
+        use serde::de::*;
+
+        struct BrainVisitor;
+
+        impl<'de> Visitor<'de> for BrainVisitor {
+            type Value = NeatBrain;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+                formatter.write_str("struct NeatBrain")
+            }
+
+            fn visit_seq<V: SeqAccess<'de>>(self, mut seq: V) -> Result<NeatBrain, V::Error> {
+                let genome: Genome = seq.next_element()?.ok_or_else(|| Error::invalid_length(0, &self))?;
+
+                Ok(genome.into())
+            }
+        }
+
+        const FIELDS: &[&str] = &[
+            "genome"
+        ];
+        deserializer.deserialize_struct::<BrainVisitor>(
+            "NeatBrain",
+            FIELDS,
+            BrainVisitor,
+        )
+    }
+}

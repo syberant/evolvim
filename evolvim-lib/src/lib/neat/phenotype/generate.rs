@@ -31,10 +31,7 @@ impl From<&Genome> for NeuralNet {
 
             match &i.node_type {
                 NodeType::Sensor(in_type) => {
-                    inputs.push(super::Input::new(
-                        counter,
-                        in_type.clone(),
-                    ));
+                    inputs.push(super::Input::new(counter, in_type.clone()));
                 }
                 NodeType::Output(out_type) => {
                     outputs.push(super::Output::new(counter, out_type.clone()));

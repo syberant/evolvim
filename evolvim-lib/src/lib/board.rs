@@ -404,12 +404,31 @@ impl<B: NeuralNet> Board<B> {
     }
 }
 
-impl Board {
-    pub fn load_from<P: AsRef<std::path::Path>>(path: P) -> Result<Self, Box<std::error::Error>> {
+// TODO: get this generic implementation working
+// impl<B: NeuralNet + serde::de::DeserializeOwned> Board<B> {
+//     pub fn load_from<P: AsRef<std::path::Path>>(path: P) -> Result<Board<B>, Box<std::error::Error>> {
+//         let file = std::fs::File::open(path)?;
+//         let res: Result<Board<B>, Box<board::bincode::ErrorKind>> = bincode::deserialize_from::<std::fs::File, Board<B>>(file);
+//         Ok(res?)
+//     }
+// }
+
+use crate::neat::NeatBrain;
+impl Board<NeatBrain> {
+    pub fn load_from<P: AsRef<std::path::Path>>(path: P) -> Result<Board<NeatBrain>, Box<std::error::Error>> {
         let file = std::fs::File::open(path)?;
         Ok(bincode::deserialize_from(file)?)
     }
+}
 
+impl Board<Brain> {
+    pub fn load_from<P: AsRef<std::path::Path>>(path: P) -> Result<Board<Brain>, Box<std::error::Error>> {
+        let file = std::fs::File::open(path)?;
+        Ok(bincode::deserialize_from(file)?)
+    }
+}
+
+impl<B: NeuralNet + serde::Serialize> Board<B> {
     pub fn save_to<P: AsRef<std::path::Path>>(
         &self,
         path: P,
