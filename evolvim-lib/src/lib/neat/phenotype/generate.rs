@@ -6,9 +6,9 @@ use std::collections::HashMap;
 impl From<&Genome> for NeuralNet {
     fn from(genome: &Genome) -> Self {
         let node_gen = genome.get_node_genome();
-        let mut nodes: Vec<Node> = std::iter::repeat(Node::empty())
+        let mut nodes: Box<[Node]> = std::iter::repeat(Node::empty())
             .take(node_gen.len())
-            .collect();
+            .collect::<Vec<Node>>().into_boxed_slice();
         let mut inputs = Vec::new();
         // Preallocate the memory so we don't have to reallocate and make the *mut-pointers invalid.
         let mut outputs = Vec::with_capacity(
@@ -58,7 +58,7 @@ impl From<&Genome> for NeuralNet {
         NeuralNet {
             nodes,
             inputs,
-            outputs,
+            outputs: outputs.into_boxed_slice(),
         }
     }
 }
