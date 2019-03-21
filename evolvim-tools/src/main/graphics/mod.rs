@@ -261,13 +261,15 @@ pub trait DrawableBrain {
 }
 
 impl DrawableBrain for lib_evolvim::neat::NeatBrain {
-    fn draw_brain<C, G>(&self, _context: Context, _graphics: &mut G, _glyphs: &mut C)
+    fn draw_brain<C, G>(&self, context: Context, graphics: &mut G, glyphs: &mut C)
     where
         C: CharacterCache,
         C::Error: Debug,
         G: Graphics<Texture = C::Texture>,
     {
-        unimplemented!();
+        let text = Text::new(18);
+        let info = self.get_ordered_key_value_pairs().into_iter().map(|(key, value)| format!("{}: {}", key, value)).collect();
+        draw_lines(info, 20.0, 100.0, context, text, glyphs, graphics);
     }
 }
 

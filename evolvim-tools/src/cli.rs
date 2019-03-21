@@ -6,6 +6,9 @@ use clap::{App, Arg};
 use lib_evolvim::Board;
 use std::sync::atomic::Ordering;
 
+// type BrainType = lib_evolvim::neat::NeatBrain;
+type BrainType = lib_evolvim::Brain;
+
 fn main() {
     let abort_reader = std::sync::Arc::new(std::sync::atomic::ATOMIC_BOOL_INIT);
     let abort_writer = abort_reader.clone();
@@ -63,8 +66,8 @@ fn main() {
         matches.value_of("output")
     };
 
-    let mut board = if let Some(name) = matches.value_of("input") {
-        Board::load_from(name).unwrap()
+    let mut board: Board<BrainType> = if let Some(name) = matches.value_of("input") {
+        Board::<BrainType>::load_from(name).unwrap()
     } else {
         Board::default()
     };

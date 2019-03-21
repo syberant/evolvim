@@ -1,4 +1,5 @@
 use super::*;
+use crate::BrainType;
 use std::ops::Range;
 
 /// The view part of MVC (Model-View-Controller), currently takes on jobs for the controller too.
@@ -19,7 +20,7 @@ pub struct View {
     _base_tile_width: f64,
     tile_width: f64,
 
-    pub board: Board,
+    pub board: Board<BrainType>,
 
     pub mouse: MouseCoordinate,
 

@@ -6,9 +6,9 @@ use super::output::OutputType;
 // TODO: use unsafe pointers or something to speed things up
 #[derive(Debug)]
 pub struct NeuralNet {
-    nodes: Vec<Node>,
+    nodes: Box<[Node]>,
 
-    outputs: Vec<Output>,
+    outputs: Box<[Output]>,
     inputs: Vec<Input>,
 }
 
@@ -20,18 +20,18 @@ impl NeuralNet {
     }
 
     pub fn use_output(&self, env: &mut crate::brain::EnvironmentMut, time_step: f64) {
-        for output in &self.outputs {
+        for output in self.outputs.iter() {
             output.use_output(env, time_step);
         }
     }
 
     pub fn run_calculations(&mut self) {
-        for n in &mut self.outputs {
+        for n in self.outputs.iter_mut() {
             // Reset the value to 0
             n.value = 0.0;
         }
 
-        for n in &mut self.nodes {
+        for n in self.nodes.iter_mut() {
             n.calc();
         }
     }

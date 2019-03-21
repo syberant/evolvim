@@ -9,6 +9,9 @@ use clap::{App, Arg};
 use lib_evolvim::Board;
 use piston_window::*;
 
+// type BrainType = lib_evolvim::neat::NeatBrain;
+type BrainType = lib_evolvim::brain::Brain;
+
 fn main() {
     let matches = App::new("Evolvim - GUI launched via CLI")
         .version(clap::crate_version!())
@@ -42,7 +45,7 @@ fn main() {
 
     let mut view = View::default();
     if let Some(filename) = matches.value_of("input") {
-        view.board = Board::load_from(filename).unwrap();
+        view.board = Board::<BrainType>::load_from(filename).unwrap();
     }
 
     let output_file = if matches.is_present("save") {
