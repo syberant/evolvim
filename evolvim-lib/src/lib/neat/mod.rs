@@ -80,6 +80,22 @@ impl crate::brain::RecombinationInfinite for NeatBrain {
     }
 }
 
+impl crate::brain::ProvideInformation for NeatBrain {
+    fn get_keys(&self) -> Vec<String> {
+        vec!(
+            "nodes".to_string(),
+            "connections".to_string()
+        )
+    }
+
+    fn get_raw_values(&self) -> Vec<String> {
+        vec!(
+            format!("{}", self.genome.get_node_genome().len()),
+            format!("{}", self.genome.get_connection_genome().len())
+        )
+    }
+}
+
 // TODO: serialize the values of the nodes (which allows for memory)
 impl serde::Serialize for NeatBrain {
     fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
