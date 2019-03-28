@@ -40,18 +40,20 @@ pub trait RecombinationInfinite {
 
 pub trait ProvideInformation {
     fn get_raw_values(&self) -> Vec<String> {
-        vec!(String::from("This struct has not yet implemented it's own information system."))
+        vec![String::from(
+            "This struct has not yet implemented it's own information system.",
+        )]
     }
 
     fn get_keys(&self) -> Vec<String> {
-        vec!(String::from("warning"))
+        vec![String::from("warning")]
     }
 
     fn get_ordered_key_value_pairs(&self) -> Vec<(String, String)> {
         let values = self.get_raw_values();
         let keys = self.get_keys();
         assert!(values.len() == keys.len(), "The amount of values ({}) and keys ({}) in the implementation of ProvideInformation does not match.", values.len(), keys.len());
-        
+
         // Zip the two iterators
         keys.into_iter().zip(values.into_iter()).collect()
     }

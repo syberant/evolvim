@@ -82,17 +82,14 @@ impl crate::brain::RecombinationInfinite for NeatBrain {
 
 impl crate::brain::ProvideInformation for NeatBrain {
     fn get_keys(&self) -> Vec<String> {
-        vec!(
-            "nodes".to_string(),
-            "connections".to_string()
-        )
+        vec!["nodes".to_string(), "connections".to_string()]
     }
 
     fn get_raw_values(&self) -> Vec<String> {
-        vec!(
+        vec![
             format!("{}", self.genome.get_node_genome().len()),
-            format!("{}", self.genome.get_connection_genome().len())
-        )
+            format!("{}", self.genome.get_connection_genome().len()),
+        ]
     }
 }
 
@@ -124,19 +121,15 @@ impl<'de> serde::Deserialize<'de> for NeatBrain {
             }
 
             fn visit_seq<V: SeqAccess<'de>>(self, mut seq: V) -> Result<NeatBrain, V::Error> {
-                let genome: Genome = seq.next_element()?.ok_or_else(|| Error::invalid_length(0, &self))?;
+                let genome: Genome = seq
+                    .next_element()?
+                    .ok_or_else(|| Error::invalid_length(0, &self))?;
 
                 Ok(genome.into())
             }
         }
 
-        const FIELDS: &[&str] = &[
-            "genome"
-        ];
-        deserializer.deserialize_struct::<BrainVisitor>(
-            "NeatBrain",
-            FIELDS,
-            BrainVisitor,
-        )
+        const FIELDS: &[&str] = &["genome"];
+        deserializer.deserialize_struct::<BrainVisitor>("NeatBrain", FIELDS, BrainVisitor)
     }
 }
