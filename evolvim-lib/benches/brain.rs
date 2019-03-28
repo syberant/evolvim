@@ -5,7 +5,8 @@ mod benches {
     extern crate lib_evolvim;
     extern crate test;
 
-    use self::lib_evolvim::*;
+    use self::lib_evolvim::{Board, BoardSize, Brain, Environment, HLSoftBody, SoftBody};
+    use self::lib_evolvim::{GenerateRandom, NeuralNet, RecombinationInfinite};
     use self::test::Bencher;
 
     // const TEST_INPUT: BrainInput = [1., 2., 3., 4., 5., 6., 7., 8., 9.];
@@ -13,7 +14,7 @@ mod benches {
     const TEST_TIME: f64 = 0.0;
 
     fn get_test_board() -> Board {
-        Board::load_from("assets/test.bin").unwrap()
+        Board::<Brain>::load_from("assets/test.bin").unwrap()
     }
 
     #[bench]

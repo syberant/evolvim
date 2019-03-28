@@ -8,7 +8,8 @@ impl From<&Genome> for NeuralNet {
         let node_gen = genome.get_node_genome();
         let mut nodes: Box<[Node]> = std::iter::repeat(Node::empty())
             .take(node_gen.len())
-            .collect::<Vec<Node>>().into_boxed_slice();
+            .collect::<Vec<Node>>()
+            .into_boxed_slice();
         let mut inputs = Vec::new();
         // Preallocate the memory so we don't have to reallocate and make the *mut-pointers invalid.
         let mut outputs = Vec::with_capacity(

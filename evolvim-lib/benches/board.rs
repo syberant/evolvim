@@ -5,13 +5,13 @@ mod benches {
     extern crate lib_evolvim;
     extern crate test;
 
-    use self::lib_evolvim::*;
+    use self::lib_evolvim::{Board, Brain};
     use self::test::Bencher;
 
     const FRAME_TIME_STEP: f64 = 0.001;
 
     fn get_test_board() -> Board {
-        Board::load_from("assets/test.bin").unwrap()
+        Board::<Brain>::load_from("assets/test.bin").unwrap()
     }
 
     #[bench]

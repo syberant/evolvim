@@ -415,14 +415,18 @@ impl<B: NeuralNet> Board<B> {
 
 use crate::neat::NeatBrain;
 impl Board<NeatBrain> {
-    pub fn load_from<P: AsRef<std::path::Path>>(path: P) -> Result<Board<NeatBrain>, Box<std::error::Error>> {
+    pub fn load_from<P: AsRef<std::path::Path>>(
+        path: P,
+    ) -> Result<Board<NeatBrain>, Box<std::error::Error>> {
         let file = std::fs::File::open(path)?;
         Ok(bincode::deserialize_from(file)?)
     }
 }
 
 impl Board<Brain> {
-    pub fn load_from<P: AsRef<std::path::Path>>(path: P) -> Result<Board<Brain>, Box<std::error::Error>> {
+    pub fn load_from<P: AsRef<std::path::Path>>(
+        path: P,
+    ) -> Result<Board<Brain>, Box<std::error::Error>> {
         let file = std::fs::File::open(path)?;
         Ok(bincode::deserialize_from(file)?)
     }
