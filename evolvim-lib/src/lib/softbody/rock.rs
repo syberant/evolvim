@@ -35,12 +35,13 @@ pub struct Rock {
     prev_sbip_max_y: usize,
     // Stats or info
     prev_energy: f64,
+    birth_time: f64,
     // Miscellanious
     mouth_hue: f64,
 }
 
 impl Rock {
-    pub fn new_random(board_size: BoardSize, density: f64, energy: f64) -> Self {
+    pub fn new_random(board_size: BoardSize, density: f64, energy: f64, time: f64) -> Self {
         let (board_width, board_height) = board_size;
 
         let mut thread_rng = rand::thread_rng();
@@ -70,13 +71,14 @@ impl Rock {
             prev_sbip_max_y: 0,
 
             prev_energy: energy,
+            birth_time: time,
 
             mouth_hue,
         }
     }
 
     /// TODO: prevent px and py from being directly on top of the parent.
-    pub fn new_from_parents<B: NeuralNet>(parents: &Vec<HLSoftBody<B>>, energy: f64) -> Rock {
+    pub fn new_from_parents<B: NeuralNet>(parents: &Vec<HLSoftBody<B>>, energy: f64, time: f64) -> Rock {
         let parent_amount = parents.len();
 
         let px = parents.iter().fold(0.0, |acc, parent| {
@@ -118,6 +120,7 @@ impl Rock {
             prev_sbip_max_y: 0,
 
             prev_energy: energy,
+            birth_time: time,
 
             mouth_hue,
         }
@@ -177,6 +180,38 @@ impl Rock {
             }
 
             self.lose_energy(attempted_amount * EAT_ENERGY * time_step);
+        }
+    }
+
+    pub fn fight<B: NeuralNet>(
+        &mut self,
+        amount: f64,
+        time: f64,
+        time_step: f64,
+        sbip: &SoftBodiesInPositions<B>,
+        self_pointer: HLSoftBody<B>,
+    ) {
+        if amount > 0.0 && self.get_age(time) >= MATURE_AGE {
+            self.lose_energy(amount * time_step * FIGHT_ENERGY);
+
+            let self_x = self.get_px();
+            let self_y = self.get_py();
+
+            let mut colliders = self.get_colliders(sbip);
+
+            // Remove self
+            colliders.remove_softbody(self_pointer);
+
+            for collider in colliders {
+                let mut col = collider.borrow_mut();
+                let distance = distance(self_x, self_y, col.get_px(), col.get_py());
+                let combined_radius = self.get_radius() * FIGHT_RANGE + col.get_radius();
+
+                if distance < combined_radius {
+                    // collider was hit, remove energy
+                    col.lose_energy(amount * INJURED_ENERGY * time_step);
+                }
+            }
         }
     }
 
@@ -379,6 +414,18 @@ impl Rock {
 
     pub fn get_mouth_hue(&self) -> f64 {
         return self.mouth_hue;
+    }
+
+    /// Returns the time when this creature was born.
+    pub fn get_birth_time(&self) -> f64 {
+        return self.birth_time;
+    }
+
+    /// Returns the age of this creature.
+    ///
+    /// More concretely: this function is equivalent to `time - self.get_birth_time()`.
+    pub fn get_age(&self, time: f64) -> f64 {
+        return time - self.birth_time;
     }
 }
 

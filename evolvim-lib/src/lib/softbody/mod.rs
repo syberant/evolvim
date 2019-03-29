@@ -136,38 +136,6 @@ impl<B: NeuralNet> HLSoftBody<B> {
         }
     }
 
-    pub fn fight(
-        &mut self,
-        amount: f64,
-        time: f64,
-        time_step: f64,
-        sbip: &SoftBodiesInPositions<B>,
-    ) {
-        let mut creature = self.borrow_mut();
-        if amount > 0.0 && creature.get_age(time) >= MATURE_AGE {
-            creature.lose_energy(amount * time_step * FIGHT_ENERGY);
-
-            let self_x = creature.get_px();
-            let self_y = creature.get_py();
-
-            let mut colliders = creature.get_colliders(sbip);
-
-            // Remove self
-            colliders.remove_softbody(self.clone());
-
-            for collider in colliders {
-                let mut col = collider.borrow_mut();
-                let distance = distance(self_x, self_y, col.get_px(), col.get_py());
-                let combined_radius = creature.get_radius() * FIGHT_RANGE + col.get_radius();
-
-                if distance < combined_radius {
-                    // collider was hit, remove energy
-                    col.lose_energy(amount * INJURED_ENERGY * time_step);
-                }
-            }
-        }
-    }
-
     /// Checks for collision and adjusts velocity if that's the case.
     ///
     /// TODO: clean up the many uses of `borrow()`
