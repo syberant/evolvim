@@ -31,6 +31,17 @@ impl<'a, B> EnvironmentMut<'a, B> {
             self_pointer,
         }
     }
+
+    pub fn get_colliders(&self) -> crate::sbip::SoftBodiesAt<B> {
+        use crate::sbip::SoftBodyBucket;
+
+        let mut colliders = self.this_body.get_colliders(self.sbip);
+
+        // Remove self
+        colliders.remove_softbody(self.self_pointer.clone());
+
+        return colliders;
+    }
 }
 
 pub struct Environment<'a> {
