@@ -274,6 +274,8 @@ impl<B: NeuralNet> Board<B> {
     }
 
     pub fn update_creatures(&mut self, time_step: f64) {
+        use crate::brain::EnvironmentMut;
+
         let time = self.year;
         let board_size = self.get_board_size();
 
@@ -294,12 +296,14 @@ impl<B: NeuralNet> Board<B> {
         if use_output {
             for c_rc in &self.creatures {
                 let creature: &mut SoftBody<B> = &mut c_rc.borrow_mut();
-                let mut env = crate::brain::EnvironmentMut::new(
+                let mut env = EnvironmentMut::new(
                     &mut self.terrain,
                     &mut creature.base,
                     board_size,
                     time,
                     &self.climate,
+                    &self.soft_bodies_in_positions,
+                    c_rc.clone(),
                 );
                 creature.brain.use_output(&mut env, time_step);
             }
