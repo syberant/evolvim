@@ -14,7 +14,9 @@ pub trait NeuralNet: Intentions {
         self.run();
     }
 
-    fn use_output(&self, env: &mut EnvironmentMut, time_step: f64);
+    fn use_output(&self, env: &mut EnvironmentMut<Self>, time_step: f64)
+    where
+        Self: std::marker::Sized;
 }
 
 pub trait Intentions {

@@ -29,7 +29,7 @@ impl crate::brain::NeuralNet for NeatBrain {
         self.net.run_calculations();
     }
 
-    fn use_output(&self, env: &mut crate::brain::EnvironmentMut, time_step: f64) {
+    fn use_output(&self, env: &mut crate::brain::EnvironmentMut<Self>, time_step: f64) {
         self.net.use_output(env, time_step);
     }
 }

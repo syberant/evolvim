@@ -19,7 +19,11 @@ impl NeuralNet {
         }
     }
 
-    pub fn use_output(&self, env: &mut crate::brain::EnvironmentMut, time_step: f64) {
+    pub fn use_output(
+        &self,
+        env: &mut crate::brain::EnvironmentMut<super::NeatBrain>,
+        time_step: f64,
+    ) {
         for output in self.outputs.iter() {
             output.use_output(env, time_step);
         }
@@ -45,7 +49,7 @@ struct Output {
 }
 
 impl Output {
-    fn use_output(&self, env: &mut crate::brain::EnvironmentMut, time_step: f64) {
+    fn use_output(&self, env: &mut crate::brain::EnvironmentMut<super::NeatBrain>, time_step: f64) {
         self.output_type.use_output(self.value, env, time_step);
     }
 

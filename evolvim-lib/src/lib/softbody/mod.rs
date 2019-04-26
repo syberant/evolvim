@@ -28,27 +28,27 @@ const MATURE_AGE: f64 = 0.01;
 /// This is a wrapper struct providing some useful functions.
 ///
 /// TODO: come up with a better name.
-pub struct HLSoftBody<B: NeuralNet = Brain>(ReferenceCounter<MutPoint<SoftBody<B>>>);
+pub struct HLSoftBody<B = Brain>(ReferenceCounter<MutPoint<SoftBody<B>>>);
 
-impl<B: NeuralNet> From<SoftBody<B>> for HLSoftBody<B> {
+impl<B> From<SoftBody<B>> for HLSoftBody<B> {
     fn from(sb: SoftBody<B>) -> HLSoftBody<B> {
         HLSoftBody(ReferenceCounter::new(MutPoint::new(sb)))
     }
 }
 
-impl<B: NeuralNet> Clone for HLSoftBody<B> {
+impl<B> Clone for HLSoftBody<B> {
     fn clone(&self) -> Self {
         HLSoftBody(ReferenceCounter::clone(&self.0))
     }
 }
 
-impl<B: NeuralNet> PartialEq<HLSoftBody<B>> for HLSoftBody<B> {
+impl<B> PartialEq<HLSoftBody<B>> for HLSoftBody<B> {
     fn eq(&self, rhs: &HLSoftBody<B>) -> bool {
         ReferenceCounter::ptr_eq(&self.0, &rhs.0)
     }
 }
 
-impl<B: NeuralNet> HLSoftBody<B> {
+impl<B> HLSoftBody<B> {
     /// Wrapper function
     #[cfg(multithreading)]
     pub fn borrow(&self) -> RwLockReadGuard<SoftBody<B>> {
@@ -136,38 +136,6 @@ impl<B: NeuralNet> HLSoftBody<B> {
         }
     }
 
-    pub fn fight(
-        &mut self,
-        amount: f64,
-        time: f64,
-        time_step: f64,
-        sbip: &SoftBodiesInPositions<B>,
-    ) {
-        let mut creature = self.borrow_mut();
-        if amount > 0.0 && creature.get_age(time) >= MATURE_AGE {
-            creature.lose_energy(amount * time_step * FIGHT_ENERGY);
-
-            let self_x = creature.get_px();
-            let self_y = creature.get_py();
-
-            let mut colliders = creature.get_colliders(sbip);
-
-            // Remove self
-            colliders.remove_softbody(self.clone());
-
-            for collider in colliders {
-                let mut col = collider.borrow_mut();
-                let distance = distance(self_x, self_y, col.get_px(), col.get_py());
-                let combined_radius = creature.get_radius() * FIGHT_RANGE + col.get_radius();
-
-                if distance < combined_radius {
-                    // collider was hit, remove energy
-                    col.lose_energy(amount * INJURED_ENERGY * time_step);
-                }
-            }
-        }
-    }
-
     /// Checks for collision and adjusts velocity if that's the case.
     ///
     /// TODO: clean up the many uses of `borrow()`
@@ -229,7 +197,7 @@ impl<B: NeuralNet> HLSoftBody<B> {
     }
 }
 
-impl<B: NeuralNet + Intentions + RecombinationInfinite> HLSoftBody<B> {
+impl<B: Intentions> HLSoftBody<B> {
     fn wants_primary_birth(&self, time: f64) -> bool {
         let temp = self.borrow();
 
@@ -237,7 +205,9 @@ impl<B: NeuralNet + Intentions + RecombinationInfinite> HLSoftBody<B> {
             && temp.brain.wants_birth() > 0.0
             && temp.get_age(time) > MATURE_AGE
     }
+}
 
+impl<B: NeuralNet + Intentions + RecombinationInfinite> HLSoftBody<B> {
     /// Returns a new creature if there's a birth, otherwise returns `None`
     // TODO: cleanup
     pub fn try_reproduce(
@@ -310,7 +280,7 @@ impl<B: NeuralNet + Intentions + RecombinationInfinite> HLSoftBody<B> {
 pub type SoftBody<B = Brain> = Creature<B>;
 
 // Here are all the functions only applicable to `Creature`s.
-impl<B: NeuralNet> SoftBody<B> {
+impl<B> SoftBody<B> {
     /// Performs the energy requirement to keep living.
     pub fn metabolize(&mut self, time_step: f64, time: f64) {
         // TODO: fix ugly code.

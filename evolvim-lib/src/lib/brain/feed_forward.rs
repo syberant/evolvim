@@ -91,7 +91,7 @@ impl super::NeuralNet for Brain {
         self.a_3 = z_3;
     }
 
-    fn use_output(&self, env: &mut super::EnvironmentMut, time_step: f64) {
+    fn use_output(&self, env: &mut super::EnvironmentMut<Self>, time_step: f64) {
         let acceleration = self.wants_acceleration();
         env.this_body.accelerate(acceleration, time_step);
 

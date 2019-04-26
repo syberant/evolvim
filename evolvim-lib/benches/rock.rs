@@ -13,6 +13,6 @@ mod benches {
     fn bench_rock_new_random(b: &mut Bencher) {
         let energy = 1.0;
 
-        b.iter(|| Rock::new_random(DEFAULT_BOARD_SIZE, ROCK_DENSITY, energy));
+        b.iter(|| Rock::new_random(DEFAULT_BOARD_SIZE, ROCK_DENSITY, energy, 0.0));
     }
 }

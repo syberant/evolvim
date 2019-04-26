@@ -4,10 +4,16 @@ pub enum OutputType {
     Eating,
     Turning,
     Accelerating,
+    Fight,
 }
 
 impl OutputType {
-    pub fn use_output(&self, value: f64, env: &mut crate::brain::EnvironmentMut, time_step: f64) {
+    pub fn use_output<B>(
+        &self,
+        value: f64,
+        env: &mut crate::brain::EnvironmentMut<B>,
+        time_step: f64,
+    ) {
         use OutputType::*;
 
         match self {
@@ -20,6 +26,13 @@ impl OutputType {
             }
             Turning => env.this_body.turn(value, time_step),
             Accelerating => env.this_body.accelerate(value, time_step),
+            Fight => env.this_body.fight(
+                value,
+                env.time,
+                time_step,
+                env.sbip,
+                env.self_pointer.clone(),
+            ),
         };
     }
 }
