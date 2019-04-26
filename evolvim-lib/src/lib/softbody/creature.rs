@@ -32,10 +32,7 @@ impl<B: NeuralNet + GenerateRandom> Creature<B> {
         let brain = B::new_random();
         // TODO: add id
 
-        Creature {
-            base,
-            brain,
-        }
+        Creature { base, brain }
     }
 }
 
@@ -46,10 +43,7 @@ impl<B: NeuralNet + RecombinationInfinite> Creature<B> {
         let brain = B::recombination_infinite_parents(&parents);
         let base = Rock::new_from_parents(&parents, energy, time);
 
-        Creature {
-            base,
-            brain,
-        }
+        Creature { base, brain }
     }
 }
 

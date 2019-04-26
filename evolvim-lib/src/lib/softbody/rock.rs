@@ -78,7 +78,11 @@ impl Rock {
     }
 
     /// TODO: prevent px and py from being directly on top of the parent.
-    pub fn new_from_parents<B: NeuralNet>(parents: &Vec<HLSoftBody<B>>, energy: f64, time: f64) -> Rock {
+    pub fn new_from_parents<B: NeuralNet>(
+        parents: &Vec<HLSoftBody<B>>,
+        energy: f64,
+        time: f64,
+    ) -> Rock {
         let parent_amount = parents.len();
 
         let px = parents.iter().fold(0.0, |acc, parent| {

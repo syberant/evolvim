@@ -268,7 +268,11 @@ impl DrawableBrain for lib_evolvim::neat::NeatBrain {
         G: Graphics<Texture = C::Texture>,
     {
         let text = Text::new(18);
-        let info = self.get_ordered_key_value_pairs().into_iter().map(|(key, value)| format!("{}: {}", key, value)).collect();
+        let info = self
+            .get_ordered_key_value_pairs()
+            .into_iter()
+            .map(|(key, value)| format!("{}: {}", key, value))
+            .collect();
         draw_lines(info, 20.0, 100.0, context, text, glyphs, graphics);
     }
 }
