@@ -9,7 +9,7 @@
 use super::*;
 use std::ops::Range;
 
-pub trait SoftBodyBucket<B: NeuralNet> {
+pub trait SoftBodyBucket<B> {
     fn remove_softbody(&mut self, body: HLSoftBody<B>);
 
     fn add_softbody(&mut self, body: HLSoftBody<B>);
@@ -17,7 +17,7 @@ pub trait SoftBodyBucket<B: NeuralNet> {
 
 pub type SoftBodiesAt<B> = Vec<HLSoftBody<B>>;
 
-impl<B: NeuralNet> SoftBodyBucket<B> for SoftBodiesAt<B> {
+impl<B> SoftBodyBucket<B> for SoftBodiesAt<B> {
     fn remove_softbody(&mut self, body: HLSoftBody<B>) {
         // WARNING: Only removes one instance
         for i in 0..self.len() {
@@ -41,9 +41,9 @@ impl<B: NeuralNet> SoftBodyBucket<B> for SoftBodiesAt<B> {
 }
 
 /// Contains a list of every `SoftBody` in a given coordinate.
-pub struct SoftBodiesInPositions<B: NeuralNet>(Vec<Vec<SoftBodiesAt<B>>>);
+pub struct SoftBodiesInPositions<B>(Vec<Vec<SoftBodiesAt<B>>>);
 
-impl<B: NeuralNet> SoftBodiesInPositions<B> {
+impl<B> SoftBodiesInPositions<B> {
     pub fn new_allocated(board_size: BoardSize) -> Self {
         let (board_width, board_height) = board_size;
 

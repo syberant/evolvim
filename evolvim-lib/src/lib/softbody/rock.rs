@@ -78,11 +78,7 @@ impl Rock {
     }
 
     /// TODO: prevent px and py from being directly on top of the parent.
-    pub fn new_from_parents<B: NeuralNet>(
-        parents: &Vec<HLSoftBody<B>>,
-        energy: f64,
-        time: f64,
-    ) -> Rock {
+    pub fn new_from_parents<B>(parents: &Vec<HLSoftBody<B>>, energy: f64, time: f64) -> Rock {
         let parent_amount = parents.len();
 
         let px = parents.iter().fold(0.0, |acc, parent| {
@@ -187,7 +183,7 @@ impl Rock {
         }
     }
 
-    pub fn fight<B: NeuralNet>(
+    pub fn fight<B>(
         &mut self,
         amount: f64,
         time: f64,
@@ -307,7 +303,7 @@ impl Rock {
 
 // All functions related to `SoftBodiesInPositions`
 impl Rock {
-    pub fn get_colliders<B: NeuralNet>(&self, sbip: &SoftBodiesInPositions<B>) -> SoftBodiesAt<B> {
+    pub fn get_colliders<B>(&self, sbip: &SoftBodiesInPositions<B>) -> SoftBodiesAt<B> {
         sbip.get_soft_bodies_in(self.current_x_range(), self.current_y_range())
     }
 

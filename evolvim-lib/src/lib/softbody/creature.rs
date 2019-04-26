@@ -5,12 +5,12 @@ use super::*;
 pub const MINIMUM_SURVIVABLE_SIZE: f64 = 0.06;
 
 #[derive(Serialize, Deserialize)]
-pub struct Creature<B: NeuralNet> {
+pub struct Creature<B> {
     pub base: Rock,
     pub brain: B,
 }
 
-impl<B: NeuralNet> std::ops::Deref for Creature<B> {
+impl<B> std::ops::Deref for Creature<B> {
     type Target = Rock;
 
     fn deref(&self) -> &Rock {
@@ -18,13 +18,13 @@ impl<B: NeuralNet> std::ops::Deref for Creature<B> {
     }
 }
 
-impl<B: NeuralNet> std::ops::DerefMut for Creature<B> {
+impl<B> std::ops::DerefMut for Creature<B> {
     fn deref_mut(&mut self) -> &mut Rock {
         &mut self.base
     }
 }
 
-impl<B: NeuralNet + GenerateRandom> Creature<B> {
+impl<B: GenerateRandom> Creature<B> {
     pub fn new_random(board_size: BoardSize, time: f64) -> Self {
         let energy = CREATURE_MIN_ENERGY
             + rand::random::<f64>() * (CREATURE_MAX_ENERGY - CREATURE_MIN_ENERGY);
@@ -47,7 +47,7 @@ impl<B: NeuralNet + RecombinationInfinite> Creature<B> {
     }
 }
 
-impl<B: NeuralNet> Creature<B> {
+impl<B> Creature<B> {
     // The `Creature` version of `apply_motions`, this is different to the `Rock` version.
     pub fn apply_motions(&mut self, time_step: f64, terrain: &Terrain, board_size: BoardSize) {
         if self.is_on_water(terrain, board_size) {
