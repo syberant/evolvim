@@ -140,15 +140,16 @@ impl<B> HLSoftBody<B> {
     ///
     /// TODO: clean up the many uses of `borrow()`
     pub fn collide(&self, sbip: &SoftBodiesInPositions<B>) {
-        let mut colliders = self.borrow().get_colliders(sbip);
+        let mut self_br = self.borrow_mut();
+        let mut colliders = self_br.get_colliders(sbip);
 
-        // Remove self
+        // Remove self, if you don't do this then the program will crash because you're borrowing self twice.
         colliders.remove_softbody(self.clone());
 
-        let self_px = self.borrow().get_px();
-        let self_py = self.borrow().get_py();
-        let self_radius = self.borrow().get_radius();
-        let self_mass = self.borrow().get_mass();
+        let self_px = self_br.get_px();
+        let self_py = self_br.get_py();
+        let self_radius = self_br.get_radius();
+        let self_mass = self_br.get_mass();
 
         for collider_rc in colliders {
             let collider = collider_rc.borrow();
@@ -164,9 +165,9 @@ impl<B> HLSoftBody<B> {
                 let add_vx = (self_px - collider_px) / distance * force / self_mass;
                 let add_vy = (self_py - collider_py) / distance * force / self_mass;
 
-                let mut self_mut_deref = self.borrow_mut();
-                self_mut_deref.add_vx(add_vx);
-                self_mut_deref.add_vy(add_vy);
+                // This is where self is needed to be borrowed mutably.
+                self_br.add_vx(add_vx);
+                self_br.add_vy(add_vy);
             }
         }
     }
