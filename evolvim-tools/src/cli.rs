@@ -10,7 +10,7 @@ use std::sync::atomic::Ordering;
 type BrainType = lib_evolvim::Brain;
 
 fn main() {
-    let abort_reader = std::sync::Arc::new(std::sync::atomic::ATOMIC_BOOL_INIT);
+    let abort_reader = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
     let abort_writer = abort_reader.clone();
 
     ctrlc::set_handler(move || abort_writer.store(true, Ordering::SeqCst))

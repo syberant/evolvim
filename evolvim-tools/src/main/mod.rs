@@ -94,8 +94,7 @@ fn main() {
 
         // Match some button presses
         if let Some(button) = event.press_args() {
-            use piston_window::Button::Keyboard;
-            use piston_window::Key;
+            use Button::Keyboard;
 
             match button {
                 Keyboard(Key::Up) => {
