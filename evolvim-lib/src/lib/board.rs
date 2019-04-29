@@ -10,8 +10,13 @@ extern crate rand;
 #[cfg(multithreading)]
 extern crate rayon;
 
-use self::constants::*;
-use super::*;
+use crate::brain::{Brain, GenerateRandom, NeuralNet, RecombinationInfinite};
+use crate::climate::Climate;
+use crate::constants::*;
+use crate::sbip::SoftBodiesInPositions;
+use crate::softbody::{Creature, HLSoftBody, SoftBody};
+use crate::terrain::Terrain;
+use crate::version::Version;
 
 /// The amount of times a year an object is updated.
 ///

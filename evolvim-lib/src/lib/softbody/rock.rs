@@ -1,8 +1,13 @@
 extern crate rand;
 
 use self::rand::Rng;
-use super::*;
-// use constants::*;
+
+use super::HLSoftBody;
+use crate::board::{BoardCoordinate, BoardPreciseCoordinate, BoardSize};
+use crate::climate::Climate;
+use crate::constants::*;
+use crate::sbip::{SoftBodiesAt, SoftBodiesInPositions};
+use crate::terrain::Terrain;
 use std::f64::consts::PI;
 use std::ops::Range;
 
@@ -152,7 +157,6 @@ impl Rock {
         climate: &Climate,
         tile: &mut crate::terrain::tile::Tile,
     ) {
-        use crate::constants::{EAT_SPEED, EAT_WHILE_MOVING_INEFFICIENCY_MULTIPLIER};
         let amount = attempted_amount
             / (1.0 + self.get_total_velocity() * EAT_WHILE_MOVING_INEFFICIENCY_MULTIPLIER);
         if amount < 0.0 {
@@ -191,6 +195,9 @@ impl Rock {
         sbip: &SoftBodiesInPositions<B>,
         self_pointer: HLSoftBody<B>,
     ) {
+        use super::MATURE_AGE;
+        use crate::sbip::SoftBodyBucket;
+
         if amount > 0.0 && self.get_age(time) >= MATURE_AGE {
             self.lose_energy(amount * time_step * FIGHT_ENERGY);
 
