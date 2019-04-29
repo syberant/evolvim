@@ -20,6 +20,7 @@ pub mod sbip;
 pub mod softbody;
 pub mod terrain;
 pub mod version;
+mod utils;
 
 pub use self::board::*;
 pub use self::brain::*;
