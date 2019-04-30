@@ -79,6 +79,21 @@ impl<B> HLSoftBody<B> {
         return self.0.try_borrow_mut().is_ok();
     }
 
+    /// Consume this thing and return the value it holds
+    #[cfg(multithreading)]
+    pub fn into_inner(self) -> SoftBody<B> {
+        self.0.into_inner().unwrap()
+    }
+    #[cfg(not(multithreading))]
+    pub fn into_inner(self) -> SoftBody<B> {
+        use std::rc::Rc;
+
+        match Rc::try_unwrap(self.0) {
+            Ok(n) => n.into_inner(),
+            Err(_e) => panic!("Could not unwrap Rc."),
+        }
+    }
+
     /// Calls the same function on all types and updates `SoftBodiesInPositions` by calling `set_sbip`.
     pub fn apply_motions(
         &self,

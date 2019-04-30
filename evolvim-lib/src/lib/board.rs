@@ -14,9 +14,8 @@ use crate::brain::{Brain, GenerateRandom, NeuralNet, RecombinationInfinite};
 use crate::climate::Climate;
 use crate::constants::*;
 use crate::sbip::SoftBodiesInPositions;
-use crate::softbody::{Creature, HLSoftBody, SoftBody};
+use crate::softbody::{HLSoftBody, SoftBody};
 use crate::terrain::Terrain;
-use crate::version::Version;
 
 /// The amount of times a year an object is updated.
 ///
@@ -114,6 +113,28 @@ impl<B: NeuralNet + GenerateRandom> Default for Board<B> {
             min_temp,
             max_temp,
         );
+    }
+}
+
+impl<B: NeuralNet> Board<B> {
+    pub fn new(board_width: usize, board_height: usize, terrain: Terrain, creature_minimum: usize, soft_bodies_in_positions: SoftBodiesInPositions<B>,
+    creatures: Vec<HLSoftBody<B>>, creature_id_up_to: usize, year: f64, climate: Climate, selected_creature: SelectedCreature<B>) -> Board<B>{
+        Board {
+            board_width,
+            board_height,
+            terrain,
+
+            creature_minimum,
+            soft_bodies_in_positions,
+            creatures,
+            creature_id_up_to,
+
+            year,
+
+            climate,
+
+            selected_creature,
+        }
     }
 }
 
@@ -397,6 +418,18 @@ impl<B: NeuralNet> Board<B> {
         return self.board_height;
     }
 
+    /// Returns the minimum amount of creatures that should be on the `Board`
+    /// 
+    /// When the population drops below this `maintain_creature_minimum()` spawns new creatures to fill the gap.
+    pub fn get_creature_minimum(&self) -> usize {
+        self.creature_minimum
+    }
+    
+    /// Returns `self.creature_id_up_to`
+    pub fn get_creature_id_up_to(&self) -> usize {
+        self.creature_id_up_to
+    }
+
     /// Gets the size of the current population; i.e. how many creatures are currently alive.
     pub fn get_population_size(&self) -> usize {
         return self.creatures.len();
@@ -413,177 +446,26 @@ impl<B: NeuralNet> Board<B> {
     }
 }
 
-// TODO: get this generic implementation working
-// impl<B: NeuralNet + serde::de::DeserializeOwned> Board<B> {
-//     pub fn load_from<P: AsRef<std::path::Path>>(path: P) -> Result<Board<B>, Box<std::error::Error>> {
-//         let file = std::fs::File::open(path)?;
-//         let res: Result<Board<B>, Box<board::bincode::ErrorKind>> = bincode::deserialize_from::<std::fs::File, Board<B>>(file);
-//         Ok(res?)
-//     }
-// }
-
-use crate::neat::NeatBrain;
-impl Board<NeatBrain> {
-    pub fn load_from<P: AsRef<std::path::Path>>(
-        path: P,
-    ) -> Result<Board<NeatBrain>, Box<std::error::Error>> {
+impl<B: NeuralNet + serde::de::DeserializeOwned> Board<B> {
+    pub fn load_from<P: AsRef<std::path::Path>>(path: P) -> Result<Board<B>, Box<std::error::Error>> {
         let file = std::fs::File::open(path)?;
-        Ok(bincode::deserialize_from(file)?)
-    }
-}
-
-impl Board<Brain> {
-    pub fn load_from<P: AsRef<std::path::Path>>(
-        path: P,
-    ) -> Result<Board<Brain>, Box<std::error::Error>> {
-        let file = std::fs::File::open(path)?;
-        Ok(bincode::deserialize_from(file)?)
+        Ok({
+            use crate::serde_structs::board::BoardSerde;
+            let ir: BoardSerde<B> = bincode::deserialize_from(file)?;
+            
+            ir.into()
+        })
     }
 }
 
 impl<B: NeuralNet + serde::Serialize> Board<B> {
     pub fn save_to<P: AsRef<std::path::Path>>(
-        &self,
+        self,
         path: P,
     ) -> Result<(), Box<std::error::Error>> {
         let file = std::fs::File::create(path)?;
-        bincode::serialize_into(file, self)?;
+        bincode::serialize_into(file, &crate::serde_structs::board::BoardSerde::from(self))?;
 
         Ok(())
-    }
-}
-
-impl<B: NeuralNet + serde::Serialize> serde::Serialize for Board<B> {
-    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-        use serde::ser::SerializeStruct;
-
-        #[cfg(multithreading)]
-        type ReadPtr<A> = std::sync::RwLockReadGuard<A>;
-        #[cfg(not(multithreading))]
-        type ReadPtr<'a, A> = std::cell::Ref<'a, A>;
-
-        let mut state = serializer.serialize_struct("Board", 7)?;
-
-        state.serialize_field("version", &Version::current_version())?;
-
-        state.serialize_field("terrain", &self.terrain)?;
-
-        state.serialize_field("creature_minimum", &self.creature_minimum)?;
-        let sb_cr: Vec<ReadPtr<SoftBody<B>>> = self.creatures.iter().map(|c| c.borrow()).collect();
-        let cr = sb_cr.iter().map(|c| &**c);
-        state.serialize_field::<Vec<&SoftBody<B>>>("creatures", &cr.collect())?;
-
-        state.serialize_field("creature_id_up_to", &self.creature_id_up_to)?;
-        state.serialize_field("year", &self.year)?;
-        state.serialize_field("climate", &self.climate)?;
-
-        state.end()
-    }
-}
-
-// TODO: write some documentation for these seemingly magic lifetimes and generics. Spoiler: they're not.
-impl<'de, B: 'de + NeuralNet + serde::Deserialize<'de>> serde::Deserialize<'de> for Board<B> {
-    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Board<B>, D::Error> {
-        use serde::de::*;
-
-        struct BoardVisitor<'a, B: NeuralNet + serde::Deserialize<'a>>(
-            std::marker::PhantomData<&'a B>,
-        );
-
-        impl<'a, B: NeuralNet + serde::Deserialize<'a>> Default for BoardVisitor<'a, B> {
-            fn default() -> Self {
-                BoardVisitor(std::marker::PhantomData)
-            }
-        }
-
-        impl<'de, B: NeuralNet + serde::Deserialize<'de>> Visitor<'de> for BoardVisitor<'de, B> {
-            type Value = Board<B>;
-
-            fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
-                formatter.write_str("struct Board")
-            }
-
-            fn visit_seq<V: SeqAccess<'de>>(self, mut seq: V) -> Result<Board<B>, V::Error> {
-                let file_version: Version = seq
-                    .next_element()?
-                    .ok_or_else(|| Error::invalid_length(0, &self))?;
-                // Check if file is compatible with this version of the library.
-                if !file_version.is_compatible_with_current() {
-                    return Err(Error::custom(format!(
-                        "file from version {} can not be used with current version ({})",
-                        file_version,
-                        Version::current_version()
-                    )));
-                }
-
-                let terrain: Terrain = seq
-                    .next_element()?
-                    .ok_or_else(|| Error::invalid_length(1, &self))?;
-                let creature_minimum = seq
-                    .next_element()?
-                    .ok_or_else(|| Error::invalid_length(2, &self))?;
-                let creatures_ir: Vec<Creature<B>> = seq
-                    .next_element()?
-                    .ok_or_else(|| Error::invalid_length(3, &self))?;
-                let creature_id_up_to = seq
-                    .next_element()?
-                    .ok_or_else(|| Error::invalid_length(4, &self))?;
-                let year = seq
-                    .next_element()?
-                    .ok_or_else(|| Error::invalid_length(5, &self))?;
-                let climate = seq
-                    .next_element()?
-                    .ok_or_else(|| Error::invalid_length(6, &self))?;
-
-                let board_size = (terrain.get_width(), terrain.get_height());
-                let mut soft_bodies_in_positions = SoftBodiesInPositions::new_allocated(board_size);
-                let mut creatures: Vec<HLSoftBody<B>> = creatures_ir
-                    .into_iter()
-                    .map(|c| HLSoftBody::from(c))
-                    .collect();
-                for c in &mut creatures {
-                    c.set_sbip(&mut soft_bodies_in_positions, board_size);
-                    c.set_sbip(&mut soft_bodies_in_positions, board_size);
-                }
-
-                Ok(Board {
-                    // Fields relevant for the board itself.
-                    board_width: terrain.get_width(),
-                    board_height: terrain.get_height(),
-                    terrain,
-
-                    // Fields relevant for the creatures.
-                    creature_minimum,
-                    soft_bodies_in_positions,
-                    creatures,
-                    creature_id_up_to,
-                    // _creature_rank_metric: usize,
-
-                    // Fields relevant for time or history
-                    year,
-
-                    // Fields relevant for temperature
-                    climate,
-
-                    // Miscelanious
-                    selected_creature: SelectedCreature::default(),
-                })
-            }
-        }
-
-        const FIELDS: &[&str] = &[
-            "version",
-            "terrain",
-            "creature_minimum",
-            "creatures",
-            "creature_id_up_to",
-            "year",
-            "climate",
-        ];
-        deserializer.deserialize_struct::<BoardVisitor<B>>(
-            "Board",
-            FIELDS,
-            BoardVisitor::<B>::default(),
-        )
     }
 }
