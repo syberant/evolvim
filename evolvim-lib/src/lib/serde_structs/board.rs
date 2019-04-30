@@ -4,7 +4,7 @@ use crate::board::Board;
 use crate::terrain::Terrain;
 use crate::softbody::SoftBody;
 use crate::climate::Climate;
-use crate::version::Version;
+use super::version::Version;
 
 use serde_derive::{Deserialize, Serialize};
 use crate::brain::NeuralNet;
@@ -68,6 +68,13 @@ impl<B: NeuralNet> From<BoardSerde<B>> for Board<B> {
         use crate::board::SelectedCreature;
         use crate::sbip::SoftBodiesInPositions;
         use crate::softbody::HLSoftBody;
+
+        if !bs.version.is_compatible_with_current() {
+            panic!("File from version {} can not be used with current version ({}).",
+                    bs.version,
+                    Version::current_version()
+            );
+        }
 
         let board_size = (bs.board_width, bs.board_height);
         let mut soft_bodies_in_positions = SoftBodiesInPositions::new_allocated(board_size);
