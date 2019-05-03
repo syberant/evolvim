@@ -11,8 +11,8 @@ use crate::constants::*;
 use crate::sbip::SoftBodiesInPositions;
 use crate::softbody::{Creature, HLSoftBody, SoftBody};
 use crate::terrain::Terrain;
-use nphysics2d::world::World;
 use nphysics2d::object::BodyHandle;
+use nphysics2d::world::World;
 
 /// The amount of times a year an object is updated.
 ///
@@ -117,8 +117,19 @@ impl<B: NeuralNet + GenerateRandom> Default for Board<B> {
 }
 
 impl<B: NeuralNet> Board<B> {
-    pub fn new(board_width: usize, board_height: usize, terrain: Terrain, world: World<f64>, creature_minimum: usize, soft_bodies_in_positions: SoftBodiesInPositions<B>,
-    creatures: Vec<HLSoftBody<B>>, creature_id_up_to: usize, year: f64, climate: Climate, selected_creature: SelectedCreature<B>) -> Board<B>{
+    pub fn new(
+        board_width: usize,
+        board_height: usize,
+        terrain: Terrain,
+        world: World<f64>,
+        creature_minimum: usize,
+        soft_bodies_in_positions: SoftBodiesInPositions<B>,
+        creatures: Vec<HLSoftBody<B>>,
+        creature_id_up_to: usize,
+        year: f64,
+        climate: Climate,
+        selected_creature: SelectedCreature<B>,
+    ) -> Board<B> {
         Board {
             board_width,
             board_height,
@@ -432,12 +443,12 @@ impl<B: NeuralNet> Board<B> {
     }
 
     /// Returns the minimum amount of creatures that should be on the `Board`
-    /// 
+    ///
     /// When the population drops below this `maintain_creature_minimum()` spawns new creatures to fill the gap.
     pub fn get_creature_minimum(&self) -> usize {
         self.creature_minimum
     }
-    
+
     /// Returns `self.creature_id_up_to`
     pub fn get_creature_id_up_to(&self) -> usize {
         self.creature_id_up_to
@@ -460,12 +471,14 @@ impl<B: NeuralNet> Board<B> {
 }
 
 impl<B: NeuralNet + serde::de::DeserializeOwned> Board<B> {
-    pub fn load_from<P: AsRef<std::path::Path>>(path: P) -> Result<Board<B>, Box<dyn std::error::Error>> {
+    pub fn load_from<P: AsRef<std::path::Path>>(
+        path: P,
+    ) -> Result<Board<B>, Box<dyn std::error::Error>> {
         let file = std::fs::File::open(path)?;
         Ok({
             use crate::serde_structs::board::BoardSerde;
             let ir: BoardSerde<B> = bincode::deserialize_from(file)?;
-            
+
             ir.into()
         })
     }
@@ -484,9 +497,9 @@ impl<B: NeuralNet + serde::Serialize> Board<B> {
 }
 
 fn make_physics_creature<B>(world: &mut World<f64>, cr: &Creature<B>) -> BodyHandle {
+    use nalgebra::Vector2;
     use ncollide2d::shape::{Ball, ShapeHandle};
     use nphysics2d::object::{ColliderDesc, RigidBodyDesc};
-    use nalgebra::Vector2;
 
     let radius = cr.get_radius();
 

@@ -1,10 +1,10 @@
-use rand::Rng;
 use super::HLSoftBody;
 use crate::board::{BoardCoordinate, BoardPreciseCoordinate, BoardSize};
 use crate::climate::Climate;
 use crate::constants::*;
 use crate::sbip::{SoftBodiesAt, SoftBodiesInPositions};
 use crate::terrain::Terrain;
+use rand::Rng;
 use std::f64::consts::PI;
 use std::ops::Range;
 

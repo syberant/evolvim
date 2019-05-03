@@ -1,11 +1,11 @@
-use crate::board::Board;
-use crate::terrain::Terrain;
-use crate::softbody::SoftBody;
-use crate::climate::Climate;
 use super::version::Version;
+use crate::board::Board;
+use crate::climate::Climate;
+use crate::softbody::SoftBody;
+use crate::terrain::Terrain;
 
-use serde_derive::{Deserialize, Serialize};
 use crate::brain::NeuralNet;
+use serde_derive::{Deserialize, Serialize};
 
 #[derive(Deserialize, Serialize)]
 pub struct BoardSerde<B: NeuralNet> {
@@ -29,7 +29,6 @@ pub struct BoardSerde<B: NeuralNet> {
 
     // Fields relevant for temperature
     pub climate: Climate,
-
     // Miscelanious
     // pub selected_creature: SelectedCreature<B>,
 }
@@ -41,7 +40,8 @@ impl<B: NeuralNet> From<Board<B>> for BoardSerde<B> {
         let creature_id_up_to = bd.get_creature_id_up_to();
         let year = bd.get_time();
 
-        let creatures: Vec<SoftBody<B>> = bd.creatures.into_iter().map(|c| c.into_inner()).collect();
+        let creatures: Vec<SoftBody<B>> =
+            bd.creatures.into_iter().map(|c| c.into_inner()).collect();
 
         BoardSerde {
             version: Version::current_version(),
@@ -53,7 +53,7 @@ impl<B: NeuralNet> From<Board<B>> for BoardSerde<B> {
             creature_minimum,
             creatures,
             creature_id_up_to,
-            
+
             year,
 
             climate: bd.climate,
@@ -68,16 +68,20 @@ impl<B: NeuralNet> From<BoardSerde<B>> for Board<B> {
         use crate::softbody::HLSoftBody;
 
         if !bs.version.is_compatible_with_current() {
-            panic!("File from version {} can not be used with current version ({}).",
-                    bs.version,
-                    Version::current_version()
+            panic!(
+                "File from version {} can not be used with current version ({}).",
+                bs.version,
+                Version::current_version()
             );
         }
 
         let board_size = (bs.board_width, bs.board_height);
         let mut soft_bodies_in_positions = SoftBodiesInPositions::new_allocated(board_size);
-        let creatures: Vec<HLSoftBody<B>> = bs.creatures.into_iter()
-            .map(|c| HLSoftBody::from(c)).collect();
+        let creatures: Vec<HLSoftBody<B>> = bs
+            .creatures
+            .into_iter()
+            .map(|c| HLSoftBody::from(c))
+            .collect();
 
         for c in &creatures {
             c.set_sbip(&mut soft_bodies_in_positions, board_size);
@@ -88,18 +92,13 @@ impl<B: NeuralNet> From<BoardSerde<B>> for Board<B> {
             bs.board_width,
             bs.board_height,
             bs.terrain,
-
             nphysics2d::world::World::new(),
-
             bs.creature_minimum,
             soft_bodies_in_positions,
             creatures,
             bs.creature_id_up_to,
-
             bs.year,
-
             bs.climate,
-
             SelectedCreature::default(),
         )
     }
