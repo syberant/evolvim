@@ -5,11 +5,6 @@
 //!
 //! TODO: documentation.
 
-extern crate bincode;
-extern crate rand;
-#[cfg(multithreading)]
-extern crate rayon;
-
 use crate::brain::{Brain, GenerateRandom, NeuralNet, RecombinationInfinite};
 use crate::climate::Climate;
 use crate::constants::*;

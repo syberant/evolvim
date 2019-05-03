@@ -4,13 +4,10 @@
 
 #![warn(missing_docs)]
 
-extern crate nalgebra;
-extern crate rand;
-
 use self::allocator::Allocator;
 use self::dimension::DimName;
-use self::nalgebra::*;
-use self::rand::Rng;
+use nalgebra::*;
+use rand::Rng;
 use std::f64::consts::PI;
 
 pub type BrainOutput<'a> = &'a [FPN];

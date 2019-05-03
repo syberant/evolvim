@@ -1,7 +1,4 @@
-extern crate rand;
-
-use self::rand::Rng;
-
+use rand::Rng;
 use super::HLSoftBody;
 use crate::board::{BoardCoordinate, BoardPreciseCoordinate, BoardSize};
 use crate::climate::Climate;

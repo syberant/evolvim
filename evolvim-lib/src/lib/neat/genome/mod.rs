@@ -1,5 +1,3 @@
-extern crate rand;
-
 mod gene;
 mod mutation;
 mod recombination;

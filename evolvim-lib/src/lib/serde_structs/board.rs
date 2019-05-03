@@ -1,5 +1,3 @@
-extern crate serde_derive;
-
 use crate::board::Board;
 use crate::terrain::Terrain;
 use crate::softbody::SoftBody;

@@ -7,12 +7,9 @@
 //!
 //! TODO 2: take a good look at the terrain generation.
 
-extern crate noise;
-extern crate rand;
-
 pub mod tile;
 
-use self::noise::{NoiseFn, Point2, Seedable};
+use noise::{NoiseFn, Point2, Seedable};
 use self::tile::Tile;
 use super::*;
 
@@ -27,8 +24,6 @@ pub struct Terrain {
 impl Terrain {
     #[cfg(multithreading)]
     pub fn update_all(&mut self, time: f64, climate: &Climate) {
-        extern crate rayon;
-
         self.tiles.par_iter_mut().flatten().for_each(|t| {
             t.update(time, climate);
         })

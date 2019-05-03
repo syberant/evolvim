@@ -1,5 +1,3 @@
-extern crate rand;
-
 use super::*;
 
 pub const MINIMUM_SURVIVABLE_SIZE: f64 = 0.06;
