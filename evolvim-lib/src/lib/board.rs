@@ -9,8 +9,10 @@ use crate::brain::{Brain, GenerateRandom, NeuralNet, RecombinationInfinite};
 use crate::climate::Climate;
 use crate::constants::*;
 use crate::sbip::SoftBodiesInPositions;
-use crate::softbody::{HLSoftBody, SoftBody};
+use crate::softbody::{Creature, HLSoftBody, SoftBody};
 use crate::terrain::Terrain;
+use nphysics2d::world::World;
+use nphysics2d::object::BodyHandle;
 
 /// The amount of times a year an object is updated.
 ///
@@ -76,6 +78,9 @@ pub struct Board<B: NeuralNet = Brain> {
     board_height: usize,
     pub terrain: Terrain,
 
+    // Fields relevant for physics
+    pub world: World<f64>,
+
     // Fields relevant for the creatures.
     creature_minimum: usize,
     pub soft_bodies_in_positions: SoftBodiesInPositions<B>,
@@ -112,12 +117,14 @@ impl<B: NeuralNet + GenerateRandom> Default for Board<B> {
 }
 
 impl<B: NeuralNet> Board<B> {
-    pub fn new(board_width: usize, board_height: usize, terrain: Terrain, creature_minimum: usize, soft_bodies_in_positions: SoftBodiesInPositions<B>,
+    pub fn new(board_width: usize, board_height: usize, terrain: Terrain, world: World<f64>, creature_minimum: usize, soft_bodies_in_positions: SoftBodiesInPositions<B>,
     creatures: Vec<HLSoftBody<B>>, creature_id_up_to: usize, year: f64, climate: Climate, selected_creature: SelectedCreature<B>) -> Board<B>{
         Board {
             board_width,
             board_height,
             terrain,
+
+            world,
 
             creature_minimum,
             soft_bodies_in_positions,
@@ -153,6 +160,8 @@ impl<B: NeuralNet + GenerateRandom> Board<B> {
             board_height: board_size.1,
             terrain: Terrain::generate_perlin(board_size, noise_step_size),
 
+            world: World::new(),
+
             creature_minimum,
             soft_bodies_in_positions: SoftBodiesInPositions::new_allocated(board_size),
             creatures,
@@ -184,6 +193,8 @@ impl<B: NeuralNet + GenerateRandom> Board<B> {
             creature.set_sbip(&mut self.soft_bodies_in_positions, board_size);
             // Just to set the prevSBIP variables.
             creature.set_sbip(&mut self.soft_bodies_in_positions, board_size);
+
+            let _handle = make_physics_creature(&mut self.world, &creature.borrow());
 
             self.creatures.push(creature);
             self.creature_id_up_to += 1;
@@ -219,6 +230,9 @@ impl<B: NeuralNet + RecombinationInfinite + GenerateRandom> Board<B> {
 
         // Move the creatures around on the board
         self.move_creatures(time_step);
+
+        // Advance the physics simulation one step
+        self.world.step();
     }
 }
 
@@ -240,7 +254,11 @@ impl<B: NeuralNet + RecombinationInfinite> Board<B> {
             }
         }
 
-        babies.into_iter().for_each(|c| self.creatures.push(c));
+        babies.into_iter().for_each(|c| {
+            let _handle = make_physics_creature(&mut self.world, &c.borrow());
+
+            self.creatures.push(c);
+        });
     }
 }
 
@@ -463,4 +481,28 @@ impl<B: NeuralNet + serde::Serialize> Board<B> {
 
         Ok(())
     }
+}
+
+fn make_physics_creature<B>(world: &mut World<f64>, cr: &Creature<B>) -> BodyHandle {
+    use ncollide2d::shape::{Ball, ShapeHandle};
+    use nphysics2d::object::{ColliderDesc, RigidBodyDesc};
+    use nalgebra::Vector2;
+
+    let radius = cr.get_radius();
+
+    // Create the ColliderDesc
+    let shape = ShapeHandle::new(Ball::new(radius));
+    let collide_handle = ColliderDesc::new(shape);
+
+    let mass = cr.get_mass();
+    let position = Vector2::new(cr.get_px(), cr.get_py());
+
+    // Build the RigidBody
+    let rigid_body = RigidBodyDesc::new()
+        .mass(mass)
+        .translation(position)
+        .collider(&collide_handle)
+        .build(world);
+
+    return rigid_body.handle();
 }

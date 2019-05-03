@@ -400,6 +400,10 @@ impl Rock {
         return self.energy;
     }
 
+    pub fn get_density(&self) -> f64 {
+        self.density
+    }
+
     pub fn get_px(&self) -> f64 {
         return self.px;
     }

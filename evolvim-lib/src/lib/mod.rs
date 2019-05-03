@@ -14,6 +14,8 @@
 extern crate serde_derive;
 extern crate serde;
 extern crate nalgebra;
+extern crate ncollide2d;
+extern crate nphysics2d;
 extern crate noise;
 extern crate bincode;
 extern crate rand;

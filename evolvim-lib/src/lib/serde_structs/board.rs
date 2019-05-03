@@ -89,6 +89,8 @@ impl<B: NeuralNet> From<BoardSerde<B>> for Board<B> {
             bs.board_height,
             bs.terrain,
 
+            nphysics2d::world::World::new(),
+
             bs.creature_minimum,
             soft_bodies_in_positions,
             creatures,
