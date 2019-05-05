@@ -213,15 +213,7 @@ impl<B> HLSoftBody<B> {
     }
 }
 
-impl<B: Intentions> HLSoftBody<B> {
-    fn wants_primary_birth(&self, time: f64) -> bool {
-        let temp = self.borrow();
 
-        temp.get_energy() > SAFE_SIZE
-            && temp.brain.wants_birth() > 0.0
-            && temp.get_age(time) > MATURE_AGE
-    }
-}
 
 impl<B: NeuralNet + Intentions + RecombinationInfinite> HLSoftBody<B> {
     /// Returns a new creature if there's a birth, otherwise returns `None`
@@ -232,7 +224,7 @@ impl<B: NeuralNet + Intentions + RecombinationInfinite> HLSoftBody<B> {
         sbip: &mut SoftBodiesInPositions<B>,
         board_size: BoardSize,
     ) -> Option<HLSoftBody<B>> {
-        if self.wants_primary_birth(time) {
+        if self.borrow().wants_primary_birth(time) {
             let self_px = self.borrow().get_px();
             let self_py = self.borrow().get_py();
             let self_radius = self.borrow().get_radius();
@@ -297,6 +289,14 @@ impl<B: NeuralNet + Intentions + RecombinationInfinite> HLSoftBody<B> {
 pub type SoftBody<B = Brain> = Creature<B>;
 
 // Here are all the functions only applicable to `Creature`s.
+impl<B: Intentions> SoftBody<B> {
+    fn wants_primary_birth(&self, time: f64) -> bool {
+        self.get_energy() > SAFE_SIZE
+            && self.brain.wants_birth() > 0.0
+            && self.get_age(time) > MATURE_AGE
+    }
+}
+
 impl<B> SoftBody<B> {
     /// Performs the energy requirement to keep living.
     pub fn metabolize(&mut self, time_step: f64, time: f64) {
