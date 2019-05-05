@@ -84,14 +84,12 @@ impl<B> HLSoftBody<B> {
     pub fn into_inner(self) -> SoftBody<B> {
         self.0.into_inner().unwrap()
     }
-    #[cfg(not(multithreading))]
-    pub fn into_inner(self) -> SoftBody<B> {
-        use std::rc::Rc;
 
-        match Rc::try_unwrap(self.0) {
-            Ok(n) => n.into_inner(),
-            Err(_e) => panic!("Could not unwrap Rc."),
-        }
+    pub fn from_creature(creature: SoftBody<B>, world: &mut World) -> Self {
+        HLSoftBody(
+            make_physics_creature(world, &creature),
+            std::marker::PhantomData,
+        )
     }
 
     /// Calls the same function on all types and updates `SoftBodiesInPositions` by calling `set_sbip`.
@@ -308,4 +306,28 @@ impl<B> SoftBody<B> {
 
         // Creature should die if it doesn't have enough energy, this is done by `Board`.
     }
+}
+
+fn make_physics_creature<B>(world: &mut World, cr: &Creature<B>) -> BodyHandle {
+    use nalgebra::Vector2;
+    use ncollide2d::shape::{Ball, ShapeHandle};
+    use nphysics2d::object::{ColliderDesc, RigidBodyDesc};
+
+    let radius = cr.get_radius();
+
+    // Create the ColliderDesc
+    let shape = ShapeHandle::new(Ball::new(radius));
+    let collide_handle = ColliderDesc::new(shape);
+
+    let mass = cr.get_mass();
+    let position = Vector2::new(cr.get_px(), cr.get_py());
+
+    // Build the RigidBody
+    let rigid_body = RigidBodyDesc::new()
+        .mass(mass)
+        .translation(position)
+        .collider(&collide_handle)
+        .build(world);
+
+    return rigid_body.handle();
 }

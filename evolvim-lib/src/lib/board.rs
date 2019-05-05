@@ -198,14 +198,15 @@ impl<B: NeuralNet + GenerateRandom> Board<B> {
     fn maintain_creature_minimum(&mut self) {
         while self.creatures.len() < self.creature_minimum {
             let board_size = self.get_board_size();
-            let creature = HLSoftBody::from(SoftBody::new_random(board_size, self.year));
+            let creature = HLSoftBody::from_creature(
+                SoftBody::new_random(board_size, self.year),
+                &mut self.world,
+            );
 
             // Initialize in `SoftBodiesInPositions` as well.
             creature.set_sbip(&mut self.soft_bodies_in_positions, board_size);
             // Just to set the prevSBIP variables.
             creature.set_sbip(&mut self.soft_bodies_in_positions, board_size);
-
-            let _handle = make_physics_creature(&mut self.world, &creature.borrow());
 
             self.creatures.push(creature);
             self.creature_id_up_to += 1;
@@ -266,8 +267,6 @@ impl<B: NeuralNet + RecombinationInfinite> Board<B> {
         }
 
         babies.into_iter().for_each(|c| {
-            let _handle = make_physics_creature(&mut self.world, &c.borrow());
-
             self.creatures.push(c);
         });
     }
@@ -494,28 +493,4 @@ impl<B: NeuralNet + serde::Serialize> Board<B> {
 
         Ok(())
     }
-}
-
-fn make_physics_creature<B>(world: &mut World<f64>, cr: &Creature<B>) -> BodyHandle {
-    use nalgebra::Vector2;
-    use ncollide2d::shape::{Ball, ShapeHandle};
-    use nphysics2d::object::{ColliderDesc, RigidBodyDesc};
-
-    let radius = cr.get_radius();
-
-    // Create the ColliderDesc
-    let shape = ShapeHandle::new(Ball::new(radius));
-    let collide_handle = ColliderDesc::new(shape);
-
-    let mass = cr.get_mass();
-    let position = Vector2::new(cr.get_px(), cr.get_py());
-
-    // Build the RigidBody
-    let rigid_body = RigidBodyDesc::new()
-        .mass(mass)
-        .translation(position)
-        .collider(&collide_handle)
-        .build(world);
-
-    return rigid_body.handle();
 }
