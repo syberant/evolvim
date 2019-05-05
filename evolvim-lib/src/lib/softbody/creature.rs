@@ -2,7 +2,7 @@ use super::*;
 
 pub const MINIMUM_SURVIVABLE_SIZE: f64 = 0.06;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct Creature<B> {
     pub base: Rock,
     pub brain: B,
@@ -37,9 +37,9 @@ impl<B: GenerateRandom> Creature<B> {
 impl<B: NeuralNet + RecombinationInfinite> Creature<B> {
     /// Create a new baby, it isn't in `SoftBodiesInPositions` so please fix that.
     /// While you're at it, also add it to `Board.creatures`.
-    pub fn new_baby(parents: Vec<HLSoftBody<B>>, energy: f64, time: f64) -> Creature<B> {
-        let brain = B::recombination_infinite_parents(&parents);
-        let base = Rock::new_from_parents(&parents, energy, time);
+    pub fn new_baby(parents: &[&SoftBody<B>], energy: f64, time: f64) -> Creature<B> {
+        let brain = B::recombination_infinite_parents(parents);
+        let base = Rock::new_from_parents(parents, energy, time);
 
         Creature { base, brain }
     }

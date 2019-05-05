@@ -274,8 +274,9 @@ impl<B: NeuralNet + Intentions + RecombinationInfinite> HLSoftBody<B> {
                     let energy_to_lose = energy * (c.get_baby_energy() / available_energy);
                     c.lose_energy(energy_to_lose);
                 });
+                let par: Vec<&SoftBody<B>> = parents.iter().map(|c| c.borrow(world)).collect();
 
-                let sb = HLSoftBody::from(Creature::new_baby(parents, energy, time));
+                let sb = HLSoftBody::from(Creature::new_baby(&par, energy, time));
 
                 sb.set_sbip(sbip, board_size);
                 sb.set_sbip(sbip, board_size);

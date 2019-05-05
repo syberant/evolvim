@@ -1,4 +1,4 @@
-use super::HLSoftBody;
+use super::{HLSoftBody, SoftBody};
 use crate::board::{BoardCoordinate, BoardPreciseCoordinate, BoardSize};
 use crate::climate::Climate;
 use crate::constants::*;
@@ -13,7 +13,7 @@ const ENERGY_DENSITY: f64 = 1.0
     / (super::creature::MINIMUM_SURVIVABLE_SIZE * super::creature::MINIMUM_SURVIVABLE_SIZE * PI);
 pub const FIGHT_RANGE: f64 = 2.0;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct Rock {
     // Position
     px: f64,
@@ -80,25 +80,25 @@ impl Rock {
     }
 
     /// TODO: prevent px and py from being directly on top of the parent.
-    pub fn new_from_parents<B>(parents: &Vec<HLSoftBody<B>>, energy: f64, time: f64) -> Rock {
+    pub fn new_from_parents<B>(parents: &[&SoftBody<B>], energy: f64, time: f64) -> Rock {
         let parent_amount = parents.len();
 
-        let px = parents.iter().fold(0.0, |acc, parent| {
-            acc + parent.borrow().px / parent_amount as f64
-        });
-        let py = parents.iter().fold(0.0, |acc, parent| {
-            acc + parent.borrow().py / parent_amount as f64
-        });
+        let px = parents
+            .iter()
+            .fold(0.0, |acc, parent| acc + parent.px / parent_amount as f64);
+        let py = parents
+            .iter()
+            .fold(0.0, |acc, parent| acc + parent.py / parent_amount as f64);
         let rotation = parents.iter().fold(0.0, |acc, parent| {
-            acc + parent.borrow().rotation / parent_amount as f64
+            acc + parent.rotation / parent_amount as f64
         });
 
         // The hue is the mean of all parent hues
         let mouth_hue = parents.iter().fold(0.0, |acc, parent| {
-            acc + parent.borrow().mouth_hue / parent_amount as f64
+            acc + parent.mouth_hue / parent_amount as f64
         });
 
-        let density = parents[0].borrow().density;
+        let density = parents[0].density;
 
         Rock {
             px,

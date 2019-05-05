@@ -37,7 +37,7 @@ type OutputLayerSize = U10;
 ///
 /// # Processing equivalent
 /// *Brain.pde/Brain*, although this doesn't have an `Axon` class/structure to rely on.
-#[derive(Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct Brain {
     // This dimension should be equal to InputLayerSize + 1.
     a_1: RowVectorN<FPN, InputLayerSizePlusBias>,
@@ -165,7 +165,7 @@ impl super::RecombinationInfinite for Brain {
     ///
     /// TODO: improve performance via vectorization.
     /// TODO: understand formulae and improve them or come up with my own
-    fn recombination_infinite_parents(parents: &Vec<crate::softbody::HLSoftBody<Brain>>) -> Self {
+    fn recombination_infinite_parents(parents: &[&crate::softbody::SoftBody<Brain>]) -> Self {
         let a_1 = <RowVectorN<FPN, InputLayerSizePlusBias>>::zeros();
         let a_2 = <RowVectorN<FPN, HiddenLayerSizePlusBias>>::zeros();
         let a_3 = <RowVectorN<FPN, OutputLayerSize>>::zeros();
@@ -192,8 +192,8 @@ impl super::RecombinationInfinite for Brain {
 
                 let r = (rng.gen::<f64>() * 2.0 - 1.0).powi(9);
 
-                theta_1[(y, z)] = parents[parent_id].borrow().brain.theta_1[(y, z)]
-                    + r * MUTABILITY / MUTATE_MULTI;
+                theta_1[(y, z)] =
+                    parents[parent_id].brain.theta_1[(y, z)] + r * MUTABILITY / MUTATE_MULTI;
             }
         }
 
@@ -208,8 +208,8 @@ impl super::RecombinationInfinite for Brain {
 
                 let r = (rng.gen::<f64>() * 2.0 - 1.0).powi(9);
 
-                theta_2[(y, z)] = parents[parent_id].borrow().brain.theta_2[(y, z)]
-                    + r * MUTABILITY / MUTATE_MULTI;
+                theta_2[(y, z)] =
+                    parents[parent_id].brain.theta_2[(y, z)] + r * MUTABILITY / MUTATE_MULTI;
             }
         }
 
