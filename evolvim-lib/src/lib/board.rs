@@ -9,9 +9,8 @@ use crate::brain::{Brain, GenerateRandom, NeuralNet, RecombinationInfinite};
 use crate::climate::Climate;
 use crate::constants::*;
 use crate::sbip::SoftBodiesInPositions;
-use crate::softbody::{Creature, HLSoftBody, SoftBody};
+use crate::softbody::{HLSoftBody, SoftBody};
 use crate::terrain::Terrain;
-use nphysics2d::object::BodyHandle;
 use nphysics2d::world::World;
 
 /// The amount of times a year an object is updated.
@@ -98,7 +97,7 @@ pub struct Board<B: NeuralNet = Brain> {
     pub selected_creature: SelectedCreature<B>,
 }
 
-impl<B: NeuralNet + GenerateRandom> Default for Board<B> {
+impl<B: NeuralNet + GenerateRandom + 'static> Default for Board<B> {
     fn default() -> Self {
         let board_size = DEFAULT_BOARD_SIZE;
         let noise_step_size = DEFAULT_NOISE_STEP_SIZE;
@@ -116,7 +115,7 @@ impl<B: NeuralNet + GenerateRandom> Default for Board<B> {
     }
 }
 
-impl<B: NeuralNet> Board<B> {
+impl<B: NeuralNet + 'static> Board<B> {
     pub fn new(
         board_width: usize,
         board_height: usize,
@@ -130,7 +129,7 @@ impl<B: NeuralNet> Board<B> {
         climate: Climate,
         selected_creature: SelectedCreature<B>,
     ) -> Board<B> {
-        Board {
+        let mut board = Board {
             board_width,
             board_height,
             terrain,
@@ -147,11 +146,16 @@ impl<B: NeuralNet> Board<B> {
             climate,
 
             selected_creature,
-        }
+        };
+
+        // Initialize sbip
+        board.reload_sbip();
+
+        return board;
     }
 }
 
-impl<B: NeuralNet + GenerateRandom> Board<B> {
+impl<B: NeuralNet + GenerateRandom + 'static> Board<B> {
     /// Randomly generates a new `Board`.
     pub fn new_random(
         board_size: BoardSize,
@@ -188,6 +192,9 @@ impl<B: NeuralNet + GenerateRandom> Board<B> {
         // Initialize creatures.
         board.maintain_creature_minimum();
 
+        // Initialize sbip
+        board.reload_sbip();
+
         return board;
     }
 
@@ -203,18 +210,13 @@ impl<B: NeuralNet + GenerateRandom> Board<B> {
                 &mut self.world,
             );
 
-            // Initialize in `SoftBodiesInPositions` as well.
-            creature.set_sbip(&mut self.soft_bodies_in_positions, board_size);
-            // Just to set the prevSBIP variables.
-            creature.set_sbip(&mut self.soft_bodies_in_positions, board_size);
-
             self.creatures.push(creature);
             self.creature_id_up_to += 1;
         }
     }
 }
 
-impl<B: NeuralNet + RecombinationInfinite + GenerateRandom> Board<B> {
+impl<B: NeuralNet + RecombinationInfinite + GenerateRandom + 'static> Board<B> {
     pub fn update(&mut self, time_step: f64) {
         self.year += time_step;
         self.climate.update(self.year);
@@ -240,15 +242,15 @@ impl<B: NeuralNet + RecombinationInfinite + GenerateRandom> Board<B> {
         // Experimental: this was moved from above to always keep the creature minimum.
         self.maintain_creature_minimum();
 
-        // Move the creatures around on the board
-        self.move_creatures(time_step);
-
         // Advance the physics simulation one step
         self.world.step();
+
+        // Get all references correct in soft_bodies_in_positions
+        self.reload_sbip();
     }
 }
 
-impl<B: NeuralNet + RecombinationInfinite> Board<B> {
+impl<B: NeuralNet + RecombinationInfinite + 'static> Board<B> {
     fn creatures_reproduce(&mut self) {
         let mut babies = Vec::new();
 
@@ -257,9 +259,10 @@ impl<B: NeuralNet + RecombinationInfinite> Board<B> {
             let time = self.get_time();
             let board_size = self.get_board_size();
             let sbip = &mut self.soft_bodies_in_positions;
+            let world = &mut self.world;
 
             for c in &mut self.creatures {
-                let maybe_baby = c.try_reproduce(time, sbip, board_size);
+                let maybe_baby = c.try_reproduce(time, sbip, board_size, world);
                 if let Some(baby) = maybe_baby {
                     babies.push(baby);
                 }
@@ -272,11 +275,11 @@ impl<B: NeuralNet + RecombinationInfinite> Board<B> {
     }
 }
 
-impl<B: NeuralNet> Board<B> {
+impl<B: NeuralNet + 'static> Board<B> {
     /// Selects the oldest creature still alive.
     pub fn select_oldest(&mut self) {
         let oldest = self.creatures.iter().fold(&self.creatures[0], |c_old, c| {
-            if c.borrow().get_birth_time() < c_old.borrow().get_birth_time() {
+            if c.borrow(&self.world).get_birth_time() < c_old.borrow(&self.world).get_birth_time() {
                 &c
             } else {
                 c_old
@@ -289,7 +292,7 @@ impl<B: NeuralNet> Board<B> {
     /// Selects the biggest creature.
     pub fn select_biggest(&mut self) {
         let biggest = self.creatures.iter().fold(&self.creatures[0], |c_old, c| {
-            if c.borrow().get_energy() > c_old.borrow().get_energy() {
+            if c.borrow(&self.world).get_energy() > c_old.borrow(&self.world).get_energy() {
                 &c
             } else {
                 c_old
@@ -301,20 +304,19 @@ impl<B: NeuralNet> Board<B> {
 
     #[cfg(not(multithreading))]
     fn update_brains(&mut self) {
-        self.creatures
-            .iter()
-            .map(|c| c.borrow_mut())
-            .for_each(|mut c| {
-                let creature: &mut SoftBody<B> = &mut c;
-                let env = crate::brain::Environment::new(&self.terrain, &creature.base);
-                creature.brain.run_with(&env);
-            });
+        let world = &mut self.world;
+
+        for c in &self.creatures {
+            let creature: &mut SoftBody<B> = c.borrow_mut(world);
+            let env = crate::brain::Environment::new(&self.terrain, &creature.base);
+            creature.brain.run_with(&env);
+         }
     }
 
     #[cfg(multithreading)]
     fn update_brains(&mut self) {
         self.creatures
-            .map(|c| c.borrow_mut())
+            .map(|c| c.borrow_mut(&mut self.world))
             .par_iter()
             .for_each(|c| {
                 let env = crate::brain::Environment::new(&self.terrain, &c.base);
@@ -329,10 +331,7 @@ impl<B: NeuralNet> Board<B> {
         let board_size = self.get_board_size();
 
         for c_rc in &self.creatures {
-            // These functions call `borrow_mut()`
-            c_rc.collide(&self.soft_bodies_in_positions);
-
-            let mut c = c_rc.borrow_mut();
+            let c = c_rc.borrow_mut(&mut self.world);
 
             c.record_energy();
 
@@ -344,33 +343,29 @@ impl<B: NeuralNet> Board<B> {
         let use_output = true;
         if use_output {
             for c_rc in &self.creatures {
-                let creature: &mut SoftBody<B> = &mut c_rc.borrow_mut();
-                let mut env = EnvironmentMut::new(
-                    &mut self.terrain,
-                    &mut creature.base,
-                    board_size,
-                    time,
-                    &self.climate,
-                    &self.soft_bodies_in_positions,
-                    c_rc.clone(),
-                );
-                creature.brain.use_output(&mut env, time_step);
+                unimplemented!("Fix mess please, using self.world twice here...");
+                // let creature: &mut SoftBody<B> = &mut c_rc.borrow_mut(&mut self.world);
+                // let mut env = EnvironmentMut::new(
+                //     &mut self.terrain,
+                //     &mut creature.base,
+                //     board_size,
+                //     time,
+                //     &self.climate,
+                //     &self.soft_bodies_in_positions,
+                //     c_rc.clone(),
+                //     &mut self.world,
+                // );
+                // creature.brain.use_output(&mut env, time_step);
             }
         }
     }
 
-    // #[cfg(multithreading)]
-    pub fn move_creatures(&mut self, time_step: f64) {
-        let board_size = self.get_board_size();
+    pub fn reload_sbip(&mut self) {
+        // Wipe everything
+        self.soft_bodies_in_positions.wipe();
 
-        for c in &self.creatures {
-            c.apply_motions(
-                time_step * OBJECT_TIMESTEPS_PER_YEAR,
-                board_size,
-                &self.terrain,
-                &mut self.soft_bodies_in_positions,
-            );
-        }
+        // Load it up again
+        unimplemented!();
     }
 
     pub fn prepare_for_drawing(&mut self) {
@@ -386,13 +381,14 @@ impl<B: NeuralNet> Board<B> {
         let terrain = &mut self.terrain;
         let climate = &self.climate;
         let sbip = &mut self.soft_bodies_in_positions;
+        let world = &mut self.world;
 
         // TODO: possibly optimise code
         let mut i = 0;
         while i < self.creatures.len() {
             // let creature = &mut self.creatures[i];
-            if self.creatures[i].borrow().should_die() {
-                self.creatures[i].return_to_earth(time, board_size, terrain, climate, sbip);
+            if self.creatures[i].borrow(world).should_die() {
+                self.creatures[i].return_to_earth(time, board_size, terrain, climate, sbip, world);
 
                 self.selected_creature
                     .unselect_if_dead(self.creatures[i].clone());
@@ -404,7 +400,9 @@ impl<B: NeuralNet> Board<B> {
             }
         }
     }
+}
 
+impl<B: NeuralNet> Board<B> {
     /// Performs the same function on `self.climate`, filling in `self.year`.
     pub fn get_growth_since(&self, last_updated: f64) -> f64 {
         return self
@@ -469,7 +467,7 @@ impl<B: NeuralNet> Board<B> {
     }
 }
 
-impl<B: NeuralNet + serde::de::DeserializeOwned> Board<B> {
+impl<B: NeuralNet + serde::de::DeserializeOwned + 'static> Board<B> {
     pub fn load_from<P: AsRef<std::path::Path>>(
         path: P,
     ) -> Result<Board<B>, Box<dyn std::error::Error>> {
@@ -483,11 +481,8 @@ impl<B: NeuralNet + serde::de::DeserializeOwned> Board<B> {
     }
 }
 
-impl<B: NeuralNet + serde::Serialize> Board<B> {
-    pub fn save_to<P: AsRef<std::path::Path>>(
-        self,
-        path: P,
-    ) -> Result<(), Box<dyn std::error::Error>> {
+impl<B: NeuralNet + serde::Serialize + Clone + 'static> Board<B> {
+    pub fn save_to<P: AsRef<std::path::Path>>(self, path: P) -> Result<(), Box<dyn std::error::Error>> {
         let file = std::fs::File::create(path)?;
         bincode::serialize_into(file, &crate::serde_structs::board::BoardSerde::from(self))?;
 

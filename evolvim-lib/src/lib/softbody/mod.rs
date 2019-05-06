@@ -6,7 +6,8 @@ mod rock;
 
 pub use self::creature::*;
 pub use self::rock::*;
-use std::cell::{Ref, RefMut};
+use nphysics2d::object::BodyHandle;
+type World = nphysics2d::world::World<f64>;
 
 const COLLISION_FORCE: f64 = 0.01;
 const PIECES: usize = 20;
@@ -32,15 +33,24 @@ impl<B> PartialEq<HLSoftBody<B>> for HLSoftBody<B> {
     }
 }
 
-impl<B> HLSoftBody<B> {
-    /// Wrapper function
-    pub fn borrow(&self) -> std::cell::Ref<SoftBody<B>> {
-        unimplemented!()
+impl<B: 'static> HLSoftBody<B> {
+    pub fn borrow<'a>(&self, world: &'a World) -> &'a SoftBody<B> {
+        let rigid_body = world.rigid_body(self.0).unwrap();
+        let data = rigid_body.user_data().unwrap();
+
+        let sb = data.downcast_ref::<SoftBody<B>>().unwrap();
+
+        sb
     }
 
     /// Wrapper function
-    pub fn borrow_mut(&self) -> std::cell::RefMut<SoftBody<B>> {
-        unimplemented!()
+    pub fn borrow_mut<'a>(&self, world: &'a mut World) -> &'a mut SoftBody<B> {
+        let rigid_body = world.rigid_body_mut(self.0).unwrap();
+        let data = rigid_body.user_data_mut().unwrap();
+
+        let sb = data.downcast_mut::<SoftBody<B>>().unwrap();
+
+        sb
     }
 
     /// Returns a boolean indicating whether this `HLSoftBody` is currently borrowed, useful for debugging.
@@ -60,95 +70,13 @@ impl<B> HLSoftBody<B> {
         )
     }
 
-    /// Calls the same function on all types and updates `SoftBodiesInPositions` by calling `set_sbip`.
-    pub fn apply_motions(
-        &self,
-        time_step: f64,
-        board_size: BoardSize,
-        terrain: &Terrain,
-        sbip: &mut SoftBodiesInPositions<B>,
-    ) {
-        use std::ops::DerefMut;
+    /// Adds this to `SoftBodiesInPositions`.
+    pub fn set_sbip(&self, sbip: &mut SoftBodiesInPositions<B>, world: &mut World) {
+        let self_borrow = self.borrow_mut(world);
 
-        self.borrow_mut()
-            .deref_mut()
-            .apply_motions(time_step, terrain, board_size);
-
-        self.set_sbip(sbip, board_size);
-    }
-
-    /// Updates `SoftBodiesInPositions` and updates itself by calling `update_sbip_variables()`.
-    pub fn set_sbip(&self, sbip: &mut SoftBodiesInPositions<B>, board_size: BoardSize) {
-        // TODO: Look for optimizations here by cleaning and filling sbip more intelligently.
-
-        let mut self_borrow = self.borrow_mut();
-
-        self_borrow.update_sbip_variables(board_size);
-
-        if self_borrow.moved_between_tiles() {
-            for x in self_borrow.previous_x_range() {
-                for y in self_borrow.previous_y_range() {
-                    // Prevents deleting tiles we are currently in.
-                    if !self_borrow.is_in_tile(x, y) {
-                        sbip.remove_soft_body_at(x, y, self.clone());
-                    }
-                }
-            }
-
-            for x in self_borrow.current_x_range() {
-                for y in self_borrow.current_y_range() {
-                    // Prevents duplicate entries.
-                    if !self_borrow.was_in_tile(x, y) {
-                        sbip.add_soft_body_at(x, y, self.clone());
-                    }
-                }
-            }
-        }
-    }
-
-    /// Completely removes this `HLSoftBody` from `sbip`.
-    ///
-    /// NOTE: `HLSoftBody` is added again when `set_sbip` is called.
-    pub fn remove_from_sbip(&mut self, sbip: &mut SoftBodiesInPositions<B>) {
-        for x in self.borrow().current_x_range() {
-            for y in self.borrow().current_y_range() {
-                sbip.remove_soft_body_at(x, y, self.clone());
-            }
-        }
-    }
-
-    /// Checks for collision and adjusts velocity if that's the case.
-    ///
-    /// TODO: clean up the many uses of `borrow()`
-    pub fn collide(&self, sbip: &SoftBodiesInPositions<B>) {
-        let mut self_br = self.borrow_mut();
-        let mut colliders = self_br.get_colliders(sbip);
-
-        // Remove self, if you don't do this then the program will crash because you're borrowing self twice.
-        colliders.remove_softbody(self.clone());
-
-        let self_px = self_br.get_px();
-        let self_py = self_br.get_py();
-        let self_radius = self_br.get_radius();
-        let self_mass = self_br.get_mass();
-
-        for collider_rc in colliders {
-            let collider = collider_rc.borrow();
-
-            let (collider_px, collider_py) = (collider.get_px(), collider.get_py());
-            let distance = distance(self_px, self_py, collider_px, collider_py);
-
-            let combined_radius = self_radius + collider.get_radius();
-
-            if distance < combined_radius {
-                let force = combined_radius * COLLISION_FORCE;
-
-                let add_vx = (self_px - collider_px) / distance * force / self_mass;
-                let add_vy = (self_py - collider_py) / distance * force / self_mass;
-
-                // This is where self is needed to be borrowed mutably.
-                self_br.add_vx(add_vx);
-                self_br.add_vy(add_vy);
+        for x in self_borrow.current_x_range() {
+            for y in self_borrow.current_y_range() {
+                sbip.add_soft_body_at(x, y, self.clone());
             }
         }
     }
@@ -162,10 +90,11 @@ impl<B> HLSoftBody<B> {
         terrain: &mut Terrain,
         climate: &Climate,
         sbip: &mut SoftBodiesInPositions<B>,
+        world: &mut World,
     ) {
         // To keep the borrowchecker happy.
         {
-            let self_deref = self.borrow_mut();
+            let self_deref = self.borrow_mut(world);
 
             for _i in 0..PIECES {
                 let tile_pos = self_deref.get_random_covered_tile(board_size);
@@ -175,13 +104,11 @@ impl<B> HLSoftBody<B> {
             }
         }
 
-        self.remove_from_sbip(sbip);
+        // SBIP automatically get's wiped every update.
     }
 }
 
-
-
-impl<B: NeuralNet + Intentions + RecombinationInfinite> HLSoftBody<B> {
+impl<B: NeuralNet + Intentions + RecombinationInfinite + 'static> HLSoftBody<B> {
     /// Returns a new creature if there's a birth, otherwise returns `None`
     // TODO: cleanup
     pub fn try_reproduce(
@@ -189,13 +116,14 @@ impl<B: NeuralNet + Intentions + RecombinationInfinite> HLSoftBody<B> {
         time: f64,
         sbip: &mut SoftBodiesInPositions<B>,
         board_size: BoardSize,
+        world: &mut World,
     ) -> Option<HLSoftBody<B>> {
-        if self.borrow().wants_primary_birth(time) {
-            let self_px = self.borrow().get_px();
-            let self_py = self.borrow().get_py();
-            let self_radius = self.borrow().get_radius();
+        if self.borrow(world).wants_primary_birth(time) {
+            let self_px = self.borrow(world).get_px();
+            let self_py = self.borrow(world).get_py();
+            let self_radius = self.borrow(world).get_radius();
 
-            let mut colliders = self.borrow().get_colliders(sbip);
+            let mut colliders = self.borrow(world).get_colliders(sbip);
 
             // Remove self
             colliders.remove_softbody(self.clone());
@@ -203,7 +131,7 @@ impl<B: NeuralNet + Intentions + RecombinationInfinite> HLSoftBody<B> {
             let mut parents: Vec<HLSoftBody<B>> = colliders
                 .into_iter()
                 .filter(|rc_soft| {
-                    let c = rc_soft.borrow();
+                    let c = rc_soft.borrow(world);
                     let dist = distance(self_px, self_py, c.get_px(), c.get_py());
                     let combined_radius = self_radius * FIGHT_RANGE + c.get_radius();
 
@@ -220,24 +148,21 @@ impl<B: NeuralNet + Intentions + RecombinationInfinite> HLSoftBody<B> {
 
             let available_energy = parents
                 .iter()
-                .fold(0.0, |acc, c| acc + c.borrow().get_baby_energy());
+                .fold(0.0, |acc, c| acc + c.borrow(world).get_baby_energy());
 
             if available_energy > BABY_SIZE {
                 let energy = BABY_SIZE;
 
                 // Giving birth costs energy
                 parents.iter_mut().for_each(|c| {
-                    let mut c = c.borrow_mut();
+                    let mut c = c.borrow_mut(world);
 
                     let energy_to_lose = energy * (c.get_baby_energy() / available_energy);
                     c.lose_energy(energy_to_lose);
                 });
                 let par: Vec<&SoftBody<B>> = parents.iter().map(|c| c.borrow(world)).collect();
 
-                let sb = HLSoftBody::from(Creature::new_baby(&par, energy, time));
-
-                sb.set_sbip(sbip, board_size);
-                sb.set_sbip(sbip, board_size);
+                let sb = HLSoftBody::from_creature(Creature::new_baby(&par, energy, time), world);
 
                 // Hooray! Return the little baby!
                 Some(sb)

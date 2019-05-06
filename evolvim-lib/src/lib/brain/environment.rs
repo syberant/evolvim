@@ -9,6 +9,7 @@ pub struct EnvironmentMut<'a, B> {
     pub climate: &'a Climate,
     pub sbip: &'a SoftBodiesInPositions<B>,
     pub self_pointer: HLSoftBody<B>,
+    pub world: &'a mut nphysics2d::world::World<f64>,
 }
 
 impl<'a, B> EnvironmentMut<'a, B> {
@@ -20,6 +21,7 @@ impl<'a, B> EnvironmentMut<'a, B> {
         climate: &'a Climate,
         sbip: &'a SoftBodiesInPositions<B>,
         self_pointer: HLSoftBody<B>,
+        world: &'a mut nphysics2d::world::World<f64>,
     ) -> Self {
         EnvironmentMut {
             terrain,
@@ -29,6 +31,7 @@ impl<'a, B> EnvironmentMut<'a, B> {
             climate,
             sbip,
             self_pointer,
+            world,
         }
     }
 

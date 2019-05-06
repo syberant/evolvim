@@ -8,7 +8,7 @@ pub enum OutputType {
 }
 
 impl OutputType {
-    pub fn use_output<B>(
+    pub fn use_output<B: 'static>(
         &self,
         value: f64,
         env: &mut crate::brain::EnvironmentMut<B>,
@@ -31,6 +31,7 @@ impl OutputType {
                 env.time,
                 time_step,
                 env.sbip,
+                env.world,
                 env.self_pointer.clone(),
             ),
         };

@@ -53,7 +53,7 @@ impl<B> Creature<B> {
             self.lose_energy(energy_to_lose);
         }
 
-        self.base.apply_motions(time_step, board_size);
+        // self.base.apply_motions(time_step, board_size);
     }
 
     pub fn should_die(&self) -> bool {

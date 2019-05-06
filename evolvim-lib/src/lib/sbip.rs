@@ -58,6 +58,15 @@ impl<B> SoftBodiesInPositions<B> {
         return SoftBodiesInPositions(allocated_rows);
     }
 
+    /// Wipes all references but leaves allocations in place
+    pub fn wipe(&mut self) {
+        for i in &mut self.0 {
+            for j in i {
+                j.clear();
+            }
+        }
+    }
+
     pub fn get_soft_bodies_at(&self, x: usize, y: usize) -> &SoftBodiesAt<B> {
         return &self.0[x][y];
     }

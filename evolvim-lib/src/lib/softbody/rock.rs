@@ -184,12 +184,13 @@ impl Rock {
         }
     }
 
-    pub fn fight<B>(
+    pub fn fight<B: 'static>(
         &mut self,
         amount: f64,
         time: f64,
         time_step: f64,
         sbip: &SoftBodiesInPositions<B>,
+        world: &mut nphysics2d::world::World<f64>,
         self_pointer: HLSoftBody<B>,
     ) {
         use super::MATURE_AGE;
@@ -207,7 +208,7 @@ impl Rock {
             colliders.remove_softbody(self_pointer);
 
             for collider in colliders {
-                let mut col = collider.borrow_mut();
+                let mut col = collider.borrow_mut(world);
                 let distance = distance(self_x, self_y, col.get_px(), col.get_py());
                 let combined_radius = self.get_radius() * FIGHT_RANGE + col.get_radius();
 
@@ -245,22 +246,6 @@ impl Rock {
         // Call `abs()` because we can turn both ways.
         let energy_to_lose = (amount * self.energy * time_step * TURN_ENERGY).abs();
         self.lose_energy(energy_to_lose);
-    }
-
-    /// Updates positions and velocities based on `time_step` and some physics formulae.
-    ///
-    /// NOTE: Includes rotation unlike the Processing code.
-    /// NOTE: Does not call `set_sbip`.
-    pub fn apply_motions(&mut self, time_step: f64, board_size: BoardSize) {
-        let new_px = self.px + self.vx * time_step;
-        let new_py = self.py + self.vy * time_step;
-        self.set_body_x(new_px, board_size.0);
-        self.set_body_y(new_py, board_size.1);
-        self.rotation += self.vr * time_step;
-
-        self.vx *= 0f64.max(1.0 - FRICTION / self.get_mass());
-        self.vy *= 0f64.max(1.0 - FRICTION / self.get_mass());
-        self.vr *= 0f64.max(1.0 - FRICTION / self.get_mass());
     }
 
     pub fn moved_between_tiles(&self) -> bool {
