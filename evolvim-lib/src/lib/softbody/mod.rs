@@ -8,16 +8,6 @@ pub use self::creature::*;
 pub use self::rock::*;
 use std::cell::{Ref, RefMut};
 
-#[cfg(multithreading)]
-type ReferenceCounter = std::sync::Arc;
-#[cfg(not(multithreading))]
-type ReferenceCounter<A> = std::rc::Rc<A>;
-
-#[cfg(multithreading)]
-type MutPoint = std::sync::RwLock;
-#[cfg(not(multithreading))]
-type MutPoint<A> = std::cell::RefCell<A>;
-
 const COLLISION_FORCE: f64 = 0.01;
 const PIECES: usize = 20;
 const AGE_FACTOR: f64 = 1.0;
@@ -28,61 +18,39 @@ const MATURE_AGE: f64 = 0.01;
 /// This is a wrapper struct providing some useful functions.
 ///
 /// TODO: come up with a better name.
-pub struct HLSoftBody<B = Brain>(ReferenceCounter<MutPoint<SoftBody<B>>>);
-
-impl<B> From<SoftBody<B>> for HLSoftBody<B> {
-    fn from(sb: SoftBody<B>) -> HLSoftBody<B> {
-        HLSoftBody(ReferenceCounter::new(MutPoint::new(sb)))
-    }
-}
+pub struct HLSoftBody<B = Brain>(BodyHandle, std::marker::PhantomData<B>);
 
 impl<B> Clone for HLSoftBody<B> {
     fn clone(&self) -> Self {
-        HLSoftBody(ReferenceCounter::clone(&self.0))
+        HLSoftBody(self.0.clone(), std::marker::PhantomData)
     }
 }
 
 impl<B> PartialEq<HLSoftBody<B>> for HLSoftBody<B> {
     fn eq(&self, rhs: &HLSoftBody<B>) -> bool {
-        ReferenceCounter::ptr_eq(&self.0, &rhs.0)
+        self.0 == rhs.0
     }
 }
 
 impl<B> HLSoftBody<B> {
     /// Wrapper function
-    #[cfg(multithreading)]
-    pub fn borrow(&self) -> RwLockReadGuard<SoftBody<B>> {
-        return self.0.read().unwrap();
-    }
-    #[cfg(not(multithreading))]
-    pub fn borrow(&self) -> Ref<SoftBody<B>> {
-        return self.0.borrow();
+    pub fn borrow(&self) -> std::cell::Ref<SoftBody<B>> {
+        unimplemented!()
     }
 
     /// Wrapper function
-    #[cfg(multithreading)]
-    pub fn borrow_mut(&self) -> RwLockWriteGuard<SoftBody<B>> {
-        return self.0.write().unwrap();
-    }
-    #[cfg(not(multithreading))]
-    pub fn borrow_mut(&self) -> RefMut<SoftBody<B>> {
-        return self.0.borrow_mut();
+    pub fn borrow_mut(&self) -> std::cell::RefMut<SoftBody<B>> {
+        unimplemented!()
     }
 
     /// Returns a boolean indicating whether this `HLSoftBody` is currently borrowed, useful for debugging.
-    #[cfg(multithreading)]
     pub fn can_borrow_mut(&self) -> bool {
-        return self.0.try_write().is_ok();
-    }
-    #[cfg(not(multithreading))]
-    pub fn can_borrow_mut(&self) -> bool {
-        return self.0.try_borrow_mut().is_ok();
+        unimplemented!()
     }
 
     /// Consume this thing and return the value it holds
-    #[cfg(multithreading)]
     pub fn into_inner(self) -> SoftBody<B> {
-        self.0.into_inner().unwrap()
+        unimplemented!()
     }
 
     pub fn from_creature(creature: SoftBody<B>, world: &mut World) -> Self {
