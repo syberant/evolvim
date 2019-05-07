@@ -31,10 +31,6 @@ pub struct Rock {
     sbip_min_y: usize,
     sbip_max_x: usize,
     sbip_max_y: usize,
-    prev_sbip_min_x: usize,
-    prev_sbip_min_y: usize,
-    prev_sbip_max_x: usize,
-    prev_sbip_max_y: usize,
     // Stats or info
     prev_energy: f64,
     birth_time: f64,
@@ -67,10 +63,6 @@ impl Rock {
             sbip_min_y: 0,
             sbip_max_x: 0,
             sbip_max_y: 0,
-            prev_sbip_min_x: 0,
-            prev_sbip_min_y: 0,
-            prev_sbip_max_x: 0,
-            prev_sbip_max_y: 0,
 
             prev_energy: energy,
             birth_time: time,
@@ -116,10 +108,6 @@ impl Rock {
             sbip_min_y: 0,
             sbip_max_x: 0,
             sbip_max_y: 0,
-            prev_sbip_min_x: 0,
-            prev_sbip_min_y: 0,
-            prev_sbip_max_x: 0,
-            prev_sbip_max_y: 0,
 
             prev_energy: energy,
             birth_time: time,
@@ -248,22 +236,8 @@ impl Rock {
         self.lose_energy(energy_to_lose);
     }
 
-    pub fn moved_between_tiles(&self) -> bool {
-        return self.prev_sbip_max_x != self.sbip_max_x
-            || self.prev_sbip_max_y != self.sbip_max_y
-            || self.prev_sbip_min_x != self.sbip_min_x
-            || self.prev_sbip_min_y != self.sbip_min_y;
-    }
-
     pub fn is_in_tile(&self, x: usize, y: usize) -> bool {
         x > self.sbip_min_x && x < self.sbip_max_x && y > self.sbip_min_y && y < self.sbip_max_y
-    }
-
-    pub fn was_in_tile(&self, x: usize, y: usize) -> bool {
-        x > self.prev_sbip_min_x
-            && x < self.prev_sbip_max_x
-            && y > self.prev_sbip_min_y
-            && y < self.prev_sbip_max_y
     }
 
     pub fn get_random_covered_tile(&self, board_size: BoardSize) -> BoardCoordinate {
@@ -299,11 +273,6 @@ impl Rock {
     pub fn update_sbip_variables(&mut self, board_size: BoardSize) {
         let radius = self.get_radius() * FIGHT_RANGE;
 
-        self.prev_sbip_min_x = self.sbip_min_x;
-        self.prev_sbip_min_y = self.sbip_min_y;
-        self.prev_sbip_max_x = self.sbip_max_x;
-        self.prev_sbip_max_y = self.sbip_max_y;
-
         let board_width = board_size.0;
         let board_height = board_size.1;
         // use this to overcome the borrow checker
@@ -313,14 +282,6 @@ impl Rock {
         self.sbip_min_y = check_center_y((py - radius).floor() as usize, board_height);
         self.sbip_max_x = check_center_x((px + radius).floor() as usize, board_width);
         self.sbip_max_y = check_center_y((py + radius).floor() as usize, board_height);
-    }
-
-    pub fn previous_x_range(&self) -> Range<usize> {
-        self.prev_sbip_min_x..self.prev_sbip_max_x + 1
-    }
-
-    pub fn previous_y_range(&self) -> Range<usize> {
-        self.prev_sbip_min_y..self.prev_sbip_max_y + 1
     }
 
     pub fn current_x_range(&self) -> Range<usize> {
@@ -364,6 +325,11 @@ impl Rock {
     pub fn set_body_y(&mut self, new_y: f64, board_height: usize) {
         let radius = self.get_radius();
         self.py = new_y.max(radius).min(board_height as f64 - radius);
+    }
+
+    /// Sets the rotation of this `Rock` to `new_rot`.
+    pub fn set_body_rotation(&mut self, new_rot: f64) {
+        self.rotation = new_rot;
     }
 
     pub fn add_vx(&mut self, value_to_add: f64) {

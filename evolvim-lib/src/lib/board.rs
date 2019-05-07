@@ -148,9 +148,6 @@ impl<B: NeuralNet + 'static> Board<B> {
             selected_creature,
         };
 
-        // Initialize sbip
-        board.reload_sbip();
-
         return board;
     }
 }
@@ -192,9 +189,6 @@ impl<B: NeuralNet + GenerateRandom + 'static> Board<B> {
         // Initialize creatures.
         board.maintain_creature_minimum();
 
-        // Initialize sbip
-        board.reload_sbip();
-
         return board;
     }
 
@@ -231,6 +225,10 @@ impl<B: NeuralNet + RecombinationInfinite + GenerateRandom + 'static> Board<B> {
             self.terrain.update_all(self.year, &self.climate);
         }
 
+        // Get all references correct in soft_bodies_in_positions
+        self.reload_sbip();
+
+        // Update all existing creatures
         self.update_creatures(time_step);
 
         // Kill weak creatures.
@@ -245,8 +243,6 @@ impl<B: NeuralNet + RecombinationInfinite + GenerateRandom + 'static> Board<B> {
         // Advance the physics simulation one step
         self.world.step();
 
-        // Get all references correct in soft_bodies_in_positions
-        self.reload_sbip();
     }
 }
 
@@ -310,7 +306,7 @@ impl<B: NeuralNet + 'static> Board<B> {
             let creature: &mut SoftBody<B> = c.borrow_mut(world);
             let env = crate::brain::Environment::new(&self.terrain, &creature.base);
             creature.brain.run_with(&env);
-         }
+        }
     }
 
     #[cfg(multithreading)]
@@ -365,7 +361,12 @@ impl<B: NeuralNet + 'static> Board<B> {
         self.soft_bodies_in_positions.wipe();
 
         // Load it up again
-        unimplemented!();
+        let board_size = self.get_board_size();
+        let sbip = &mut self.soft_bodies_in_positions;
+        let world = &mut self.world;
+        for c in &self.creatures {
+            c.set_sbip(sbip, world, board_size);
+        }
     }
 
     pub fn prepare_for_drawing(&mut self) {

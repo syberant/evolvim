@@ -8,6 +8,7 @@ pub use self::creature::*;
 pub use self::rock::*;
 use nphysics2d::object::BodyHandle;
 type World = nphysics2d::world::World<f64>;
+type RigidBody = nphysics2d::object::RigidBody<f64>;
 
 const COLLISION_FORCE: f64 = 0.01;
 const PIECES: usize = 20;
@@ -63,6 +64,10 @@ impl<B: 'static> HLSoftBody<B> {
         unimplemented!()
     }
 
+    pub fn get_body<'a>(&self, world: &'a World) -> &'a RigidBody {
+        world.rigid_body(self.0).unwrap()
+    }
+
     pub fn from_creature(creature: SoftBody<B>, world: &mut World) -> Self {
         HLSoftBody(
             make_physics_creature(world, &creature),
@@ -71,7 +76,14 @@ impl<B: 'static> HLSoftBody<B> {
     }
 
     /// Adds this to `SoftBodiesInPositions`.
-    pub fn set_sbip(&self, sbip: &mut SoftBodiesInPositions<B>, world: &mut World) {
+    pub fn set_sbip(
+        &self,
+        sbip: &mut SoftBodiesInPositions<B>,
+        world: &mut World,
+        board_size: BoardSize,
+    ) {
+        self.update_sbip_variables(world, board_size);
+
         let self_borrow = self.borrow_mut(world);
 
         for x in self_borrow.current_x_range() {
@@ -79,6 +91,23 @@ impl<B: 'static> HLSoftBody<B> {
                 sbip.add_soft_body_at(x, y, self.clone());
             }
         }
+    }
+
+    pub fn update_sbip_variables(&self, world: &mut World, board_size: BoardSize) {
+        // First set the position to the correct one
+        let body = self.get_body(world);
+        let pos = body.position();
+        let rotation = pos.rotation.angle();
+        let px = pos.translation.vector[0];
+        let py = pos.translation.vector[1];
+
+        let bor = self.borrow_mut(world);
+        bor.set_body_x(px, board_size.0);
+        bor.set_body_y(py, board_size.1);
+        bor.set_body_rotation(rotation);
+
+        // Now update the variables
+        bor.update_sbip_variables(board_size);
     }
 
     /// This function requires a reference to a `Board`.
