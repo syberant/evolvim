@@ -217,7 +217,7 @@ pub fn draw_details_creature<B, C, G>(
         creature.get_px(),
         creature.get_py()
     ));
-    text_to_draw.push(format!("Speed: {:.3}", creature.get_total_velocity()));
+    // text_to_draw.push(format!("Speed: {:.3}", creature.get_total_velocity()));
 
     draw_lines(
         text_to_draw,

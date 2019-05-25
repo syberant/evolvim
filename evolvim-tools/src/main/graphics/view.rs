@@ -70,9 +70,10 @@ impl View {
         ) {
             let (x, y) = BoardCoordinate::from(exact_pos.clone());
             let soft_bodies = self.board.soft_bodies_in_positions.get_soft_bodies_at(x, y);
+            let world = &self.board.world;
 
             for c_ref in soft_bodies {
-                let c = c_ref.borrow();
+                let c = c_ref.borrow(world);
 
                 let px = c.get_px();
                 let py = c.get_py();
@@ -183,8 +184,9 @@ impl View {
 
             if self.board.selected_creature.0.is_some() {
                 let pos = {
+                    let world = &self.board.world;
                     let c = &self.board.selected_creature.0.as_ref().unwrap();
-                    let c = c.borrow();
+                    let c = c.borrow(world);
 
                     c.get_position()
                 };
@@ -212,17 +214,18 @@ impl View {
 
                 let y_range = self.get_y_range();
                 let x_range = self.get_x_range();
+                let world = &self.board.world;
 
                 for c in self
                     .board
                     .soft_bodies_in_positions
                     .get_soft_bodies_in(x_range, y_range)
                 {
-                    draw_creature(&c.borrow(), context, graphics, &self);
+                    draw_creature(&c.borrow(world), context, graphics, &self);
                 }
 
                 if let Some(ref c) = self.board.selected_creature.0 {
-                    let creature = c.borrow();
+                    let creature = c.borrow(world);
 
                     draw_details_creature(&creature, context, graphics, glyphs, &self);
                 }
