@@ -19,10 +19,6 @@ pub struct Rock {
     px: f64,
     py: f64,
     rotation: f64,
-    // Velocity
-    vx: f64,
-    vy: f64,
-    vr: f64,
     // Energy
     energy: f64,
     density: f64,
@@ -51,10 +47,6 @@ impl Rock {
             px,
             py,
             rotation: rand::random::<f64>() * 2.0 * PI,
-
-            vx: 0.0,
-            vy: 0.0,
-            vr: 0.0,
 
             energy,
             density,
@@ -97,10 +89,6 @@ impl Rock {
             py,
             rotation,
 
-            vx: 0.0,
-            vy: 0.0,
-            vr: 0.0,
-
             energy,
             density,
 
@@ -126,13 +114,6 @@ impl Rock {
         return self.energy / ENERGY_DENSITY * self.density;
     }
 
-    /// Returns the total velocity.
-    ///
-    /// Does sqrt(vx^2 + vy^2).
-    pub fn get_total_velocity(&self) -> f64 {
-        return (self.vx.powi(2) + self.vy.powi(2)).sqrt();
-    }
-
     /// Eat
     pub fn eat(
         &mut self,
@@ -142,8 +123,9 @@ impl Rock {
         climate: &Climate,
         tile: &mut crate::terrain::tile::Tile,
     ) {
-        let amount = attempted_amount
-            / (1.0 + self.get_total_velocity() * EAT_WHILE_MOVING_INEFFICIENCY_MULTIPLIER);
+        // let amount = attempted_amount
+        //     / (1.0 + self.get_total_velocity() * EAT_WHILE_MOVING_INEFFICIENCY_MULTIPLIER);
+        let amount: f64 = unimplemented!();
         if amount < 0.0 {
             // Vomit
             // TODO: implement vomiting.
@@ -213,8 +195,9 @@ impl Rock {
     /// Costs energy.
     pub fn accelerate(&mut self, amount: f64, time_step: f64) {
         let multiplier = amount * time_step / self.get_mass();
-        self.vx += self.rotation.cos() * multiplier;
-        self.vy += self.rotation.sin() * multiplier;
+        // self.vx += self.rotation.cos() * multiplier;
+        // self.vy += self.rotation.sin() * multiplier;
+        unimplemented!();
 
         if amount >= 0.0 {
             // Moving forward
@@ -229,7 +212,8 @@ impl Rock {
     ///
     /// Costs energy.
     pub fn turn(&mut self, amount: f64, time_step: f64) {
-        self.vr += 0.04 * amount * time_step / self.get_mass();
+        // self.vr += 0.04 * amount * time_step / self.get_mass();
+        unimplemented!();
 
         // Call `abs()` because we can turn both ways.
         let energy_to_lose = (amount * self.energy * time_step * TURN_ENERGY).abs();
@@ -330,14 +314,6 @@ impl Rock {
     /// Sets the rotation of this `Rock` to `new_rot`.
     pub fn set_body_rotation(&mut self, new_rot: f64) {
         self.rotation = new_rot;
-    }
-
-    pub fn add_vx(&mut self, value_to_add: f64) {
-        self.vx += value_to_add;
-    }
-
-    pub fn add_vy(&mut self, value_to_add: f64) {
-        self.vy += value_to_add;
     }
 
     pub fn set_mouth_hue(&mut self, value: f64) {
