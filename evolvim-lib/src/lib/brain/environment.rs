@@ -1,5 +1,5 @@
 use crate::softbody::{HLSoftBody, Rock};
-use crate::{BoardSize, Climate, SoftBodiesInPositions, Terrain};
+use crate::{BoardSize, Climate, Terrain};
 
 pub struct EnvironmentMut<'a, B> {
     pub terrain: &'a mut Terrain,

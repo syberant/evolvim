@@ -8,7 +8,6 @@
 use crate::brain::{Brain, GenerateRandom, NeuralNet, RecombinationInfinite};
 use crate::climate::Climate;
 use crate::constants::*;
-use crate::sbip::SoftBodiesInPositions;
 use crate::softbody::{HLSoftBody, SoftBody};
 use crate::terrain::Terrain;
 use nphysics2d::world::World;
