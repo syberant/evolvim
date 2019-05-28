@@ -37,38 +37,38 @@ impl From<BoardPreciseCoordinate> for BoardCoordinate {
     }
 }
 
-pub struct SelectedCreature<B: NeuralNet>(pub Option<HLSoftBody<B>>);
+// pub struct SelectedCreature<B: NeuralNet>(pub Option<HLSoftBody<B>>);
 
-impl<B: NeuralNet> Default for SelectedCreature<B> {
-    fn default() -> Self {
-        SelectedCreature(None)
-    }
-}
+// impl<B: NeuralNet> Default for SelectedCreature<B> {
+//     fn default() -> Self {
+//         SelectedCreature(None)
+//     }
+// }
 
-impl<B: NeuralNet> SelectedCreature<B> {
-    /// Checks if the given creature was selected and if so, removes it by setting `self.0` to `None`.
-    pub fn unselect_if_dead(&mut self, creature: HLSoftBody<B>) {
-        if let Some(sel_creature) = &self.0 {
-            // If `creature` isn't the same as `self.selected_creature`.
-            if *sel_creature != creature {
-                // Then don't change to `None`.
-                return;
-            }
+// impl<B: NeuralNet> SelectedCreature<B> {
+//     /// Checks if the given creature was selected and if so, removes it by setting `self.0` to `None`.
+//     pub fn unselect_if_dead(&mut self, creature: HLSoftBody<B>) {
+//         if let Some(sel_creature) = &self.0 {
+//             // If `creature` isn't the same as `self.selected_creature`.
+//             if *sel_creature != creature {
+//                 // Then don't change to `None`.
+//                 return;
+//             }
 
-            // Else go on
-        }
+//             // Else go on
+//         }
 
-        self.0 = None;
-    }
+//         self.0 = None;
+//     }
 
-    pub fn select(&mut self, creature: HLSoftBody<B>) {
-        self.0 = Some(creature);
-    }
+//     pub fn select(&mut self, creature: HLSoftBody<B>) {
+//         self.0 = Some(creature);
+//     }
 
-    pub fn deselect(&mut self) {
-        self.0 = None;
-    }
-}
+//     pub fn deselect(&mut self) {
+//         self.0 = None;
+//     }
+// }
 
 pub struct Board<B: NeuralNet = Brain> {
     // Fields relevant for the board itself.
@@ -90,9 +90,6 @@ pub struct Board<B: NeuralNet = Brain> {
 
     // Fields relevant for temperature
     pub climate: Climate,
-
-    // Miscelanious
-    pub selected_creature: SelectedCreature<B>,
 }
 
 impl<B: NeuralNet + GenerateRandom + 'static> Default for Board<B> {
@@ -124,7 +121,6 @@ impl<B: NeuralNet + 'static> Board<B> {
         creature_id_up_to: usize,
         year: f64,
         climate: Climate,
-        selected_creature: SelectedCreature<B>,
     ) -> Board<B> {
         let board = Board {
             board_width,
@@ -140,8 +136,6 @@ impl<B: NeuralNet + 'static> Board<B> {
             year,
 
             climate,
-
-            selected_creature,
         };
 
         return board;
@@ -177,8 +171,6 @@ impl<B: NeuralNet + GenerateRandom + 'static> Board<B> {
             year: 0.0,
 
             climate,
-
-            selected_creature: SelectedCreature::default(),
         };
 
         // Initialize creatures.
@@ -263,31 +255,31 @@ impl<B: NeuralNet + RecombinationInfinite + 'static> Board<B> {
 }
 
 impl<B: NeuralNet + 'static> Board<B> {
-    /// Selects the oldest creature still alive.
-    pub fn select_oldest(&mut self) {
-        let oldest = self.creatures.iter().fold(&self.creatures[0], |c_old, c| {
-            if c.borrow(&self.world).get_birth_time() < c_old.borrow(&self.world).get_birth_time() {
-                &c
-            } else {
-                c_old
-            }
-        });
+    // /// Selects the oldest creature still alive.
+    // pub fn select_oldest(&mut self) {
+    //     let oldest = self.creatures.iter().fold(&self.creatures[0], |c_old, c| {
+    //         if c.borrow(&self.world).get_birth_time() < c_old.borrow(&self.world).get_birth_time() {
+    //             &c
+    //         } else {
+    //             c_old
+    //         }
+    //     });
 
-        self.selected_creature.select(oldest.clone());
-    }
+    //     self.selected_creature.select(oldest.clone());
+    // }
 
-    /// Selects the biggest creature.
-    pub fn select_biggest(&mut self) {
-        let biggest = self.creatures.iter().fold(&self.creatures[0], |c_old, c| {
-            if c.borrow(&self.world).get_energy() > c_old.borrow(&self.world).get_energy() {
-                &c
-            } else {
-                c_old
-            }
-        });
+    // /// Selects the biggest creature.
+    // pub fn select_biggest(&mut self) {
+    //     let biggest = self.creatures.iter().fold(&self.creatures[0], |c_old, c| {
+    //         if c.borrow(&self.world).get_energy() > c_old.borrow(&self.world).get_energy() {
+    //             &c
+    //         } else {
+    //             c_old
+    //         }
+    //     });
 
-        self.selected_creature.select(biggest.clone());
-    }
+    //     self.selected_creature.select(biggest.clone());
+    // }
 
     #[cfg(not(multithreading))]
     fn update_brains(&mut self) {
@@ -367,8 +359,8 @@ impl<B: NeuralNet + 'static> Board<B> {
             if self.creatures[i].borrow(world).should_die() {
                 self.creatures[i].return_to_earth(time, board_size, terrain, climate, world);
 
-                self.selected_creature
-                    .unselect_if_dead(self.creatures[i].clone());
+                // self.selected_creature
+                //     .unselect_if_dead(self.creatures[i].clone());
                 self.creatures.remove(i);
 
             // println!("Dead!");
