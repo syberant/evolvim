@@ -2,7 +2,7 @@ use super::{HLSoftBody, SoftBody};
 use crate::board::{BoardCoordinate, BoardPreciseCoordinate, BoardSize};
 use crate::climate::Climate;
 use crate::constants::*;
-use crate::sbip::{SoftBodiesAt, SoftBodiesInPositions};
+use crate::sbip::SoftBodiesAt;
 use crate::terrain::Terrain;
 use rand::Rng;
 use std::f64::consts::PI;
@@ -22,11 +22,6 @@ pub struct Rock {
     // Energy
     energy: f64,
     density: f64,
-    // Soft Bodies In Positions
-    sbip_min_x: usize,
-    sbip_min_y: usize,
-    sbip_max_x: usize,
-    sbip_max_y: usize,
     // Stats or info
     prev_energy: f64,
     birth_time: f64,
@@ -50,11 +45,6 @@ impl Rock {
 
             energy,
             density,
-
-            sbip_min_x: 0,
-            sbip_min_y: 0,
-            sbip_max_x: 0,
-            sbip_max_y: 0,
 
             prev_energy: energy,
             birth_time: time,
@@ -91,11 +81,6 @@ impl Rock {
 
             energy,
             density,
-
-            sbip_min_x: 0,
-            sbip_min_y: 0,
-            sbip_max_x: 0,
-            sbip_max_y: 0,
 
             prev_energy: energy,
             birth_time: time,
@@ -159,7 +144,6 @@ impl Rock {
         amount: f64,
         time: f64,
         time_step: f64,
-        sbip: &SoftBodiesInPositions<B>,
         world: &mut nphysics2d::world::World<f64>,
         self_pointer: HLSoftBody<B>,
     ) {
@@ -172,7 +156,7 @@ impl Rock {
             let self_x = self.get_px();
             let self_y = self.get_py();
 
-            let mut colliders = self.get_colliders(sbip);
+            let mut colliders: SoftBodiesAt<B> = unimplemented!();
 
             // Remove self
             colliders.remove_softbody(self_pointer);
@@ -220,10 +204,6 @@ impl Rock {
         self.lose_energy(energy_to_lose);
     }
 
-    pub fn is_in_tile(&self, x: usize, y: usize) -> bool {
-        x > self.sbip_min_x && x < self.sbip_max_x && y > self.sbip_min_y && y < self.sbip_max_y
-    }
-
     pub fn get_random_covered_tile(&self, board_size: BoardSize) -> BoardCoordinate {
         let radius = self.get_radius();
         let mut choice_x = 0.0;
@@ -245,35 +225,6 @@ impl Rock {
         let pos = self.get_random_covered_tile(board_size);
         let tile = terrain.get_tile_at(pos);
         return tile.is_water();
-    }
-}
-
-// All functions related to `SoftBodiesInPositions`
-impl Rock {
-    pub fn get_colliders<B>(&self, sbip: &SoftBodiesInPositions<B>) -> SoftBodiesAt<B> {
-        sbip.get_soft_bodies_in(self.current_x_range(), self.current_y_range())
-    }
-
-    pub fn update_sbip_variables(&mut self, board_size: BoardSize) {
-        let radius = self.get_radius() * FIGHT_RANGE;
-
-        let board_width = board_size.0;
-        let board_height = board_size.1;
-        // use this to overcome the borrow checker
-        let px = self.px;
-        let py = self.py;
-        self.sbip_min_x = check_center_x((px - radius).floor() as usize, board_width);
-        self.sbip_min_y = check_center_y((py - radius).floor() as usize, board_height);
-        self.sbip_max_x = check_center_x((px + radius).floor() as usize, board_width);
-        self.sbip_max_y = check_center_y((py + radius).floor() as usize, board_height);
-    }
-
-    pub fn current_x_range(&self) -> Range<usize> {
-        self.sbip_min_x..self.sbip_max_x + 1
-    }
-
-    pub fn current_y_range(&self) -> Range<usize> {
-        self.sbip_min_y..self.sbip_max_y + 1
     }
 }
 

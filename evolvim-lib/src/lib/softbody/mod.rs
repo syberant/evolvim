@@ -75,41 +75,6 @@ impl<B: 'static> HLSoftBody<B> {
         )
     }
 
-    /// Adds this to `SoftBodiesInPositions`.
-    pub fn set_sbip(
-        &self,
-        sbip: &mut SoftBodiesInPositions<B>,
-        world: &mut World,
-        board_size: BoardSize,
-    ) {
-        self.update_sbip_variables(world, board_size);
-
-        let self_borrow = self.borrow_mut(world);
-
-        for x in self_borrow.current_x_range() {
-            for y in self_borrow.current_y_range() {
-                sbip.add_soft_body_at(x, y, self.clone());
-            }
-        }
-    }
-
-    pub fn update_sbip_variables(&self, world: &mut World, board_size: BoardSize) {
-        // First set the position to the correct one
-        let body = self.get_body(world);
-        let pos = body.position();
-        let rotation = pos.rotation.angle();
-        let px = pos.translation.vector[0];
-        let py = pos.translation.vector[1];
-
-        let bor = self.borrow_mut(world);
-        bor.set_body_x(px, board_size.0);
-        bor.set_body_y(py, board_size.1);
-        bor.set_body_rotation(rotation);
-
-        // Now update the variables
-        bor.update_sbip_variables(board_size);
-    }
-
     /// This function requires a reference to a `Board`.
     /// This is usually impossible so you'll have to turn to `unsafe`.
     pub fn return_to_earth(
@@ -118,7 +83,6 @@ impl<B: 'static> HLSoftBody<B> {
         board_size: BoardSize,
         terrain: &mut Terrain,
         climate: &Climate,
-        sbip: &mut SoftBodiesInPositions<B>,
         world: &mut World,
     ) {
         // To keep the borrowchecker happy.
@@ -152,7 +116,7 @@ impl<B: NeuralNet + Intentions + RecombinationInfinite + 'static> HLSoftBody<B> 
             let self_py = self.borrow(world).get_py();
             let self_radius = self.borrow(world).get_radius();
 
-            let mut colliders = self.borrow(world).get_colliders(sbip);
+            let mut colliders: SoftBodiesAt<B> = unimplemented!();
 
             // Remove self
             colliders.remove_softbody(self.clone());

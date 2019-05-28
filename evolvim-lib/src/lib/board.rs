@@ -364,7 +364,7 @@ impl<B: NeuralNet + 'static> Board<B> {
         let sbip = &mut self.soft_bodies_in_positions;
         let world = &mut self.world;
         for c in &self.creatures {
-            c.set_sbip(sbip, world, board_size);
+            // c.set_sbip(sbip, world, board_size);
         }
     }
 
@@ -380,7 +380,6 @@ impl<B: NeuralNet + 'static> Board<B> {
         let board_size = self.get_board_size();
         let terrain = &mut self.terrain;
         let climate = &self.climate;
-        let sbip = &mut self.soft_bodies_in_positions;
         let world = &mut self.world;
 
         // TODO: possibly optimise code
@@ -388,7 +387,7 @@ impl<B: NeuralNet + 'static> Board<B> {
         while i < self.creatures.len() {
             // let creature = &mut self.creatures[i];
             if self.creatures[i].borrow(world).should_die() {
-                self.creatures[i].return_to_earth(time, board_size, terrain, climate, sbip, world);
+                self.creatures[i].return_to_earth(time, board_size, terrain, climate, world);
 
                 self.selected_creature
                     .unselect_if_dead(self.creatures[i].clone());
