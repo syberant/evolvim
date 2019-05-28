@@ -82,7 +82,6 @@ pub struct Board<B: NeuralNet = Brain> {
 
     // Fields relevant for the creatures.
     creature_minimum: usize,
-    pub soft_bodies_in_positions: SoftBodiesInPositions<B>,
     pub creatures: Vec<HLSoftBody<B>>,
     creature_id_up_to: usize,
     // _creature_rank_metric: usize,
@@ -122,14 +121,13 @@ impl<B: NeuralNet + 'static> Board<B> {
         terrain: Terrain,
         world: World<f64>,
         creature_minimum: usize,
-        soft_bodies_in_positions: SoftBodiesInPositions<B>,
         creatures: Vec<HLSoftBody<B>>,
         creature_id_up_to: usize,
         year: f64,
         climate: Climate,
         selected_creature: SelectedCreature<B>,
     ) -> Board<B> {
-        let mut board = Board {
+        let board = Board {
             board_width,
             board_height,
             terrain,
@@ -137,7 +135,6 @@ impl<B: NeuralNet + 'static> Board<B> {
             world,
 
             creature_minimum,
-            soft_bodies_in_positions,
             creatures,
             creature_id_up_to,
 
@@ -175,7 +172,6 @@ impl<B: NeuralNet + GenerateRandom + 'static> Board<B> {
             world: World::new(),
 
             creature_minimum,
-            soft_bodies_in_positions: SoftBodiesInPositions::new_allocated(board_size),
             creatures,
             creature_id_up_to: 0,
 
@@ -225,9 +221,6 @@ impl<B: NeuralNet + RecombinationInfinite + GenerateRandom + 'static> Board<B> {
             self.terrain.update_all(self.year, &self.climate);
         }
 
-        // Get all references correct in soft_bodies_in_positions
-        self.reload_sbip();
-
         // Update all existing creatures
         self.update_creatures(time_step);
 
@@ -254,11 +247,10 @@ impl<B: NeuralNet + RecombinationInfinite + 'static> Board<B> {
         {
             let time = self.get_time();
             let board_size = self.get_board_size();
-            let sbip = &mut self.soft_bodies_in_positions;
             let world = &mut self.world;
 
             for c in &mut self.creatures {
-                let maybe_baby = c.try_reproduce(time, sbip, board_size, world);
+                let maybe_baby = c.try_reproduce(time, board_size, world);
                 if let Some(baby) = maybe_baby {
                     babies.push(baby);
                 }
@@ -352,19 +344,6 @@ impl<B: NeuralNet + 'static> Board<B> {
                 // );
                 // creature.brain.use_output(&mut env, time_step);
             }
-        }
-    }
-
-    pub fn reload_sbip(&mut self) {
-        // Wipe everything
-        self.soft_bodies_in_positions.wipe();
-
-        // Load it up again
-        let board_size = self.get_board_size();
-        let sbip = &mut self.soft_bodies_in_positions;
-        let world = &mut self.world;
-        for c in &self.creatures {
-            // c.set_sbip(sbip, world, board_size);
         }
     }
 

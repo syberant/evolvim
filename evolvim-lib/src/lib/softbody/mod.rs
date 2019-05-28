@@ -107,7 +107,6 @@ impl<B: NeuralNet + Intentions + RecombinationInfinite + 'static> HLSoftBody<B> 
     pub fn try_reproduce(
         &mut self,
         time: f64,
-        sbip: &mut SoftBodiesInPositions<B>,
         board_size: BoardSize,
         world: &mut World,
     ) -> Option<HLSoftBody<B>> {
