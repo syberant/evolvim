@@ -26,14 +26,16 @@ impl OutputType {
             }
             Turning => env.this_body.turn(value, time_step),
             Accelerating => env.this_body.accelerate(value, time_step),
-            Fight => env.this_body.fight(
-                value,
-                env.time,
-                time_step,
-                env.sbip,
-                env.world,
-                env.self_pointer.clone(),
-            ),
+            Fight => {
+                // env.this_body.fight(
+                //     value,
+                //     env.time,
+                //     time_step,
+                //     env.sbip,
+                //     env.world,
+                //     env.self_pointer.clone(),
+                // );
+            }
         };
     }
 }

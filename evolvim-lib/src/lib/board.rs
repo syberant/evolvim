@@ -347,7 +347,6 @@ impl<B: NeuralNet + 'static> Board<B> {
                 //     board_size,
                 //     time,
                 //     &self.climate,
-                //     &self.soft_bodies_in_positions,
                 //     c_rc.clone(),
                 //     &mut self.world,
                 // );
