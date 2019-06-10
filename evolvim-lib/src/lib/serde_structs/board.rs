@@ -41,11 +41,7 @@ impl<B: NeuralNet + Clone + 'static> From<Board<B>> for BoardSerde<B> {
         let year = bd.get_time();
         let world = &mut bd.world;
 
-        let creatures: Vec<SoftBody<B>> = {
-            let iter = bd.creatures.iter().map(|c| c.borrow(world).clone());
-
-            iter.collect()
-        };
+        let creatures: Vec<SoftBody<B>> = bd.creatures;
 
         BoardSerde {
             version: Version::current_version(),

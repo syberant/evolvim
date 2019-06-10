@@ -8,7 +8,7 @@
 use crate::brain::{Brain, GenerateRandom, NeuralNet, RecombinationInfinite};
 use crate::climate::Climate;
 use crate::constants::*;
-use crate::softbody::{HLSoftBody, SoftBody};
+use crate::softbody::{Creature, HLSoftBody, SoftBody};
 use crate::terrain::Terrain;
 use nphysics2d::world::World;
 
@@ -81,7 +81,7 @@ pub struct Board<B: NeuralNet = Brain> {
 
     // Fields relevant for the creatures.
     creature_minimum: usize,
-    pub creatures: Vec<HLSoftBody<B>>,
+    pub creatures: Vec<Creature<B>>,
     creature_id_up_to: usize,
     // _creature_rank_metric: usize,
 
@@ -117,7 +117,7 @@ impl<B: NeuralNet + 'static> Board<B> {
         terrain: Terrain,
         world: World<f64>,
         creature_minimum: usize,
-        creatures: Vec<HLSoftBody<B>>,
+        creatures: Vec<Creature<B>>,
         creature_id_up_to: usize,
         year: f64,
         climate: Climate,
@@ -186,10 +186,7 @@ impl<B: NeuralNet + GenerateRandom + 'static> Board<B> {
     fn maintain_creature_minimum(&mut self) {
         while self.creatures.len() < self.creature_minimum {
             let board_size = self.get_board_size();
-            let creature = HLSoftBody::from_creature(
-                SoftBody::new_random(board_size, self.year),
-                &mut self.world,
-            );
+            let creature = SoftBody::new_random(&mut self.world, board_size, self.year);
 
             self.creatures.push(creature);
             self.creature_id_up_to += 1;
@@ -285,8 +282,7 @@ impl<B: NeuralNet + 'static> Board<B> {
     fn update_brains(&mut self) {
         let world = &mut self.world;
 
-        for c in &self.creatures {
-            let creature: &mut SoftBody<B> = c.borrow_mut(world);
+        for creature in &mut self.creatures {
             let env = crate::brain::Environment::new(&self.terrain, &creature.base);
             creature.brain.run_with(&env);
         }
@@ -295,8 +291,7 @@ impl<B: NeuralNet + 'static> Board<B> {
     #[cfg(multithreading)]
     fn update_brains(&mut self) {
         self.creatures
-            .map(|c| c.borrow_mut(&mut self.world))
-            .par_iter()
+            .par_iter_mut()
             .for_each(|c| {
                 let env = crate::brain::Environment::new(&self.terrain, &c.base);
                 c.brain.run_with(&env);
@@ -309,9 +304,7 @@ impl<B: NeuralNet + 'static> Board<B> {
         let time = self.year;
         let board_size = self.get_board_size();
 
-        for c_rc in &self.creatures {
-            let c = c_rc.borrow_mut(&mut self.world);
-
+        for c in &mut self.creatures {
             c.record_energy();
 
             c.metabolize(time_step, time);
@@ -321,7 +314,7 @@ impl<B: NeuralNet + 'static> Board<B> {
 
         let use_output = true;
         if use_output {
-            for c_rc in &self.creatures {
+            for creature in &mut self.creatures {
                 unimplemented!("Fix mess please, using self.world twice here...");
                 // let creature: &mut SoftBody<B> = &mut c_rc.borrow_mut(&mut self.world);
                 // let mut env = EnvironmentMut::new(
@@ -356,7 +349,7 @@ impl<B: NeuralNet + 'static> Board<B> {
         let mut i = 0;
         while i < self.creatures.len() {
             // let creature = &mut self.creatures[i];
-            if self.creatures[i].borrow(world).should_die() {
+            if self.creatures[i].should_die() {
                 self.creatures[i].return_to_earth(time, board_size, terrain, climate, world);
 
                 // self.selected_creature

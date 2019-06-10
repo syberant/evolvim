@@ -69,35 +69,11 @@ impl<B: 'static> HLSoftBody<B> {
     }
 
     pub fn from_creature(creature: SoftBody<B>, world: &mut World) -> Self {
-        HLSoftBody(
-            make_physics_creature(world, &creature),
-            std::marker::PhantomData,
-        )
-    }
-
-    /// This function requires a reference to a `Board`.
-    /// This is usually impossible so you'll have to turn to `unsafe`.
-    pub fn return_to_earth(
-        &mut self,
-        time: f64,
-        board_size: BoardSize,
-        terrain: &mut Terrain,
-        climate: &Climate,
-        world: &mut World,
-    ) {
-        // To keep the borrowchecker happy.
-        {
-            let self_deref = self.borrow_mut(world);
-
-            for _i in 0..PIECES {
-                let tile_pos = self_deref.get_random_covered_tile(board_size);
-                terrain.add_food_or_nothing_at(tile_pos, self_deref.get_energy() / PIECES as f64);
-
-                terrain.update_at(tile_pos, time, climate);
-            }
-        }
-
-        // SBIP automatically get's wiped every update.
+        // HLSoftBody(
+        //     make_physics_creature(world, &creature.base),
+        //     std::marker::PhantomData,
+        // )
+        unimplemented!()
     }
 }
 
@@ -154,7 +130,7 @@ impl<B: NeuralNet + Intentions + RecombinationInfinite + 'static> HLSoftBody<B> 
                 });
                 let par: Vec<&SoftBody<B>> = parents.iter().map(|c| c.borrow(world)).collect();
 
-                let sb = HLSoftBody::from_creature(Creature::new_baby(&par, energy, time), world);
+                let sb = HLSoftBody::from_creature(Creature::new_baby(world, &par, energy, time), world);
 
                 // Hooray! Return the little baby!
                 Some(sb)
@@ -191,28 +167,4 @@ impl<B> SoftBody<B> {
 
         // Creature should die if it doesn't have enough energy, this is done by `Board`.
     }
-}
-
-fn make_physics_creature<B>(world: &mut World, cr: &Creature<B>) -> BodyHandle {
-    use nalgebra::Vector2;
-    use ncollide2d::shape::{Ball, ShapeHandle};
-    use nphysics2d::object::{ColliderDesc, RigidBodyDesc};
-
-    let radius = cr.get_radius();
-
-    // Create the ColliderDesc
-    let shape = ShapeHandle::new(Ball::new(radius));
-    let collide_handle = ColliderDesc::new(shape);
-
-    let mass = cr.get_mass();
-    let position = Vector2::new(cr.get_px(), cr.get_py());
-
-    // Build the RigidBody
-    let rigid_body = RigidBodyDesc::new()
-        .mass(mass)
-        .translation(position)
-        .collider(&collide_handle)
-        .build(world);
-
-    return rigid_body.handle();
 }
