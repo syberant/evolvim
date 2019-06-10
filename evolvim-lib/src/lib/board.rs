@@ -238,7 +238,8 @@ impl<B: NeuralNet + RecombinationInfinite + 'static> Board<B> {
             let world = &mut self.world;
 
             for c in &mut self.creatures {
-                let maybe_baby = c.try_reproduce(time, board_size, world);
+                // let maybe_baby = c.try_reproduce(time, board_size, world);
+                let maybe_baby = unimplemented!();
                 if let Some(baby) = maybe_baby {
                     babies.push(baby);
                 }
