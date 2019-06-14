@@ -30,6 +30,10 @@ pub struct Creature<B> {
     body: Body,
 }
 
+impl<B: 'static + std::marker::Sync + std::marker::Send> specs::Component for Creature<B> {
+    type Storage = specs::VecStorage<Self>;
+}
+
 impl<B> std::ops::Deref for Creature<B> {
     type Target = Rock;
 
@@ -102,6 +106,10 @@ impl<B> Creature<B> {
 
     pub fn get_baby_energy(&self) -> f64 {
         self.base.get_energy() - SAFE_SIZE
+    }
+
+    pub fn get_handle(&self) -> BodyHandle {
+        self.body.0
     }
 }
 

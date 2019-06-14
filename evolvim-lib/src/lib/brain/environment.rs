@@ -7,8 +7,8 @@ pub struct EnvironmentMut<'a, B> {
     pub board_size: BoardSize,
     pub time: f64,
     pub climate: &'a Climate,
-    pub self_pointer: HLSoftBody<B>,
     pub world: &'a mut nphysics2d::world::World<f64>,
+    phantom: std::marker::PhantomData<B>,
 }
 
 impl<'a, B> EnvironmentMut<'a, B> {
@@ -18,7 +18,6 @@ impl<'a, B> EnvironmentMut<'a, B> {
         board_size: BoardSize,
         time: f64,
         climate: &'a Climate,
-        self_pointer: HLSoftBody<B>,
         world: &'a mut nphysics2d::world::World<f64>,
     ) -> Self {
         EnvironmentMut {
@@ -27,8 +26,8 @@ impl<'a, B> EnvironmentMut<'a, B> {
             board_size,
             time,
             climate,
-            self_pointer,
             world,
+            phantom: std::marker::PhantomData,
         }
     }
 }
