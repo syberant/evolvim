@@ -127,8 +127,13 @@ impl<'a> System<'a> for RefillCreatures {
 
         let num_creatures = creatures.join().count();
         let minimum_creatures = 60;
+        let creatures_to_add = if num_creatures >= minimum_creatures {
+            0
+        } else {
+            minimum_creatures - num_creatures
+        };
 
-        for e in entities.create_iter().take(minimum_creatures - num_creatures) {
+        for e in entities.create_iter().take(creatures_to_add) {
             // Make a new creature and add it to nphysicsd2::World
             let creature = Creature::<Brain>::new_random(&mut world, *board_size, time.0);
 
