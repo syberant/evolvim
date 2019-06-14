@@ -29,6 +29,8 @@ impl ECSBoard {
         let time = crate::time::Time::default();
         world.add_resource(time);
 
+        world.add_resource(board_size);
+
         // Return the world
         ECSBoard { world }
     }
@@ -53,5 +55,15 @@ impl ECSBoard {
 
         // Synchronize deletions and insertions
         self.world.maintain();
+    }
+
+    pub fn get_time(&self) -> f64 {
+        self.world.read_resource::<crate::time::Time>().0
+    }
+
+    pub fn get_population_count(&self) -> usize {
+        use specs::Join;
+        
+        self.world.read_storage::<Creature<Brain>>().join().count()
     }
 }
