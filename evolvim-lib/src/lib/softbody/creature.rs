@@ -73,6 +73,75 @@ impl<B: NeuralNet + RecombinationInfinite> Creature<B> {
     }
 }
 
+impl<B: NeuralNet + RecombinationInfinite> Creature<B> {
+    // Returns a new creature if there's a birth, otherwise returns `None`
+    // TODO: cleanup
+    pub fn try_reproduce(
+        &mut self,
+        time: f64,
+        board_size: BoardSize,
+        world: &mut World,
+    ) -> Option<Creature<B>> {
+        if self.wants_primary_birth(time) {
+            let self_px = self.get_px();
+            let self_py = self.get_py();
+            let self_radius = self.get_radius();
+
+            // let mut colliders: SoftBodiesAt<B> = unimplemented!();
+
+            // // Remove self
+            // colliders.remove_softbody(self.clone());
+
+            // let mut parents: Vec<HLSoftBody<B>> = colliders
+            //     .into_iter()
+            //     .filter(|rc_soft| {
+            //         let c = rc_soft.borrow(world);
+            //         let dist = distance(self_px, self_py, c.get_px(), c.get_py());
+            //         let combined_radius = self_radius * FIGHT_RANGE + c.get_radius();
+
+            //         c.brain.wants_help_birth() > -1.0 // must be a willing creature
+            //                 && dist < combined_radius // must be close enough
+
+            //         // TODO: find out if this addition to the Processing code works
+            //         // && c.get_age(time) >= MATURE_AGE // creature must be old enough
+            //         // && c.base.get_energy() > SAFE_SIZE
+            //     })
+            //     .collect();
+
+            // parents.push(self.clone());
+
+            let parents: Vec<&mut Creature<B>> = unimplemented!();
+
+            let available_energy = parents
+                .iter()
+                .fold(0.0, |acc, c| acc + c.get_baby_energy());
+
+            if available_energy > BABY_SIZE {
+                let energy = BABY_SIZE;
+
+                // Giving birth costs energy
+                parents.iter_mut().for_each(|c| {
+                    let energy_to_lose = energy * (c.get_baby_energy() / available_energy);
+
+                    c.lose_energy(energy_to_lose);
+                });
+                let par: Vec<&SoftBody<B>> = parents.into_iter().map(|c| &*c).collect();
+
+                let sb = Creature::new_baby(world, &par, energy, time);
+
+                // Hooray! Return the little baby!
+                Some(sb)
+            } else {
+                // There isn't enough energy available
+                None
+            }
+        } else {
+            // This creature can't give birth because of age, energy or because it doesn't want to.
+            return None;
+        }
+    }
+}
+
 impl<B> Creature<B> {
     // The `Creature` version of `apply_motions`, this is different to the `Rock` version.
     pub fn apply_motions(&mut self, time_step: f64, terrain: &Terrain, board_size: BoardSize) {
