@@ -47,8 +47,8 @@ impl ECSBoard {
         res_up.run_now(&mut self.world.res);
         creat_up.run_now(&mut self.world.res);
         rm_dead_creat.run_now(&mut self.world.res);
-        // creat_rep.run_now(&mut self.world.res);
-        // refill_creat.run_now(&mut self.world.res);
+        creat_rep.run_now(&mut self.world.res);
+        refill_creat.run_now(&mut self.world.res);
         physics.run_now(&mut self.world.res);
 
         // Synchronize deletions and insertions
