@@ -116,12 +116,25 @@ pub struct RefillCreatures;
 impl<'a> System<'a> for RefillCreatures {
     type SystemData = (
         ReadExpect<'a, BoardSize>,
-        ReadStorage<'a, Creature<Brain>>,
+        ReadExpect<'a, Time>,
+        WriteStorage<'a, Creature<Brain>>,
+        WriteExpect<'a, nphysics2d::world::World<f64>>,
         Entities<'a>,
     );
 
-    fn run(&mut self, (board_size, creatures, entities): Self::SystemData) {
-        unimplemented!();
+    fn run(&mut self, (board_size, time, mut creatures, mut world, entities): Self::SystemData) {
+        use specs::Join;
+
+        let num_creatures = creatures.join().count();
+        let minimum_creatures = 60;
+
+        for e in entities.create_iter().take(minimum_creatures - num_creatures) {
+            // Make a new creature and add it to nphysicsd2::World
+            let creature = Creature::<Brain>::new_random(&mut world, *board_size, time.0);
+
+            // Add it to specs::World
+            creatures.insert(e, creature).unwrap();
+        }
     }
 }
 
