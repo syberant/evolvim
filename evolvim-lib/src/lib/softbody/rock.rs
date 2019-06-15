@@ -4,6 +4,7 @@ use crate::climate::Climate;
 use crate::constants::*;
 use crate::sbip::SoftBodiesAt;
 use crate::terrain::Terrain;
+use nphysics2d::object::{Body, RigidBody};
 use rand::Rng;
 use std::f64::consts::PI;
 use std::ops::Range;
@@ -107,10 +108,15 @@ impl Rock {
         time: f64,
         climate: &Climate,
         tile: &mut crate::terrain::tile::Tile,
+        body: &RigidBody<f64>,
     ) {
-        // let amount = attempted_amount
-        //     / (1.0 + self.get_total_velocity() * EAT_WHILE_MOVING_INEFFICIENCY_MULTIPLIER);
-        let amount: f64 = unimplemented!();
+        let velocity = {
+            let v = body.velocity().as_slice();
+
+            (v[0].powi(2) + v[1].powi(2)).sqrt()
+        };
+        let amount = attempted_amount
+            / (1.0 + velocity * EAT_WHILE_MOVING_INEFFICIENCY_MULTIPLIER);
         if amount < 0.0 {
             // Vomit
             // TODO: implement vomiting.
@@ -177,11 +183,13 @@ impl Rock {
     /// Accelerate
     ///
     /// Costs energy.
-    pub fn accelerate(&mut self, amount: f64, time_step: f64) {
-        let multiplier = amount * time_step / self.get_mass();
-        // self.vx += self.rotation.cos() * multiplier;
-        // self.vy += self.rotation.sin() * multiplier;
-        unimplemented!();
+    pub fn accelerate(&mut self, amount: f64, time_step: f64, body: &mut RigidBody<f64>) {
+        use nphysics2d::algebra::ForceType;
+        use nphysics2d::math::Force;
+
+        let force_type = ForceType::Force;
+        let force = Force::from_slice(&[0.0, amount, 0.0]);
+        body.apply_local_force(0, &force, force_type, true);
 
         if amount >= 0.0 {
             // Moving forward
@@ -195,9 +203,13 @@ impl Rock {
     /// Increase turning velocity.
     ///
     /// Costs energy.
-    pub fn turn(&mut self, amount: f64, time_step: f64) {
-        // self.vr += 0.04 * amount * time_step / self.get_mass();
-        unimplemented!();
+    pub fn turn(&mut self, amount: f64, time_step: f64, body: &mut RigidBody<f64>) {
+        use nphysics2d::algebra::ForceType;
+        use nphysics2d::math::Force;
+
+        let force_type = ForceType::Force;
+        let force = Force::from_slice(&[0.0, 0.0, amount]);
+        body.apply_local_force(0, &force, force_type, true);
 
         // Call `abs()` because we can turn both ways.
         let energy_to_lose = (amount * self.energy * time_step * TURN_ENERGY).abs();

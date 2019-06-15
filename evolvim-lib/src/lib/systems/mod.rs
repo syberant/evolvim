@@ -61,9 +61,11 @@ impl<'a> System<'a> for UpdateCreatures {
             let env = Environment::new(&terrain, &c.base);
             c.brain.run_with(&env);
 
+            let handle = c.get_handle();
             let mut env_mut = EnvironmentMut::new(
                 &mut terrain,
                 &mut c.base,
+                handle,
                 *board_size,
                 time.0,
                 &climate,
