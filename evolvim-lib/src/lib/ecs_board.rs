@@ -61,9 +61,31 @@ impl ECSBoard {
         self.world.read_resource::<crate::time::Time>().0
     }
 
-    pub fn get_population_count(&self) -> usize {
+    /// Returns a `String` representing the current season.
+    ///
+    /// Can be either "Winter", "Spring", "Summer" or "Autumn".
+    pub fn get_season(&self) -> String {
+        const SEASONS: [&str; 4] = ["Winter", "Spring", "Summer", "Autumn"];
+        let season: usize = ((self.get_time() % 1.0) * 4.0).floor() as usize;
+
+        return SEASONS[season].to_string();
+    }
+
+    pub fn get_population_size(&self) -> usize {
         use specs::Join;
-        
+
         self.world.read_storage::<Creature<Brain>>().join().count()
+    }
+
+    pub fn get_board_size(&self) -> BoardSize {
+        *self.world.read_resource::<BoardSize>()
+    }
+
+    pub fn get_board_width(&self) -> usize {
+        self.get_board_size().0
+    }
+
+    pub fn get_board_height(&self) -> usize {
+        self.get_board_size().1
     }
 }
