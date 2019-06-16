@@ -23,6 +23,8 @@ ctrlc = "3.1.1"
 evolvim-lib = { path = "../evolvim-lib" }
 piston2d-gfx_graphics = "0.56.0"
 piston_window = "0.89.0"
+nphysics2d = "0.11.1"
+specs = "0.14.3"
 
 [dependencies.piston2d-graphics]
 features = ["glyph_cache_rusttype"]

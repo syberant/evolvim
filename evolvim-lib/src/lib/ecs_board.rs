@@ -58,10 +58,15 @@ impl<'a, 'b> ECSBoard<'a, 'b> {
             .with(UpdateResources, "update_resources", &[])
             .with(UpdateCreatures, "update_creatures", &["update_resources"])
             .with(RemoveDeadCreatures, "remove_dead_creatures", &["update_creatures"])
-            .with(CreaturesReproduce, "creatures_reproduce", &["remove_dead_creatures"])
-            .with(RefillCreatures, "refill_creatures", &["creatures_reproduce"])
+            // .with(CreaturesReproduce, "creatures_reproduce", &["remove_dead_creatures"])
+            // .with(RefillCreatures, "refill_creatures", &["creatures_reproduce"])
+            .with(RefillCreatures, "refill_creatures", &["remove_dead_creatures"])
             .with(PhysicsStep, "physics_step", &["refill_creatures"])
             .build();
+    }
+
+    pub fn get_ecs(&self) -> &specs::World {
+        &self.world
     }
 
     pub fn get_time(&self) -> f64 {

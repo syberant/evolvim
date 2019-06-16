@@ -1,13 +1,14 @@
 use super::*;
 use crate::BrainType;
 use std::ops::Range;
+use lib_evolvim::ecs_board::ECSBoard;
 
 /// The view part of MVC (Model-View-Controller), currently takes on jobs for the controller too.
 ///
 /// TODO: Provide adequate error handling when the mouse leaves the window.
 ///
 /// TODO 2: Move the "controller" parts over to another struct.
-pub struct View {
+pub struct View<'a, 'b> {
     precise_x: f64,
     precise_y: f64,
 
@@ -20,7 +21,7 @@ pub struct View {
     _base_tile_width: f64,
     tile_width: f64,
 
-    pub board: Board<BrainType>,
+    pub board: ECSBoard<'a, 'b>,
 
     pub mouse: MouseCoordinate,
 
@@ -28,9 +29,10 @@ pub struct View {
     mode: DisplayMode,
 }
 
-impl Default for View {
+impl<'a, 'b> Default for View<'a, 'b> {
     fn default() -> Self {
-        let board = Board::default();
+        let board = ECSBoard::init((100, 100), 0.1);
+
         let base_tile_width = 100.0;
 
         View {
@@ -56,37 +58,37 @@ impl Default for View {
     }
 }
 
-impl View {
+impl<'a, 'b> View<'a, 'b> {
     pub fn on_mouse_release(&mut self) {
         use self::Dragging::*;
 
         self.drag = None;
 
-        if let Some(exact_pos) = self.mouse.into_board_precise_coordinate(
-            self.get_precise_x(),
-            self.get_precise_y(),
-            self.get_tile_size(),
-            self.board.get_board_size(),
-        ) {
-            let (x, y) = BoardCoordinate::from(exact_pos.clone());
-            let soft_bodies = self.board.soft_bodies_in_positions.get_soft_bodies_at(x, y);
-            let world = &self.board.world;
+        // if let Some(exact_pos) = self.mouse.into_board_precise_coordinate(
+        //     self.get_precise_x(),
+        //     self.get_precise_y(),
+        //     self.get_tile_size(),
+        //     self.board.get_board_size(),
+        // ) {
+        //     let (x, y) = BoardCoordinate::from(exact_pos.clone());
+        //     let soft_bodies = self.board.soft_bodies_in_positions.get_soft_bodies_at(x, y);
+        //     let world = &self.board.world;
 
-            for c_ref in soft_bodies {
-                let c = c_ref.borrow(world);
+        //     for c_ref in soft_bodies {
+        //         let c = c_ref.borrow(world);
 
-                let px = c.get_px();
-                let py = c.get_py();
-                let radius = c.get_radius();
+        //         let px = c.get_px();
+        //         let py = c.get_py();
+        //         let radius = c.get_radius();
 
-                let dist = lib_evolvim::softbody::distance(exact_pos.0, exact_pos.1, px, py);
+        //         let dist = lib_evolvim::softbody::distance(exact_pos.0, exact_pos.1, px, py);
 
-                if dist < radius {
-                    self.board.selected_creature.select(c_ref.clone());
-                    break;
-                }
-            }
-        }
+        //         if dist < radius {
+        //             self.board.selected_creature.select(c_ref.clone());
+        //             break;
+        //         }
+        //     }
+        // }
     }
 
     pub fn on_mouse_press(&mut self) {
@@ -122,7 +124,7 @@ impl View {
     }
 }
 
-impl View {
+impl<'a, 'b> View<'a, 'b> {
     pub fn get_tile_size(&self) -> f64 {
         return self.tile_width;
     }
@@ -170,33 +172,34 @@ impl View {
     }
 }
 
-impl View {
+impl<'a, 'b> View<'a, 'b> {
     pub fn prepare_for_drawing(&mut self) {
         if self.mode == DisplayMode::Normal || self.mode == DisplayMode::Tiles {
             let time = self.board.get_time();
             let x_range = self.get_x_range();
             let y_range = self.get_y_range();
 
-            self.board
-                .terrain
-                .update_all_at(time, &self.board.climate, x_range, y_range);
+            let bd = self.board.get_ecs();
+            let mut terrain = bd.write_resource::<lib_evolvim::Terrain>();
+            let climate = bd.read_resource::<lib_evolvim::Climate>();
+            terrain.update_all_at(time, &climate, x_range, y_range);
             // self.board.terrain.update_all(time, &self.board.climate);
 
-            if self.board.selected_creature.0.is_some() {
-                let pos = {
-                    let world = &self.board.world;
-                    let c = &self.board.selected_creature.0.as_ref().unwrap();
-                    let c = c.borrow(world);
+            // if self.board.selected_creature.0.is_some() {
+            //     let pos = {
+            //         let world = &self.board.world;
+            //         let c = &self.board.selected_creature.0.as_ref().unwrap();
+            //         let c = c.borrow(world);
 
-                    c.get_position()
-                };
+            //         c.get_position()
+            //     };
 
-                let tw = self.tiles_on_width;
-                let th = self.tiles_on_height;
+            //     let tw = self.tiles_on_width;
+            //     let th = self.tiles_on_height;
 
-                self.set_precise_x(pos.0 - tw as f64 * 0.5);
-                self.set_precise_y(pos.1 - th as f64 * 0.5);
-            }
+            //     self.set_precise_x(pos.0 - tw as f64 * 0.5);
+            //     self.set_precise_y(pos.1 - th as f64 * 0.5);
+            // }
         }
     }
 
@@ -210,28 +213,30 @@ impl View {
 
         match self.mode {
             Normal => {
-                draw_terrain(&self.board.terrain, context, graphics, glyphs, &self);
+                // Draw terrain
+                let bd = self.board.get_ecs();
+                let terrain = bd.read_resource::<lib_evolvim::Terrain>();
+                draw_terrain(&terrain, context, graphics, glyphs, &self);
 
-                let y_range = self.get_y_range();
-                let x_range = self.get_x_range();
-                let world = &self.board.world;
+                // Draw creatures
+                let ps_world = bd.read_resource::<nphysics2d::world::World<f64>>();
+                use specs::Join;
 
-                for c in self
-                    .board
-                    .soft_bodies_in_positions
-                    .get_soft_bodies_in(x_range, y_range)
-                {
-                    draw_creature(&c.borrow(world), context, graphics, &self);
+                for c in bd.read_storage::<Creature<Brain>>().join() {
+                    let body = ps_world.rigid_body(c.get_handle()).unwrap();
+                    draw_body(body, context, graphics, &self);
                 }
 
-                if let Some(ref c) = self.board.selected_creature.0 {
-                    let creature = c.borrow(world);
+                // if let Some(ref c) = self.board.selected_creature.0 {
+                //     let creature = c.borrow(world);
 
-                    draw_details_creature(&creature, context, graphics, glyphs, &self);
-                }
+                //     draw_details_creature(&creature, context, graphics, glyphs, &self);
+                // }
             }
             Tiles => {
-                draw_terrain(&self.board.terrain, context, graphics, glyphs, &self);
+                let bd = self.board.get_ecs();
+                let terrain = bd.read_resource::<lib_evolvim::Terrain>();
+                draw_terrain(&terrain, context, graphics, glyphs, &self);
             }
             None => {}
         }

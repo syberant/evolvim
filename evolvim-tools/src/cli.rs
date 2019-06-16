@@ -4,6 +4,7 @@ extern crate lib_evolvim;
 
 use clap::{App, Arg};
 use lib_evolvim::Board;
+use lib_evolvim::ecs_board::ECSBoard;
 use std::sync::atomic::Ordering;
 
 // type BrainType = lib_evolvim::neat::NeatBrain;
@@ -66,11 +67,12 @@ fn main() {
         matches.value_of("output")
     };
 
-    let mut board: Board<BrainType> = if let Some(name) = matches.value_of("input") {
-        Board::<BrainType>::load_from(name).unwrap()
-    } else {
-        Board::default()
-    };
+    // let mut board: Board<BrainType> = if let Some(name) = matches.value_of("input") {
+    //     Board::<BrainType>::load_from(name).unwrap()
+    // } else {
+    //     Board::default()
+    // };
+    let mut board = ECSBoard::init((100, 100), 0.1);
 
     if let Some(years) = matches.value_of("iterations") {
         let mut years: usize = years.parse().unwrap();
@@ -88,7 +90,8 @@ fn main() {
             println!("Simulating year {}...", board.get_time() as usize);
             print!("\x1B[1A");
             for _i in 0..1000 {
-                board.update(0.001);
+                // board.update(0.001);
+                board.run();
             }
         }
     }
@@ -98,10 +101,10 @@ fn main() {
 
     if matches.is_present("info") {
         println!("Year: {}", board.get_time() as usize);
-        println!("Population: {}", board.creatures.len());
+        println!("Population: {}", board.get_population_size());
     }
 
-    if let Some(name) = output_file {
-        board.save_to(name).unwrap();
-    }
+    // if let Some(name) = output_file {
+    //     board.save_to(name).unwrap();
+    // }
 }

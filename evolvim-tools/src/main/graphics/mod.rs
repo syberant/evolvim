@@ -6,6 +6,7 @@
 
 extern crate graphics;
 extern crate lib_evolvim;
+extern crate nphysics2d;
 
 pub mod ui;
 pub mod view;
@@ -21,6 +22,8 @@ use std::fmt::Debug;
 
 use lib_evolvim::constants::*;
 use lib_evolvim::*;
+
+use nphysics2d::object::RigidBody;
 
 // pub trait Drawable {
 //     fn draw(&self, context: Context, g2d: &mut G2d);
@@ -178,6 +181,34 @@ pub fn draw_creature<B: lib_evolvim::brain::NeuralNet, G: Graphics>(
         // This gives the upper-left corner of the circle so subtract the radius.
         (creature.get_px() - radius) * size,
         (creature.get_py() - radius) * size,
+        radius * 2.0 * size,
+        radius * 2.0 * size,
+    ];
+
+    let ellipse = ellipse::Ellipse::new(color);
+
+    ellipse.draw(rect, &context.draw_state, transform, graphics);
+}
+
+pub fn draw_body<G: Graphics>(body: &RigidBody<f64>, context: Context, graphics: &mut G, view: &View) {
+    let size = view.get_tile_size();
+    let transform = context
+        .transform
+        .trans(-view.get_precise_x() * size, -view.get_precise_y() * size);
+
+    // let radius = creature.get_radius();
+    let radius = 0.3;
+
+    // let color = from_hsba([creature.get_mouth_hue() as f32, 1.0, 1.0, 1.0]);
+    let color = from_hsba([0.5, 1.0, 1.0, 1.0]);
+
+    let pos = body.position().translation.vector;
+    let x = pos[0];
+    let y = pos[1];
+    let rect = [
+        // This gives the upper-left corner of the circle so subtract the radius.
+        (x - radius) * size,
+        (y - radius) * size,
         radius * 2.0 * size,
         radius * 2.0 * size,
     ];

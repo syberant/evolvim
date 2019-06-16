@@ -1,12 +1,13 @@
 extern crate clap;
 extern crate lib_evolvim;
 extern crate piston_window;
+extern crate specs;
 
 mod graphics;
 
 use self::graphics::View;
 use clap::{App, Arg};
-use lib_evolvim::Board;
+use lib_evolvim::ecs_board::ECSBoard;
 use piston_window::*;
 
 // type BrainType = lib_evolvim::neat::NeatBrain;
@@ -45,7 +46,7 @@ fn main() {
 
     let mut view = View::default();
     if let Some(filename) = matches.value_of("input") {
-        view.board = Board::<BrainType>::load_from(filename).unwrap();
+        // view.board = Board::<BrainType>::load_from(filename).unwrap();
     }
 
     let output_file = if matches.is_present("save") {
@@ -55,8 +56,8 @@ fn main() {
     };
 
     let time = view.board.get_time();
-    view.board.update(0.001);
-    view.board.terrain.update_all(time, &view.board.climate);
+    // view.board.update(0.001);
+    // view.board.terrain.update_all(time, &view.board.climate);
 
     let mut playspeed = 1;
 
@@ -76,7 +77,8 @@ fn main() {
         // Render
         event.update(|_args| {
             for _i in 0..playspeed {
-                view.board.update(0.001);
+                // view.board.update(0.001);
+                view.board.run();
             }
         });
 
@@ -115,13 +117,13 @@ fn main() {
                     view.switch_display_mode();
                 }
                 Keyboard(Key::O) => {
-                    view.board.select_oldest();
+                    // view.board.select_oldest();
                 }
                 Keyboard(Key::B) => {
-                    view.board.select_biggest();
+                    // view.board.select_biggest();
                 }
                 Keyboard(Key::Q) => {
-                    view.board.selected_creature.deselect();
+                    // view.board.selected_creature.deselect();
                 }
                 // Keyboard(Key::S) => {
                 //     view.board.save_to("test.bin").unwrap();
@@ -160,6 +162,6 @@ fn main() {
     }
 
     if let Some(filename) = output_file {
-        view.board.save_to(filename).unwrap();
+        // view.board.save_to(filename).unwrap();
     }
 }
