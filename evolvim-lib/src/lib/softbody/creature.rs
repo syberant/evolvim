@@ -187,7 +187,8 @@ fn make_physics_creature(world: &mut World, cr: &Rock) -> BodyHandle {
     use ncollide2d::shape::{Ball, ShapeHandle};
     use nphysics2d::object::{ColliderDesc, RigidBodyDesc};
 
-    let radius = cr.get_radius();
+    // let radius = cr.get_radius();
+    let radius = 0.3;
 
     // Create the ColliderDesc
     let shape = ShapeHandle::new(Ball::new(radius));
