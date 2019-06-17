@@ -13,10 +13,6 @@ path = "./src/main/mod.rs"
 name = "evolvim_cli"
 path = "./src/cli.rs"
 
-[[bin]]
-name = "check_terrain_gen"
-path = "./src/checkTerrainGen.rs"
-
 [dependencies]
 clap = "2.32.0"
 ctrlc = "3.1.1"
