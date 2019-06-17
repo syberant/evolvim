@@ -22,6 +22,7 @@ use std::fmt::Debug;
 
 use lib_evolvim::constants::*;
 use lib_evolvim::*;
+use lib_evolvim::ecs_board::{BoardCoordinate, BoardSize, BoardPreciseCoordinate};
 
 use nphysics2d::object::RigidBody;
 

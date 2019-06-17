@@ -37,7 +37,7 @@ enum EyeType {
 
 impl Eye {
     pub fn get_data(&self, env: &Environment) -> f64 {
-        use crate::board::BoardPreciseCoordinate;
+        use crate::ecs_board::BoardPreciseCoordinate;
         use EyeType::*;
 
         let real_angle = self.angle + env.this_body.get_rotation();

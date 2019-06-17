@@ -1,5 +1,6 @@
-use crate::softbody::{HLSoftBody, Rock};
-use crate::{BoardSize, Climate, Terrain};
+use crate::ecs_board::BoardSize;
+use crate::softbody::Rock;
+use crate::{Climate, Terrain};
 use nphysics2d::object::BodyHandle;
 
 pub struct EnvironmentMut<'a, B> {

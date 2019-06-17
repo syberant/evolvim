@@ -1,4 +1,4 @@
-use crate::board::BoardSize;
+use crate::ecs_board::BoardSize;
 use crate::brain::Brain;
 use crate::climate::Climate;
 use crate::softbody::Creature;

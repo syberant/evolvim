@@ -1,8 +1,7 @@
-use super::{HLSoftBody, SoftBody};
-use crate::board::{BoardCoordinate, BoardPreciseCoordinate, BoardSize};
+use super::SoftBody;
+use crate::ecs_board::{BoardCoordinate, BoardPreciseCoordinate, BoardSize};
 use crate::climate::Climate;
 use crate::constants::*;
-use crate::sbip::SoftBodiesAt;
 use crate::terrain::Terrain;
 use nphysics2d::object::{Body, RigidBody};
 use rand::Rng;
@@ -151,10 +150,8 @@ impl Rock {
         time: f64,
         time_step: f64,
         world: &mut nphysics2d::world::World<f64>,
-        self_pointer: HLSoftBody<B>,
     ) {
         use super::MATURE_AGE;
-        use crate::sbip::SoftBodyBucket;
 
         if amount > 0.0 && self.get_age(time) >= MATURE_AGE {
             self.lose_energy(amount * time_step * FIGHT_ENERGY);
@@ -162,13 +159,9 @@ impl Rock {
             let self_x = self.get_px();
             let self_y = self.get_py();
 
-            let mut colliders: SoftBodiesAt<B> = unimplemented!();
+            let mut colliders: Vec<&mut SoftBody<B>> = unimplemented!();
 
-            // Remove self
-            colliders.remove_softbody(self_pointer);
-
-            for collider in colliders {
-                let mut col = collider.borrow_mut(world);
+            for col in colliders {
                 let distance = distance(self_x, self_y, col.get_px(), col.get_py());
                 let combined_radius = self.get_radius() * FIGHT_RANGE + col.get_radius();
 

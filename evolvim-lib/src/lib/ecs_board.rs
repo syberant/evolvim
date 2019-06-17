@@ -1,7 +1,25 @@
-use crate::board::BoardSize;
 use crate::brain::Brain;
 use crate::constants;
 use crate::softbody::Creature;
+
+pub type BoardSize = (usize, usize);
+pub type BoardCoordinate = (usize, usize);
+#[derive(Clone)]
+pub struct BoardPreciseCoordinate(pub f64, pub f64);
+
+impl BoardPreciseCoordinate {
+    pub fn unpack(&self) -> (f64, f64) {
+        return (self.0, self.1);
+    }
+}
+
+impl From<BoardPreciseCoordinate> for BoardCoordinate {
+    fn from(bpc: BoardPreciseCoordinate) -> BoardCoordinate {
+        let (x, y) = bpc.unpack();
+
+        (x.floor() as usize, y.floor() as usize)
+    }
+}
 
 pub struct ECSBoard<'a, 'b> {
     world: specs::World,

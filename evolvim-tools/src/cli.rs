@@ -3,7 +3,6 @@ extern crate ctrlc;
 extern crate lib_evolvim;
 
 use clap::{App, Arg};
-use lib_evolvim::Board;
 use lib_evolvim::ecs_board::ECSBoard;
 use std::sync::atomic::Ordering;
 

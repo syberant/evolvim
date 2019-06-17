@@ -12,6 +12,7 @@ pub mod tile;
 use self::tile::Tile;
 use super::*;
 use noise::{NoiseFn, Point2, Seedable};
+use crate::ecs_board::{BoardCoordinate, BoardSize};
 
 /// Contains the terrain of the world.
 ///

@@ -32,7 +32,7 @@ pub const DEFAULT_BOARD_HEIGHT: usize = 100;
 /// The default size when generating a new `Board`.
 ///
 /// NOTE: Don't change the value of this constant, change `DEFAULT_BOARD_WIDTH` and/or `DEFAULT_BOARD_HEIGHT` instead.
-pub const DEFAULT_BOARD_SIZE: BoardSize = (DEFAULT_BOARD_WIDTH, DEFAULT_BOARD_HEIGHT);
+pub const DEFAULT_BOARD_SIZE: crate::ecs_board::BoardSize = (DEFAULT_BOARD_WIDTH, DEFAULT_BOARD_HEIGHT);
 
 /// The default minimum amount of creatures.
 ///
