@@ -7,11 +7,7 @@ mod rock;
 
 pub use self::creature::*;
 pub use self::rock::*;
-use nphysics2d::object::BodyHandle;
-type World = nphysics2d::world::World<f64>;
-type RigidBody = nphysics2d::object::RigidBody<f64>;
 
-const COLLISION_FORCE: f64 = 0.01;
 const PIECES: usize = 20;
 const AGE_FACTOR: f64 = 1.0;
 const MATURE_AGE: f64 = 0.01;

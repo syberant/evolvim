@@ -8,8 +8,6 @@
 //!
 //! TODO: transport all constants over to this file.
 
-use super::*;
-
 pub const SAFE_SIZE: f64 = 1.25;
 
 /// used by creature.rs

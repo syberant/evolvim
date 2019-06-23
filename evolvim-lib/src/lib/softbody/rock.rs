@@ -1,14 +1,12 @@
 use super::SoftBody;
-use crate::ecs_board::{BoardCoordinate, BoardPreciseCoordinate, BoardSize};
 use crate::climate::Climate;
 use crate::constants::*;
+use crate::ecs_board::{BoardCoordinate, BoardPreciseCoordinate, BoardSize};
 use crate::terrain::Terrain;
 use nphysics2d::object::{Body, RigidBody};
 use rand::Rng;
 use std::f64::consts::PI;
-use std::ops::Range;
 
-const FRICTION: f64 = 0.004;
 const ENERGY_DENSITY: f64 = 1.0
     / (super::creature::MINIMUM_SURVIVABLE_SIZE * super::creature::MINIMUM_SURVIVABLE_SIZE * PI);
 pub const FIGHT_RANGE: f64 = 2.0;
@@ -114,8 +112,7 @@ impl Rock {
 
             (v[0].powi(2) + v[1].powi(2)).sqrt()
         };
-        let amount = attempted_amount
-            / (1.0 + velocity * EAT_WHILE_MOVING_INEFFICIENCY_MULTIPLIER);
+        let amount = attempted_amount / (1.0 + velocity * EAT_WHILE_MOVING_INEFFICIENCY_MULTIPLIER);
         if amount < 0.0 {
             // Vomit
             // TODO: implement vomiting.

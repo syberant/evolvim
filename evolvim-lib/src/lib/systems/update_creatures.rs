@@ -21,7 +21,7 @@ impl<'a> System<'a> for UpdateCreatures {
         use crate::brain::NeuralNet;
         use specs::Join;
 
-        for (c) in (&mut creatures).join() {
+        for c in (&mut creatures).join() {
             c.record_energy();
             c.metabolize(0.001, time.0);
 

@@ -1,5 +1,8 @@
 use super::*;
 
+use nphysics2d::object::BodyHandle;
+type World = nphysics2d::world::World<f64>;
+
 pub const MINIMUM_SURVIVABLE_SIZE: f64 = 0.06;
 
 #[derive(Clone)]
@@ -64,7 +67,12 @@ impl<B: GenerateRandom> Creature<B> {
 impl<B: NeuralNet + RecombinationInfinite> Creature<B> {
     /// Create a new baby, it isn't in `SoftBodiesInPositions` so please fix that.
     /// While you're at it, also add it to `Board.creatures`.
-    pub fn new_baby(world: &mut World, parents: &[&SoftBody<B>], energy: f64, time: f64) -> Creature<B> {
+    pub fn new_baby(
+        world: &mut World,
+        parents: &[&SoftBody<B>],
+        energy: f64,
+        time: f64,
+    ) -> Creature<B> {
         let brain = B::recombination_infinite_parents(parents);
         let base = Rock::new_from_parents(parents, energy, time);
         let body = make_physics_creature(world, &base).into();
@@ -112,9 +120,7 @@ impl<B: NeuralNet + RecombinationInfinite> Creature<B> {
 
             let parents: Vec<&mut Creature<B>> = unimplemented!();
 
-            let available_energy = parents
-                .iter()
-                .fold(0.0, |acc, c| acc + c.get_baby_energy());
+            let available_energy = parents.iter().fold(0.0, |acc, c| acc + c.get_baby_energy());
 
             if available_energy > BABY_SIZE {
                 let energy = BABY_SIZE;
@@ -159,7 +165,6 @@ impl<B> Creature<B> {
         board_size: BoardSize,
         terrain: &mut Terrain,
         climate: &Climate,
-        world: &mut World,
     ) {
         for _i in 0..PIECES {
             let tile_pos = self.get_random_covered_tile(board_size);
