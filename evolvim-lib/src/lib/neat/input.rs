@@ -40,7 +40,7 @@ impl Eye {
         use crate::ecs_board::BoardPreciseCoordinate;
         use EyeType::*;
 
-        let real_angle = self.angle + env.this_body.get_rotation();
+        let real_angle = self.angle + env.body_angle();
         let x = real_angle.cos() * self.relative_distance;
         let y = real_angle.sin() * self.relative_distance;
         let pos = BoardPreciseCoordinate(x + env.this_body.get_px(), y + env.this_body.get_py());

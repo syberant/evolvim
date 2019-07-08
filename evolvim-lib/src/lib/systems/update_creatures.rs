@@ -25,10 +25,10 @@ impl<'a> System<'a> for UpdateCreatures {
             c.record_energy();
             c.metabolize(0.001, time.0);
 
-            let env = Environment::new(&terrain, &c.base);
+            let handle = c.get_handle();
+            let env = Environment::new(&terrain, &c.base, handle, &world);
             c.brain.run_with(&env);
 
-            let handle = c.get_handle();
             let mut env_mut = EnvironmentMut::new(
                 &mut terrain,
                 &mut c.base,

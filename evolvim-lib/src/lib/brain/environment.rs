@@ -40,10 +40,19 @@ impl<'a, B> EnvironmentMut<'a, B> {
 pub struct Environment<'a> {
     pub terrain: &'a Terrain,
     pub this_body: &'a Rock,
+    pub handle: BodyHandle,
+    pub world: &'a nphysics2d::world::World<f64>,
 }
 
 impl<'a> Environment<'a> {
-    pub fn new(terrain: &'a Terrain, this_body: &'a Rock) -> Self {
-        Environment { terrain, this_body }
+    pub fn new(terrain: &'a Terrain, this_body: &'a Rock, handle: BodyHandle, world: &'a nphysics2d::world::World<f64>) -> Self {
+        Environment { terrain, this_body, handle, world }
+    }
+
+    /// The rotation of this body in `]-pi; pi]`
+    pub fn body_angle(&self) -> f64 {
+        let rb = self.world.rigid_body(self.handle).unwrap();
+
+        rb.position().rotation.angle()
     }
 }

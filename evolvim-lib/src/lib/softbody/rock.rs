@@ -16,7 +16,6 @@ pub struct Rock {
     // Position
     px: f64,
     py: f64,
-    rotation: f64,
     // Energy
     energy: f64,
     density: f64,
@@ -39,7 +38,6 @@ impl Rock {
         Self {
             px,
             py,
-            rotation: rand::random::<f64>() * 2.0 * PI,
 
             energy,
             density,
@@ -61,9 +59,6 @@ impl Rock {
         let py = parents
             .iter()
             .fold(0.0, |acc, parent| acc + parent.py / parent_amount as f64);
-        let rotation = parents.iter().fold(0.0, |acc, parent| {
-            acc + parent.rotation / parent_amount as f64
-        });
 
         // The hue is the mean of all parent hues
         let mouth_hue = parents.iter().fold(0.0, |acc, parent| {
@@ -75,7 +70,6 @@ impl Rock {
         Rock {
             px,
             py,
-            rotation,
 
             energy,
             density,
@@ -264,11 +258,6 @@ impl Rock {
         self.py = new_y.max(radius).min(board_height as f64 - radius);
     }
 
-    /// Sets the rotation of this `Rock` to `new_rot`.
-    pub fn set_body_rotation(&mut self, new_rot: f64) {
-        self.rotation = new_rot;
-    }
-
     pub fn set_mouth_hue(&mut self, value: f64) {
         self.mouth_hue = value.min(1.0).max(0.0);
     }
@@ -290,10 +279,6 @@ impl Rock {
 
     pub fn get_py(&self) -> f64 {
         return self.py;
-    }
-
-    pub fn get_rotation(&self) -> f64 {
-        return self.rotation;
     }
 
     pub fn get_position(&self) -> BoardPreciseCoordinate {
