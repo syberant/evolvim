@@ -13,6 +13,14 @@ impl BoardPreciseCoordinate {
     }
 }
 
+impl From<&nalgebra::Isometry2<f64>> for BoardPreciseCoordinate {
+    fn from(orig: &nalgebra::Isometry2<f64>) -> Self {
+        let pos = orig.translation.vector;
+
+        BoardPreciseCoordinate(pos[0], pos[1])
+    }
+}
+
 impl From<BoardPreciseCoordinate> for BoardCoordinate {
     fn from(bpc: BoardPreciseCoordinate) -> BoardCoordinate {
         let (x, y) = bpc.unpack();

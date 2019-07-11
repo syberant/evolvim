@@ -98,8 +98,9 @@ impl super::NeuralNet for Brain {
         env.this_body.turn(turning, time_step, rg_body);
 
         // TODO: clean this mess.
-        let pos = rg_body.position().translation.vector;
-        let tile = env.terrain.get_tile_at_mut((pos[0] as usize, pos[1] as usize));
+        use crate::ecs_board::BoardPreciseCoordinate;
+        let pos: BoardPreciseCoordinate = rg_body.position().into();
+        let tile = env.terrain.get_tile_at_mut(pos.into());
         let eat_amount = self.wants_to_eat();
         env.this_body
             .eat(eat_amount, time_step, env.time, env.climate, tile, rg_body);

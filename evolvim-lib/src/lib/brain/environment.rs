@@ -59,8 +59,6 @@ impl<'a> Environment<'a> {
     pub fn body_position(&self) -> BoardPreciseCoordinate {
         let rb = self.world.rigid_body(self.handle).unwrap();
 
-        let pos = rb.position().translation.vector;
-
-        BoardPreciseCoordinate(pos[0], pos[1])
+        rb.position().into()
     }
 }

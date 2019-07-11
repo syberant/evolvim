@@ -177,9 +177,11 @@ impl<B> Creature<B> {
         climate: &Climate,
         world: &World,
     ) {
+        use crate::ecs_board::BoardPreciseCoordinate;
+        
         let rg_body = self.get_rigid_body(world);
-        let pos = rg_body.position().translation.vector;
-        let tile_pos = (pos[0] as usize, pos[1] as usize);
+        let pos: BoardPreciseCoordinate = rg_body.position().into();
+        let tile_pos = pos.into();
         
         terrain.add_food_or_nothing_at(tile_pos, self.get_energy());
         terrain.update_at(tile_pos, time, climate);

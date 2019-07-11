@@ -22,10 +22,9 @@ impl OutputType {
             Eating => {
                 let rg_body = env.world.rigid_body_mut(env.handle).unwrap();
 
-                let pos = rg_body.position().translation.vector;
-                let tile_pos = BoardPreciseCoordinate(pos[0], pos[1]).into();
+                let pos: BoardPreciseCoordinate = rg_body.position().into();
 
-                let tile = env.terrain.get_tile_at_mut(tile_pos);
+                let tile = env.terrain.get_tile_at_mut(pos.into());
                 env.this_body
                     .eat(value, time_step, env.time, env.climate, tile, rg_body);
             }
