@@ -21,7 +21,7 @@ impl<'a> System<'a> for RemoveDeadCreatures {
 
         for (c, e) in (&creatures, &entities).join() {
             if c.should_die() {
-                c.return_to_earth(time.0, *board_size, &mut terrain, &climate);
+                c.return_to_earth(time.0, *board_size, &mut terrain, &climate, &world);
 
                 // Remove this entity from nphysics2d::World
                 // TODO: optimise this to do all at once or something

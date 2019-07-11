@@ -41,9 +41,10 @@ impl Eye {
         use EyeType::*;
 
         let real_angle = self.angle + env.body_angle();
+        let body_pos = env.body_position();
         let x = real_angle.cos() * self.relative_distance;
         let y = real_angle.sin() * self.relative_distance;
-        let pos = BoardPreciseCoordinate(x + env.this_body.get_px(), y + env.this_body.get_py());
+        let pos = BoardPreciseCoordinate(x + body_pos.0, y + body_pos.1);
 
         let tile = env.terrain.get_tile_at(pos.into());
         match self.what_to_look_for {

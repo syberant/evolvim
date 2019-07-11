@@ -1,6 +1,6 @@
 use super::*;
 
-use nphysics2d::object::BodyHandle;
+use nphysics2d::object::{BodyHandle, RigidBody};
 type World = nphysics2d::world::World<f64>;
 
 pub const MINIMUM_SURVIVABLE_SIZE: f64 = 0.06;
@@ -53,11 +53,21 @@ impl<B> std::ops::DerefMut for Creature<B> {
 
 impl<B: GenerateRandom> Creature<B> {
     pub fn new_random(world: &mut World, board_size: BoardSize, time: f64) -> Self {
+        use rand::Rng;
+
         let energy = CREATURE_MIN_ENERGY
             + rand::random::<f64>() * (CREATURE_MAX_ENERGY - CREATURE_MIN_ENERGY);
         let base = Rock::new_random(board_size, CREATURE_DENSITY, energy, time);
         let brain = B::new_random();
-        let body = make_physics_creature(world, &base).into();
+        
+        let mut rng = rand::thread_rng();
+        let position = nalgebra::Vector2::<f64>::from_vec(
+            vec!(
+                rng.gen::<f64>() * board_size.0 as f64,
+                rng.gen::<f64>() * board_size.1 as f64,
+            )
+        );
+        let body = make_physics_creature(world, &base, position).into();
         // TODO: add id
 
         Creature { base, brain, body }
@@ -75,7 +85,7 @@ impl<B: NeuralNet + RecombinationInfinite> Creature<B> {
     ) -> Creature<B> {
         let brain = B::recombination_infinite_parents(parents);
         let base = Rock::new_from_parents(parents, energy, time);
-        let body = make_physics_creature(world, &base).into();
+        let body = physics_creature_from_parent(world, &base, parents[0]).into();
 
         Creature { base, brain, body }
     }
@@ -91,8 +101,8 @@ impl<B: NeuralNet + RecombinationInfinite> Creature<B> {
         world: &mut World,
     ) -> Option<Creature<B>> {
         if self.wants_primary_birth(time) {
-            let self_px = self.get_px();
-            let self_py = self.get_py();
+            // let self_px = self.get_px();
+            // let self_py = self.get_py();
             let self_radius = self.get_radius();
 
             // let mut colliders: SoftBodiesAt<B> = unimplemented!();
@@ -165,13 +175,14 @@ impl<B> Creature<B> {
         board_size: BoardSize,
         terrain: &mut Terrain,
         climate: &Climate,
+        world: &World,
     ) {
-        for _i in 0..PIECES {
-            let tile_pos = self.get_random_covered_tile(board_size);
-
-            terrain.add_food_or_nothing_at(tile_pos, self.get_energy() / PIECES as f64);
-            terrain.update_at(tile_pos, time, climate);
-        }
+        let rg_body = self.get_rigid_body(world);
+        let pos = rg_body.position().translation.vector;
+        let tile_pos = (pos[0] as usize, pos[1] as usize);
+        
+        terrain.add_food_or_nothing_at(tile_pos, self.get_energy());
+        terrain.update_at(tile_pos, time, climate);
     }
 
     pub fn should_die(&self) -> bool {
@@ -185,10 +196,13 @@ impl<B> Creature<B> {
     pub fn get_handle(&self) -> BodyHandle {
         self.body.0
     }
+
+    fn get_rigid_body<'a>(&self, world: &'a World) -> &'a RigidBody<f64> {
+        world.rigid_body(self.get_handle()).unwrap()
+    }
 }
 
-fn make_physics_creature(world: &mut World, cr: &Rock) -> BodyHandle {
-    use nalgebra::Vector2;
+fn make_physics_creature(world: &mut World, cr: &Rock, position: nalgebra::Vector2<f64>) -> BodyHandle {
     use ncollide2d::shape::{Ball, ShapeHandle};
     use nphysics2d::object::{ColliderDesc, RigidBodyDesc};
 
@@ -200,7 +214,6 @@ fn make_physics_creature(world: &mut World, cr: &Rock) -> BodyHandle {
     let collide_handle = ColliderDesc::new(shape);
 
     let mass = cr.get_mass();
-    let position = Vector2::new(cr.get_px(), cr.get_py());
 
     // Build the RigidBody
     let rigid_body = RigidBodyDesc::new()
@@ -210,4 +223,8 @@ fn make_physics_creature(world: &mut World, cr: &Rock) -> BodyHandle {
         .build(world);
 
     return rigid_body.handle();
+}
+
+fn physics_creature_from_parent<B>(world: &mut World, cr: &Rock, par: &Creature<B>) -> BodyHandle {
+    unimplemented!()
 }

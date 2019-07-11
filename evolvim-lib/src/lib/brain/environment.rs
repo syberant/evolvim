@@ -1,4 +1,4 @@
-use crate::ecs_board::BoardSize;
+use crate::ecs_board::{BoardSize, BoardPreciseCoordinate};
 use crate::softbody::Rock;
 use crate::{Climate, Terrain};
 use nphysics2d::object::BodyHandle;
@@ -54,5 +54,13 @@ impl<'a> Environment<'a> {
         let rb = self.world.rigid_body(self.handle).unwrap();
 
         rb.position().rotation.angle()
+    }
+
+    pub fn body_position(&self) -> BoardPreciseCoordinate {
+        let rb = self.world.rigid_body(self.handle).unwrap();
+
+        let pos = rb.position().translation.vector;
+
+        BoardPreciseCoordinate(pos[0], pos[1])
     }
 }

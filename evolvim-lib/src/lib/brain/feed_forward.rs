@@ -63,7 +63,7 @@ impl super::NeuralNet for Brain {
         self.a_1[2] = env.this_body.get_mouth_hue();
 
         // Look directly underneath the creature
-        let pos = env.this_body.get_position();
+        let pos = env.body_position();
         let tile = env.terrain.get_tile_at(pos.into());
         let colors = tile.get_hsba_color();
         self.a_1[3] = colors[0] as FPN;
@@ -98,8 +98,8 @@ impl super::NeuralNet for Brain {
         env.this_body.turn(turning, time_step, rg_body);
 
         // TODO: clean this mess.
-        let tile_pos = env.this_body.get_random_covered_tile(env.board_size);
-        let tile = env.terrain.get_tile_at_mut(tile_pos);
+        let pos = rg_body.position().translation.vector;
+        let tile = env.terrain.get_tile_at_mut((pos[0] as usize, pos[1] as usize));
         let eat_amount = self.wants_to_eat();
         env.this_body
             .eat(eat_amount, time_step, env.time, env.climate, tile, rg_body);

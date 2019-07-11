@@ -1,7 +1,7 @@
 use super::SoftBody;
 use crate::climate::Climate;
 use crate::constants::*;
-use crate::ecs_board::{BoardCoordinate, BoardPreciseCoordinate, BoardSize};
+use crate::ecs_board::{BoardCoordinate, BoardSize};
 use crate::terrain::Terrain;
 use nphysics2d::object::{Body, RigidBody};
 use rand::Rng;
@@ -13,9 +13,6 @@ pub const FIGHT_RANGE: f64 = 2.0;
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct Rock {
-    // Position
-    px: f64,
-    py: f64,
     // Energy
     energy: f64,
     density: f64,
@@ -31,14 +28,9 @@ impl Rock {
         let (board_width, board_height) = board_size;
 
         let mut thread_rng = rand::thread_rng();
-        let px = thread_rng.gen::<f64>() * (board_width - 1) as f64;
-        let py = thread_rng.gen::<f64>() * (board_height - 1) as f64;
         let mouth_hue = thread_rng.gen::<f64>();
 
         Self {
-            px,
-            py,
-
             energy,
             density,
 
@@ -49,16 +41,8 @@ impl Rock {
         }
     }
 
-    /// TODO: prevent px and py from being directly on top of the parent.
     pub fn new_from_parents<B>(parents: &[&SoftBody<B>], energy: f64, time: f64) -> Rock {
         let parent_amount = parents.len();
-
-        let px = parents
-            .iter()
-            .fold(0.0, |acc, parent| acc + parent.px / parent_amount as f64);
-        let py = parents
-            .iter()
-            .fold(0.0, |acc, parent| acc + parent.py / parent_amount as f64);
 
         // The hue is the mean of all parent hues
         let mouth_hue = parents.iter().fold(0.0, |acc, parent| {
@@ -68,9 +52,6 @@ impl Rock {
         let density = parents[0].density;
 
         Rock {
-            px,
-            py,
-
             energy,
             density,
 
@@ -142,26 +123,26 @@ impl Rock {
         time_step: f64,
         world: &mut nphysics2d::world::World<f64>,
     ) {
-        use super::MATURE_AGE;
+        // use super::MATURE_AGE;
 
-        if amount > 0.0 && self.get_age(time) >= MATURE_AGE {
-            self.lose_energy(amount * time_step * FIGHT_ENERGY);
+        // if amount > 0.0 && self.get_age(time) >= MATURE_AGE {
+        //     self.lose_energy(amount * time_step * FIGHT_ENERGY);
 
-            let self_x = self.get_px();
-            let self_y = self.get_py();
+        //     let self_x = self.get_px();
+        //     let self_y = self.get_py();
 
-            let mut colliders: Vec<&mut SoftBody<B>> = unimplemented!();
+        //     let mut colliders: Vec<&mut SoftBody<B>> = unimplemented!();
 
-            for col in colliders {
-                let distance = distance(self_x, self_y, col.get_px(), col.get_py());
-                let combined_radius = self.get_radius() * FIGHT_RANGE + col.get_radius();
+        //     for col in colliders {
+        //         let distance = distance(self_x, self_y, col.get_px(), col.get_py());
+        //         let combined_radius = self.get_radius() * FIGHT_RANGE + col.get_radius();
 
-                if distance < combined_radius {
-                    // collider was hit, remove energy
-                    col.lose_energy(amount * INJURED_ENERGY * time_step);
-                }
-            }
-        }
+        //         if distance < combined_radius {
+        //             // collider was hit, remove energy
+        //             col.lose_energy(amount * INJURED_ENERGY * time_step);
+        //         }
+        //     }
+        // }
     }
 
     /// Accelerate
@@ -200,25 +181,8 @@ impl Rock {
         self.lose_energy(energy_to_lose);
     }
 
-    pub fn get_random_covered_tile(&self, board_size: BoardSize) -> BoardCoordinate {
-        let radius = self.get_radius();
-        let mut choice_x = 0.0;
-        let mut choice_y = 0.0;
-        while distance(self.px, self.py, choice_x, choice_y) > radius {
-            choice_x = rand::random::<f64>() * 2.0 * radius - radius + self.px;
-            choice_y = rand::random::<f64>() * 2.0 * radius - radius + self.py;
-        }
-
-        let choice_x = check_center_x(choice_x.floor() as usize, board_size.0);
-        let choice_y = check_center_y(choice_y.floor() as usize, board_size.1);
-
-        return (choice_x, choice_y);
-    }
-
     /// Returns true if this body is currently on water.
-    pub fn is_on_water(&self, terrain: &Terrain, board_size: BoardSize) -> bool {
-        // TODO: determine whether this is desirable and maybe come up with a better system.
-        let pos = self.get_random_covered_tile(board_size);
+    pub fn is_on_water(&self, terrain: &Terrain, pos: BoardCoordinate) -> bool {
         let tile = terrain.get_tile_at(pos);
         return tile.is_water();
     }
@@ -242,22 +206,6 @@ impl Rock {
         (self.energy - self.prev_energy) / time_step
     }
 
-    /// Sets the center of this `SoftBody` and makes sure the entire body stays inside of the world.
-    ///
-    /// I.e. it also takes the radius of this body into account.
-    pub fn set_body_x(&mut self, new_x: f64, board_width: usize) {
-        let radius = self.get_radius();
-        self.px = new_x.max(radius).min(board_width as f64 - radius);
-    }
-
-    /// Sets the center of this `SoftBody` and makes sure the entire body stays inside of the world.
-    ///
-    /// I.e. it also takes the radius of this body into account.
-    pub fn set_body_y(&mut self, new_y: f64, board_height: usize) {
-        let radius = self.get_radius();
-        self.py = new_y.max(radius).min(board_height as f64 - radius);
-    }
-
     pub fn set_mouth_hue(&mut self, value: f64) {
         self.mouth_hue = value.min(1.0).max(0.0);
     }
@@ -271,18 +219,6 @@ impl Rock {
 
     pub fn get_density(&self) -> f64 {
         self.density
-    }
-
-    pub fn get_px(&self) -> f64 {
-        return self.px;
-    }
-
-    pub fn get_py(&self) -> f64 {
-        return self.py;
-    }
-
-    pub fn get_position(&self) -> BoardPreciseCoordinate {
-        BoardPreciseCoordinate(self.get_px(), self.get_py())
     }
 
     pub fn get_mouth_hue(&self) -> f64 {
