@@ -61,10 +61,12 @@ impl<B: GenerateRandom> Creature<B> {
         let brain = B::new_random();
         
         let mut rng = rand::thread_rng();
+        // Randomly pick a position
+        // Do take care however to ensure the ENTIRE body is inside of the board
         let position = nalgebra::Vector2::<f64>::from_vec(
             vec!(
-                rng.gen::<f64>() * board_size.0 as f64,
-                rng.gen::<f64>() * board_size.1 as f64,
+                1.0 + rng.gen::<f64>() * (board_size.0 - 2) as f64,
+                1.0 + rng.gen::<f64>() * (board_size.1 - 2) as f64,
             )
         );
         let body = make_physics_creature(world, &base, position).into();
@@ -178,7 +180,7 @@ impl<B> Creature<B> {
         world: &World,
     ) {
         use crate::ecs_board::BoardPreciseCoordinate;
-        
+
         let rg_body = self.get_rigid_body(world);
         let pos: BoardPreciseCoordinate = rg_body.position().into();
         let tile_pos = pos.into();

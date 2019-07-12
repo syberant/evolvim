@@ -76,13 +76,13 @@ impl Terrain {
 
         assert!(
             x < self.get_width(),
-            "There is no `Tile` at the given x coordinate: {}.",
-            x
+            "There is no `Tile` at the given x coordinate: {}, y coordinate was {}.",
+            x, y
         );
         assert!(
             y < self.get_height(),
-            "There is no `Tile` at the given y coordinate: {}.",
-            y
+            "There is no `Tile` at the given y coordinate: {}, x coordinate was {}.",
+            y, x
         );
 
         return &self.tiles[x][y];

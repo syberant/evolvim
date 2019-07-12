@@ -51,6 +51,7 @@ impl<'a, 'b> ECSBoard<'a, 'b> {
 
         let mut physics_world = nphysics2d::world::World::<f64>::new();
         physics_world.set_timestep(0.001);
+        create_walls(&mut physics_world, board_size.0 as f64, board_size.1 as f64);
         world.add_resource(physics_world);
 
         let time = crate::time::Time::default();
@@ -126,4 +127,34 @@ impl<'a, 'b> ECSBoard<'a, 'b> {
     pub fn get_board_height(&self) -> usize {
         self.get_board_size().1
     }
+}
+
+fn create_walls(world: &mut nphysics2d::world::World<f64>, x: f64, y: f64) {
+    use ncollide2d::shape::{Cuboid, ShapeHandle};
+    use nphysics2d::object::ColliderDesc;
+    use nalgebra::Vector2;
+
+    let half_height = y / 2.0;
+    let vertical_shape = ShapeHandle::new(Cuboid::new(Vector2::repeat(half_height)));
+    // let half_height = y;
+
+    let half_width = x / 2.0;
+    let horizontal_shape = ShapeHandle::new(Cuboid::new(Vector2::repeat(half_width)));
+    // let half_width = x;
+
+    let mut vert = ColliderDesc::new(vertical_shape);
+    vert.set_translation(Vector2::from_vec(vec!(-half_width, half_height)));
+    // println!("1V: {:?}", vert.get_position().translation);
+    vert.build(world);
+    vert.set_translation(Vector2::from_vec(vec!(half_width * 3.0, half_height)));
+    // println!("2V: {:?}", vert.get_position().translation);
+    vert.build(world);
+
+    let mut horiz = ColliderDesc::new(horizontal_shape);
+    horiz.set_translation(Vector2::from_vec(vec!(half_width, -half_height)));
+    // println!("1H: {:?}", horiz.get_position().translation);
+    horiz.build(world);
+    horiz.set_translation(Vector2::from_vec(vec!(half_width, half_height * 3.0)));
+    // println!("2H: {:?}", horiz.get_position().translation);
+    horiz.build(world);
 }
