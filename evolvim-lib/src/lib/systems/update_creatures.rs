@@ -22,6 +22,8 @@ impl<'a> System<'a> for UpdateCreatures {
         use specs::Join;
 
         for c in (&mut creatures).join() {
+            check_position(c, *board_size, &mut world);
+
             c.record_energy();
             c.metabolize(0.001, time.0);
 
@@ -41,5 +43,34 @@ impl<'a> System<'a> for UpdateCreatures {
 
             c.brain.use_output(&mut env_mut, 0.001);
         }
+    }
+}
+
+fn check_position(creature: &mut Creature<Brain>, board_size: BoardSize, world: &mut nphysics2d::world::World<f64>) {
+    let handle = creature.get_handle();
+    let mut rg = world.rigid_body_mut(handle).unwrap();
+
+    let position: crate::ecs_board::BoardPreciseCoordinate = rg.position().into();
+    let mut x = position.0.floor() as usize;
+    let mut y = position.1.floor() as usize;
+
+    if (x >= board_size.0) {
+        // println!("({}, {}) Out of bounds! x coordinate is {}.", x, y, x);
+
+        x = if (x > 2*board_size.0) {0} else {board_size.0 - 1};
+        let mut pos = rg.position().clone();
+        pos.translation.vector[0] = x as f64;
+
+        rg.set_position(pos);
+    }
+
+    if (y >= board_size.1) {
+        // println!("({}, {}) Out of bounds! y coordinate is {}.", x, y, y);
+
+        y = if (y > 2*board_size.1) {0} else {board_size.1 - 1};
+        let mut pos = rg.position().clone();
+        pos.translation.vector[1] = y as f64;
+
+        rg.set_position(pos);
     }
 }
