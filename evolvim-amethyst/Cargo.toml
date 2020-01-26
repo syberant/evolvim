@@ -1,0 +1,12 @@
+[package]
+name = "evolvim-amethyst"
+version = "0.2.0"
+authors = ["Sybrand Aarnoutse (syberant)"]
+edition = "2018"
+
+[dependencies.amethyst]
+version = "0.13"
+features = ["vulkan"]
+
+[dependencies.evolvim-lib]
+path = "../evolvim-lib"
