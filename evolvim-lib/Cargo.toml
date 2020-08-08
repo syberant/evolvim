@@ -14,7 +14,7 @@ serde_derive = "1.0.87"
 
 [dependencies.nalgebra]
 features = ["serde-serialize"]
-version = "0.17.0"
+version = "0.21.1"
 
 [dependencies.rayon]
 optional = true
