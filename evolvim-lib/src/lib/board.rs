@@ -447,7 +447,7 @@ impl<B: NeuralNet> Board<B> {
 }
 
 impl<B: NeuralNet + serde::de::DeserializeOwned> Board<B> {
-    pub fn load_from<P: AsRef<std::path::Path>>(path: P) -> Result<Board<B>, Box<std::error::Error>> {
+    pub fn load_from<P: AsRef<std::path::Path>>(path: P) -> Result<Board<B>, Box<dyn std::error::Error>> {
         let file = std::fs::File::open(path)?;
         Ok({
             use crate::serde_structs::board::BoardSerde;
@@ -462,7 +462,7 @@ impl<B: NeuralNet + serde::Serialize> Board<B> {
     pub fn save_to<P: AsRef<std::path::Path>>(
         self,
         path: P,
-    ) -> Result<(), Box<std::error::Error>> {
+    ) -> Result<(), Box<dyn std::error::Error>> {
         let file = std::fs::File::create(path)?;
         bincode::serialize_into(file, &crate::serde_structs::board::BoardSerde::from(self))?;
 

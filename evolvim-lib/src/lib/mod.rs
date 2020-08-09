@@ -7,6 +7,9 @@
 
 // #![deny(unsafe_code)]
 
+// Force the explicit marking of trait objects with the dyn syntax
+#![deny(bare_trait_objects)]
+
 #[macro_use]
 extern crate serde_derive;
 extern crate serde;
