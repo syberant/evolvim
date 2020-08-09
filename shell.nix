@@ -12,6 +12,15 @@ stdenv.mkDerivation rec {
     cargo
 
     # Example Build-time Additional Dependencies
+    alsaLib
+    cmake
+    freetype
+    expat
+    openssl
+    pkgconfig
+    python3
+    #vulkan-validation-layers
+    xlibs.libX11
   ];
 
   # Run-time Additional Dependencies
