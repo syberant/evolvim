@@ -7,14 +7,12 @@
 //!
 //! TODO 2: take a good look at the terrain generation.
 
-extern crate noise;
-extern crate rand;
-
 pub mod tile;
 
-use self::noise::{NoiseFn, Point2, Seedable};
 use self::tile::Tile;
 use super::*;
+use noise::{NoiseFn, Point2, Seedable};
+use crate::ecs_board::{BoardCoordinate, BoardSize};
 
 /// Contains the terrain of the world.
 ///
@@ -27,8 +25,6 @@ pub struct Terrain {
 impl Terrain {
     #[cfg(multithreading)]
     pub fn update_all(&mut self, time: f64, climate: &Climate) {
-        extern crate rayon;
-
         self.tiles.par_iter_mut().flatten().for_each(|t| {
             t.update(time, climate);
         })
@@ -80,13 +76,13 @@ impl Terrain {
 
         assert!(
             x < self.get_width(),
-            "There is no `Tile` at the given x coordinate: {}.",
-            x
+            "There is no `Tile` at the given x coordinate: {}, y coordinate was {}.",
+            x, y
         );
         assert!(
             y < self.get_height(),
-            "There is no `Tile` at the given y coordinate: {}.",
-            y
+            "There is no `Tile` at the given y coordinate: {}, x coordinate was {}.",
+            y, x
         );
 
         return &self.tiles[x][y];

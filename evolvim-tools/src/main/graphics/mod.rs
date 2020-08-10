@@ -6,6 +6,7 @@
 
 extern crate graphics;
 extern crate lib_evolvim;
+extern crate nphysics2d;
 
 pub mod ui;
 pub mod view;
@@ -21,6 +22,9 @@ use std::fmt::Debug;
 
 use lib_evolvim::constants::*;
 use lib_evolvim::*;
+use lib_evolvim::ecs_board::{BoardCoordinate, BoardSize, BoardPreciseCoordinate};
+
+use nphysics2d::object::RigidBody;
 
 // pub trait Drawable {
 //     fn draw(&self, context: Context, g2d: &mut G2d);
@@ -160,24 +164,52 @@ pub fn draw_terrain<C, G>(
     }
 }
 
-pub fn draw_creature<B: lib_evolvim::brain::NeuralNet, G: Graphics>(
-    creature: &Creature<B>,
-    context: Context,
-    graphics: &mut G,
-    view: &View,
-) {
+// pub fn draw_creature<B: lib_evolvim::brain::NeuralNet, G: Graphics>(
+//     creature: &Creature<B>,
+//     context: Context,
+//     graphics: &mut G,
+//     view: &View,
+// ) {
+//     let size = view.get_tile_size();
+//     let transform = context
+//         .transform
+//         .trans(-view.get_precise_x() * size, -view.get_precise_y() * size);
+
+//     let radius = creature.get_radius();
+//     let color = from_hsba([creature.get_mouth_hue() as f32, 1.0, 1.0, 1.0]);
+
+//     let rect = [
+//         // This gives the upper-left corner of the circle so subtract the radius.
+//         (creature.get_px() - radius) * size,
+//         (creature.get_py() - radius) * size,
+//         radius * 2.0 * size,
+//         radius * 2.0 * size,
+//     ];
+
+//     let ellipse = ellipse::Ellipse::new(color);
+
+//     ellipse.draw(rect, &context.draw_state, transform, graphics);
+// }
+
+pub fn draw_body<G: Graphics>(body: &RigidBody<f64>, context: Context, graphics: &mut G, view: &View) {
     let size = view.get_tile_size();
     let transform = context
         .transform
         .trans(-view.get_precise_x() * size, -view.get_precise_y() * size);
 
-    let radius = creature.get_radius();
-    let color = from_hsba([creature.get_mouth_hue() as f32, 1.0, 1.0, 1.0]);
+    // let radius = creature.get_radius();
+    let radius = 0.3;
 
+    // let color = from_hsba([creature.get_mouth_hue() as f32, 1.0, 1.0, 1.0]);
+    let color = from_hsba([0.5, 1.0, 1.0, 1.0]);
+
+    let pos = body.position().translation.vector;
+    let x = pos[0];
+    let y = pos[1];
     let rect = [
         // This gives the upper-left corner of the circle so subtract the radius.
-        (creature.get_px() - radius) * size,
-        (creature.get_py() - radius) * size,
+        (x - radius) * size,
+        (y - radius) * size,
         radius * 2.0 * size,
         radius * 2.0 * size,
     ];
@@ -212,12 +244,12 @@ pub fn draw_details_creature<B, C, G>(
         "Age: {:.3}",
         creature.get_age(view.board.get_time())
     ));
-    text_to_draw.push(format!(
-        "Pos: ({:.1}, {:.1})",
-        creature.get_px(),
-        creature.get_py()
-    ));
-    text_to_draw.push(format!("Speed: {:.3}", creature.get_total_velocity()));
+    // text_to_draw.push(format!(
+    //     "Pos: ({:.1}, {:.1})",
+    //     creature.get_px(),
+    //     creature.get_py()
+    // ));
+    // text_to_draw.push(format!("Speed: {:.3}", creature.get_total_velocity()));
 
     draw_lines(
         text_to_draw,
@@ -231,25 +263,25 @@ pub fn draw_details_creature<B, C, G>(
 
     creature.brain.draw_brain(context, graphics, glyphs);
 
-    let size = view.get_tile_size();
-    let transform = context
-        .transform
-        .trans(-view.get_precise_x() * size, -view.get_precise_y() * size);
+    // let size = view.get_tile_size();
+    // let transform = context
+    //     .transform
+    //     .trans(-view.get_precise_x() * size, -view.get_precise_y() * size);
 
-    let radius = creature.get_radius() / 2.0;
-    let color = [1.0, 1.0, 1.0, 0.5];
+    // let radius = creature.get_radius() / 2.0;
+    // let color = [1.0, 1.0, 1.0, 0.5];
 
-    let rect = [
-        // This gives the upper-left corner of the circle so subtract the radius.
-        (creature.get_px() - radius) * size,
-        (creature.get_py() - radius) * size,
-        radius * 2.0 * size,
-        radius * 2.0 * size,
-    ];
+    // let rect = [
+    //     // This gives the upper-left corner of the circle so subtract the radius.
+    //     (creature.get_px() - radius) * size,
+    //     (creature.get_py() - radius) * size,
+    //     radius * 2.0 * size,
+    //     radius * 2.0 * size,
+    // ];
 
-    let ellipse = ellipse::Ellipse::new(color);
+    // let ellipse = ellipse::Ellipse::new(color);
 
-    ellipse.draw(rect, &context.draw_state, transform, graphics);
+    // ellipse.draw(rect, &context.draw_state, transform, graphics);
 }
 
 pub trait DrawableBrain {

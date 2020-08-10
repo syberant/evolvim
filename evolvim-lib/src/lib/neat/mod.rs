@@ -58,13 +58,13 @@ impl crate::brain::RecombinationTwoParents for NeatBrain {
 }
 
 impl crate::brain::RecombinationInfinite for NeatBrain {
-    fn recombination_infinite_parents(parents: &Vec<crate::softbody::HLSoftBody<Self>>) -> Self {
+    fn recombination_infinite_parents(parents: &[&crate::softbody::SoftBody<Self>]) -> Self {
         use crate::brain::RecombinationTwoParents;
 
         if parents.len() == 1 {
             // Only mutate this genome
 
-            let parent = parents[0].borrow();
+            let parent = parents[0];
             // Make a copy of the parent genome
             let mut genome = parent.brain.genome.clone();
             // Mutate it
@@ -73,8 +73,8 @@ impl crate::brain::RecombinationInfinite for NeatBrain {
             genome.into()
         } else {
             NeatBrain::recombination_two_parents(
-                &parents[0].borrow().brain,
-                &parents[1].borrow().brain,
+                &parents[0].brain,
+                &parents[1].brain,
             )
         }
     }

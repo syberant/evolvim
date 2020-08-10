@@ -11,10 +11,13 @@ noise = "0.5.1"
 rand = "0.6.5"
 serde = "1.0.87"
 serde_derive = "1.0.87"
+specs = "0.14.3"
+nphysics2d = "0.16.1"
+ncollide2d = "0.23.2"
 
 [dependencies.nalgebra]
 features = ["serde-serialize"]
-version = "0.17.0"
+version = "0.21.1"
 
 [dependencies.rayon]
 optional = true

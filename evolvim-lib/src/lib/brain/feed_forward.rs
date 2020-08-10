@@ -4,13 +4,10 @@
 
 #![warn(missing_docs)]
 
-extern crate nalgebra;
-extern crate rand;
-
 use self::allocator::Allocator;
 use self::dimension::DimName;
-use self::nalgebra::*;
-use self::rand::Rng;
+use nalgebra::*;
+use rand::Rng;
 use std::f64::consts::PI;
 
 pub type BrainOutput<'a> = &'a [FPN];
@@ -40,7 +37,7 @@ type OutputLayerSize = U10;
 ///
 /// # Processing equivalent
 /// *Brain.pde/Brain*, although this doesn't have an `Axon` class/structure to rely on.
-#[derive(Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct Brain {
     // This dimension should be equal to InputLayerSize + 1.
     a_1: RowVectorN<FPN, InputLayerSizePlusBias>,
@@ -66,7 +63,7 @@ impl super::NeuralNet for Brain {
         self.a_1[2] = env.this_body.get_mouth_hue();
 
         // Look directly underneath the creature
-        let pos = env.this_body.get_position();
+        let pos = env.body_position();
         let tile = env.terrain.get_tile_at(pos.into());
         let colors = tile.get_hsba_color();
         self.a_1[3] = colors[0] as FPN;
@@ -92,18 +89,21 @@ impl super::NeuralNet for Brain {
     }
 
     fn use_output(&self, env: &mut super::EnvironmentMut<Self>, time_step: f64) {
+        let rg_body = env.world.rigid_body_mut(env.handle).unwrap();
+
         let acceleration = self.wants_acceleration();
-        env.this_body.accelerate(acceleration, time_step);
+        env.this_body.accelerate(acceleration, time_step, rg_body);
 
         let turning = self.wants_turning();
-        env.this_body.turn(turning, time_step);
+        env.this_body.turn(turning, time_step, rg_body);
 
         // TODO: clean this mess.
-        let tile_pos = env.this_body.get_random_covered_tile(env.board_size);
-        let tile = env.terrain.get_tile_at_mut(tile_pos);
+        use crate::ecs_board::BoardPreciseCoordinate;
+        let pos: BoardPreciseCoordinate = rg_body.position().into();
+        let tile = env.terrain.get_tile_at_mut(pos.into());
         let eat_amount = self.wants_to_eat();
         env.this_body
-            .eat(eat_amount, time_step, env.time, env.climate, tile);
+            .eat(eat_amount, time_step, env.time, env.climate, tile, rg_body);
 
         let mouth_hue = self.wants_mouth_hue();
         env.this_body.set_mouth_hue(mouth_hue);
@@ -168,7 +168,7 @@ impl super::RecombinationInfinite for Brain {
     ///
     /// TODO: improve performance via vectorization.
     /// TODO: understand formulae and improve them or come up with my own
-    fn recombination_infinite_parents(parents: &Vec<crate::softbody::HLSoftBody<Brain>>) -> Self {
+    fn recombination_infinite_parents(parents: &[&crate::softbody::SoftBody<Brain>]) -> Self {
         let a_1 = <RowVectorN<FPN, InputLayerSizePlusBias>>::zeros();
         let a_2 = <RowVectorN<FPN, HiddenLayerSizePlusBias>>::zeros();
         let a_3 = <RowVectorN<FPN, OutputLayerSize>>::zeros();
@@ -195,8 +195,8 @@ impl super::RecombinationInfinite for Brain {
 
                 let r = (rng.gen::<f64>() * 2.0 - 1.0).powi(9);
 
-                theta_1[(y, z)] = parents[parent_id].borrow().brain.theta_1[(y, z)]
-                    + r * MUTABILITY / MUTATE_MULTI;
+                theta_1[(y, z)] =
+                    parents[parent_id].brain.theta_1[(y, z)] + r * MUTABILITY / MUTATE_MULTI;
             }
         }
 
@@ -211,8 +211,8 @@ impl super::RecombinationInfinite for Brain {
 
                 let r = (rng.gen::<f64>() * 2.0 - 1.0).powi(9);
 
-                theta_2[(y, z)] = parents[parent_id].borrow().brain.theta_2[(y, z)]
-                    + r * MUTABILITY / MUTATE_MULTI;
+                theta_2[(y, z)] =
+                    parents[parent_id].brain.theta_2[(y, z)] + r * MUTABILITY / MUTATE_MULTI;
             }
         }
 

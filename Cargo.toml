@@ -1,2 +1,2 @@
 [workspace]
-members = ["evolvim-lib", "evolvim-tools"]
+members = ["evolvim-lib", "evolvim-tools", "evolvim-amethyst"]

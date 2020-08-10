@@ -8,31 +8,46 @@ pub enum OutputType {
 }
 
 impl OutputType {
-    pub fn use_output<B>(
+    pub fn use_output<B: 'static>(
         &self,
         value: f64,
         env: &mut crate::brain::EnvironmentMut<B>,
         time_step: f64,
     ) {
         use OutputType::*;
+        use crate::ecs_board::BoardPreciseCoordinate;
 
         match self {
             MouthHue => env.this_body.set_mouth_hue(value),
             Eating => {
-                let tile_pos = env.this_body.get_random_covered_tile(env.board_size);
-                let tile = env.terrain.get_tile_at_mut(tile_pos);
+                let rg_body = env.world.rigid_body_mut(env.handle).unwrap();
+
+                let pos: BoardPreciseCoordinate = rg_body.position().into();
+
+                let tile = env.terrain.get_tile_at_mut(pos.into());
                 env.this_body
-                    .eat(value, time_step, env.time, env.climate, tile);
+                    .eat(value, time_step, env.time, env.climate, tile, rg_body);
             }
-            Turning => env.this_body.turn(value, time_step),
-            Accelerating => env.this_body.accelerate(value, time_step),
-            Fight => env.this_body.fight(
-                value,
-                env.time,
-                time_step,
-                env.sbip,
-                env.self_pointer.clone(),
-            ),
+            Turning => {
+                let rg_body = env.world.rigid_body_mut(env.handle).unwrap();
+                
+                env.this_body.turn(value, time_step, rg_body);
+            },
+            Accelerating => {
+                let rg_body = env.world.rigid_body_mut(env.handle).unwrap();
+
+                env.this_body.accelerate(value, time_step, rg_body);
+            },
+            Fight => {
+                // env.this_body.fight(
+                //     value,
+                //     env.time,
+                //     time_step,
+                //     env.sbip,
+                //     env.world,
+                //     env.self_pointer.clone(),
+                // );
+            }
         };
     }
 }

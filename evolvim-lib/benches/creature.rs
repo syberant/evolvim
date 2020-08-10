@@ -5,6 +5,7 @@ mod benches {
     extern crate lib_evolvim;
     extern crate test;
 
+    use self::lib_evolvim::ecs_board::BoardSize;
     use self::lib_evolvim::*;
     use self::test::Bencher;
 
@@ -14,21 +15,27 @@ mod benches {
 
     #[bench]
     fn bench_creature_new_baby_1_parent(b: &mut Bencher) {
-        let parents = vec![HLSoftBody::<Brain>::from(SoftBody::new_random(
-            TEST_BOARD_SIZE,
-            TEST_TIME,
-        ))];
+        let mut world = nphysics2d::world::World::<f64>::new();
 
-        b.iter(|| Creature::new_baby(parents.clone(), TEST_ENERGY, TEST_TIME));
+        let parents: Vec<SoftBody<Brain>> =
+            vec![SoftBody::new_random(&mut world, TEST_BOARD_SIZE, TEST_TIME)];
+
+        let parents: Vec<&SoftBody<Brain>> = parents.iter().collect();
+
+        b.iter(|| Creature::new_baby(&mut world, &parents, TEST_ENERGY, TEST_TIME));
     }
 
     #[bench]
     fn bench_creature_new_baby_2_parents(b: &mut Bencher) {
-        let parents = vec![
-            HLSoftBody::<Brain>::from(SoftBody::new_random(TEST_BOARD_SIZE, TEST_TIME)),
-            HLSoftBody::<Brain>::from(SoftBody::new_random(TEST_BOARD_SIZE, TEST_TIME)),
+        let mut world = nphysics2d::world::World::<f64>::new();
+
+        let parents: Vec<SoftBody<Brain>> = vec![
+            SoftBody::new_random(&mut world, TEST_BOARD_SIZE, TEST_TIME),
+            SoftBody::new_random(&mut world, TEST_BOARD_SIZE, TEST_TIME),
         ];
 
-        b.iter(|| Creature::new_baby(parents.clone(), TEST_ENERGY, TEST_TIME));
+        let parents: Vec<&SoftBody<Brain>> = parents.iter().collect();
+
+        b.iter(|| Creature::new_baby(&mut world, &parents, TEST_ENERGY, TEST_TIME));
     }
 }

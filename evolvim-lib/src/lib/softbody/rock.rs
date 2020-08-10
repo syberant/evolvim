@@ -1,43 +1,21 @@
-extern crate rand;
-
-use self::rand::Rng;
-
-use super::HLSoftBody;
-use crate::board::{BoardCoordinate, BoardPreciseCoordinate, BoardSize};
+use super::SoftBody;
 use crate::climate::Climate;
 use crate::constants::*;
-use crate::sbip::{SoftBodiesAt, SoftBodiesInPositions};
+use crate::ecs_board::{BoardCoordinate, BoardSize};
 use crate::terrain::Terrain;
+use nphysics2d::object::{Body, RigidBody};
+use rand::Rng;
 use std::f64::consts::PI;
-use std::ops::Range;
 
-const FRICTION: f64 = 0.004;
 const ENERGY_DENSITY: f64 = 1.0
     / (super::creature::MINIMUM_SURVIVABLE_SIZE * super::creature::MINIMUM_SURVIVABLE_SIZE * PI);
 pub const FIGHT_RANGE: f64 = 2.0;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct Rock {
-    // Position
-    px: f64,
-    py: f64,
-    rotation: f64,
-    // Velocity
-    vx: f64,
-    vy: f64,
-    vr: f64,
     // Energy
     energy: f64,
     density: f64,
-    // Soft Bodies In Positions
-    sbip_min_x: usize,
-    sbip_min_y: usize,
-    sbip_max_x: usize,
-    sbip_max_y: usize,
-    prev_sbip_min_x: usize,
-    prev_sbip_min_y: usize,
-    prev_sbip_max_x: usize,
-    prev_sbip_max_y: usize,
     // Stats or info
     prev_energy: f64,
     birth_time: f64,
@@ -50,30 +28,11 @@ impl Rock {
         let (board_width, board_height) = board_size;
 
         let mut thread_rng = rand::thread_rng();
-        let px = thread_rng.gen::<f64>() * (board_width - 1) as f64;
-        let py = thread_rng.gen::<f64>() * (board_height - 1) as f64;
         let mouth_hue = thread_rng.gen::<f64>();
 
         Self {
-            px,
-            py,
-            rotation: rand::random::<f64>() * 2.0 * PI,
-
-            vx: 0.0,
-            vy: 0.0,
-            vr: 0.0,
-
             energy,
             density,
-
-            sbip_min_x: 0,
-            sbip_min_y: 0,
-            sbip_max_x: 0,
-            sbip_max_y: 0,
-            prev_sbip_min_x: 0,
-            prev_sbip_min_y: 0,
-            prev_sbip_max_x: 0,
-            prev_sbip_max_y: 0,
 
             prev_energy: energy,
             birth_time: time,
@@ -82,47 +41,19 @@ impl Rock {
         }
     }
 
-    /// TODO: prevent px and py from being directly on top of the parent.
-    pub fn new_from_parents<B>(parents: &Vec<HLSoftBody<B>>, energy: f64, time: f64) -> Rock {
+    pub fn new_from_parents<B>(parents: &[&SoftBody<B>], energy: f64, time: f64) -> Rock {
         let parent_amount = parents.len();
-
-        let px = parents.iter().fold(0.0, |acc, parent| {
-            acc + parent.borrow().px / parent_amount as f64
-        });
-        let py = parents.iter().fold(0.0, |acc, parent| {
-            acc + parent.borrow().py / parent_amount as f64
-        });
-        let rotation = parents.iter().fold(0.0, |acc, parent| {
-            acc + parent.borrow().rotation / parent_amount as f64
-        });
 
         // The hue is the mean of all parent hues
         let mouth_hue = parents.iter().fold(0.0, |acc, parent| {
-            acc + parent.borrow().mouth_hue / parent_amount as f64
+            acc + parent.mouth_hue / parent_amount as f64
         });
 
-        let density = parents[0].borrow().density;
+        let density = parents[0].density;
 
         Rock {
-            px,
-            py,
-            rotation,
-
-            vx: 0.0,
-            vy: 0.0,
-            vr: 0.0,
-
             energy,
             density,
-
-            sbip_min_x: 0,
-            sbip_min_y: 0,
-            sbip_max_x: 0,
-            sbip_max_y: 0,
-            prev_sbip_min_x: 0,
-            prev_sbip_min_y: 0,
-            prev_sbip_max_x: 0,
-            prev_sbip_max_y: 0,
 
             prev_energy: energy,
             birth_time: time,
@@ -141,13 +72,6 @@ impl Rock {
         return self.energy / ENERGY_DENSITY * self.density;
     }
 
-    /// Returns the total velocity.
-    ///
-    /// Does sqrt(vx^2 + vy^2).
-    pub fn get_total_velocity(&self) -> f64 {
-        return (self.vx.powi(2) + self.vy.powi(2)).sqrt();
-    }
-
     /// Eat
     pub fn eat(
         &mut self,
@@ -156,9 +80,14 @@ impl Rock {
         time: f64,
         climate: &Climate,
         tile: &mut crate::terrain::tile::Tile,
+        body: &RigidBody<f64>,
     ) {
-        let amount = attempted_amount
-            / (1.0 + self.get_total_velocity() * EAT_WHILE_MOVING_INEFFICIENCY_MULTIPLIER);
+        let velocity = {
+            let v = body.velocity().as_slice();
+
+            (v[0].powi(2) + v[1].powi(2)).sqrt()
+        };
+        let amount = attempted_amount / (1.0 + velocity * EAT_WHILE_MOVING_INEFFICIENCY_MULTIPLIER);
         if amount < 0.0 {
             // Vomit
             // TODO: implement vomiting.
@@ -187,48 +116,45 @@ impl Rock {
         }
     }
 
-    pub fn fight<B>(
+    pub fn fight<B: 'static>(
         &mut self,
         amount: f64,
         time: f64,
         time_step: f64,
-        sbip: &SoftBodiesInPositions<B>,
-        self_pointer: HLSoftBody<B>,
+        world: &mut nphysics2d::world::World<f64>,
     ) {
-        use super::MATURE_AGE;
-        use crate::sbip::SoftBodyBucket;
+        // use super::MATURE_AGE;
 
-        if amount > 0.0 && self.get_age(time) >= MATURE_AGE {
-            self.lose_energy(amount * time_step * FIGHT_ENERGY);
+        // if amount > 0.0 && self.get_age(time) >= MATURE_AGE {
+        //     self.lose_energy(amount * time_step * FIGHT_ENERGY);
 
-            let self_x = self.get_px();
-            let self_y = self.get_py();
+        //     let self_x = self.get_px();
+        //     let self_y = self.get_py();
 
-            let mut colliders = self.get_colliders(sbip);
+        //     let mut colliders: Vec<&mut SoftBody<B>> = unimplemented!();
 
-            // Remove self
-            colliders.remove_softbody(self_pointer);
+        //     for col in colliders {
+        //         let distance = distance(self_x, self_y, col.get_px(), col.get_py());
+        //         let combined_radius = self.get_radius() * FIGHT_RANGE + col.get_radius();
 
-            for collider in colliders {
-                let mut col = collider.borrow_mut();
-                let distance = distance(self_x, self_y, col.get_px(), col.get_py());
-                let combined_radius = self.get_radius() * FIGHT_RANGE + col.get_radius();
-
-                if distance < combined_radius {
-                    // collider was hit, remove energy
-                    col.lose_energy(amount * INJURED_ENERGY * time_step);
-                }
-            }
-        }
+        //         if distance < combined_radius {
+        //             // collider was hit, remove energy
+        //             col.lose_energy(amount * INJURED_ENERGY * time_step);
+        //         }
+        //     }
+        // }
     }
 
     /// Accelerate
     ///
     /// Costs energy.
-    pub fn accelerate(&mut self, amount: f64, time_step: f64) {
-        let multiplier = amount * time_step / self.get_mass();
-        self.vx += self.rotation.cos() * multiplier;
-        self.vy += self.rotation.sin() * multiplier;
+    pub fn accelerate(&mut self, amount: f64, time_step: f64, body: &mut RigidBody<f64>) {
+        use nphysics2d::algebra::ForceType;
+        use nphysics2d::math::Force;
+
+        let force_type = ForceType::Force;
+        let force = Force::from_slice(&[0.0, amount, 0.0]);
+        body.apply_local_force(0, &force, force_type, true);
 
         if amount >= 0.0 {
             // Moving forward
@@ -242,111 +168,23 @@ impl Rock {
     /// Increase turning velocity.
     ///
     /// Costs energy.
-    pub fn turn(&mut self, amount: f64, time_step: f64) {
-        self.vr += 0.04 * amount * time_step / self.get_mass();
+    pub fn turn(&mut self, amount: f64, time_step: f64, body: &mut RigidBody<f64>) {
+        use nphysics2d::algebra::ForceType;
+        use nphysics2d::math::Force;
+
+        let force_type = ForceType::Force;
+        let force = Force::from_slice(&[0.0, 0.0, amount]);
+        body.apply_local_force(0, &force, force_type, true);
 
         // Call `abs()` because we can turn both ways.
         let energy_to_lose = (amount * self.energy * time_step * TURN_ENERGY).abs();
         self.lose_energy(energy_to_lose);
     }
 
-    /// Updates positions and velocities based on `time_step` and some physics formulae.
-    ///
-    /// NOTE: Includes rotation unlike the Processing code.
-    /// NOTE: Does not call `set_sbip`.
-    pub fn apply_motions(&mut self, time_step: f64, board_size: BoardSize) {
-        let new_px = self.px + self.vx * time_step;
-        let new_py = self.py + self.vy * time_step;
-        self.set_body_x(new_px, board_size.0);
-        self.set_body_y(new_py, board_size.1);
-        self.rotation += self.vr * time_step;
-
-        self.vx *= 0f64.max(1.0 - FRICTION / self.get_mass());
-        self.vy *= 0f64.max(1.0 - FRICTION / self.get_mass());
-        self.vr *= 0f64.max(1.0 - FRICTION / self.get_mass());
-    }
-
-    pub fn moved_between_tiles(&self) -> bool {
-        return self.prev_sbip_max_x != self.sbip_max_x
-            || self.prev_sbip_max_y != self.sbip_max_y
-            || self.prev_sbip_min_x != self.sbip_min_x
-            || self.prev_sbip_min_y != self.sbip_min_y;
-    }
-
-    pub fn is_in_tile(&self, x: usize, y: usize) -> bool {
-        x > self.sbip_min_x && x < self.sbip_max_x && y > self.sbip_min_y && y < self.sbip_max_y
-    }
-
-    pub fn was_in_tile(&self, x: usize, y: usize) -> bool {
-        x > self.prev_sbip_min_x
-            && x < self.prev_sbip_max_x
-            && y > self.prev_sbip_min_y
-            && y < self.prev_sbip_max_y
-    }
-
-    pub fn get_random_covered_tile(&self, board_size: BoardSize) -> BoardCoordinate {
-        let radius = self.get_radius();
-        let mut choice_x = 0.0;
-        let mut choice_y = 0.0;
-        while distance(self.px, self.py, choice_x, choice_y) > radius {
-            choice_x = rand::random::<f64>() * 2.0 * radius - radius + self.px;
-            choice_y = rand::random::<f64>() * 2.0 * radius - radius + self.py;
-        }
-
-        let choice_x = check_center_x(choice_x.floor() as usize, board_size.0);
-        let choice_y = check_center_y(choice_y.floor() as usize, board_size.1);
-
-        return (choice_x, choice_y);
-    }
-
     /// Returns true if this body is currently on water.
-    pub fn is_on_water(&self, terrain: &Terrain, board_size: BoardSize) -> bool {
-        // TODO: determine whether this is desirable and maybe come up with a better system.
-        let pos = self.get_random_covered_tile(board_size);
+    pub fn is_on_water(&self, terrain: &Terrain, pos: BoardCoordinate) -> bool {
         let tile = terrain.get_tile_at(pos);
         return tile.is_water();
-    }
-}
-
-// All functions related to `SoftBodiesInPositions`
-impl Rock {
-    pub fn get_colliders<B>(&self, sbip: &SoftBodiesInPositions<B>) -> SoftBodiesAt<B> {
-        sbip.get_soft_bodies_in(self.current_x_range(), self.current_y_range())
-    }
-
-    pub fn update_sbip_variables(&mut self, board_size: BoardSize) {
-        let radius = self.get_radius() * FIGHT_RANGE;
-
-        self.prev_sbip_min_x = self.sbip_min_x;
-        self.prev_sbip_min_y = self.sbip_min_y;
-        self.prev_sbip_max_x = self.sbip_max_x;
-        self.prev_sbip_max_y = self.sbip_max_y;
-
-        let board_width = board_size.0;
-        let board_height = board_size.1;
-        // use this to overcome the borrow checker
-        let px = self.px;
-        let py = self.py;
-        self.sbip_min_x = check_center_x((px - radius).floor() as usize, board_width);
-        self.sbip_min_y = check_center_y((py - radius).floor() as usize, board_height);
-        self.sbip_max_x = check_center_x((px + radius).floor() as usize, board_width);
-        self.sbip_max_y = check_center_y((py + radius).floor() as usize, board_height);
-    }
-
-    pub fn previous_x_range(&self) -> Range<usize> {
-        self.prev_sbip_min_x..self.prev_sbip_max_x + 1
-    }
-
-    pub fn previous_y_range(&self) -> Range<usize> {
-        self.prev_sbip_min_y..self.prev_sbip_max_y + 1
-    }
-
-    pub fn current_x_range(&self) -> Range<usize> {
-        self.sbip_min_x..self.sbip_max_x + 1
-    }
-
-    pub fn current_y_range(&self) -> Range<usize> {
-        self.sbip_min_y..self.sbip_max_y + 1
     }
 }
 
@@ -368,30 +206,6 @@ impl Rock {
         (self.energy - self.prev_energy) / time_step
     }
 
-    /// Sets the center of this `SoftBody` and makes sure the entire body stays inside of the world.
-    ///
-    /// I.e. it also takes the radius of this body into account.
-    pub fn set_body_x(&mut self, new_x: f64, board_width: usize) {
-        let radius = self.get_radius();
-        self.px = new_x.max(radius).min(board_width as f64 - radius);
-    }
-
-    /// Sets the center of this `SoftBody` and makes sure the entire body stays inside of the world.
-    ///
-    /// I.e. it also takes the radius of this body into account.
-    pub fn set_body_y(&mut self, new_y: f64, board_height: usize) {
-        let radius = self.get_radius();
-        self.py = new_y.max(radius).min(board_height as f64 - radius);
-    }
-
-    pub fn add_vx(&mut self, value_to_add: f64) {
-        self.vx += value_to_add;
-    }
-
-    pub fn add_vy(&mut self, value_to_add: f64) {
-        self.vy += value_to_add;
-    }
-
     pub fn set_mouth_hue(&mut self, value: f64) {
         self.mouth_hue = value.min(1.0).max(0.0);
     }
@@ -403,20 +217,8 @@ impl Rock {
         return self.energy;
     }
 
-    pub fn get_px(&self) -> f64 {
-        return self.px;
-    }
-
-    pub fn get_py(&self) -> f64 {
-        return self.py;
-    }
-
-    pub fn get_rotation(&self) -> f64 {
-        return self.rotation;
-    }
-
-    pub fn get_position(&self) -> BoardPreciseCoordinate {
-        BoardPreciseCoordinate(self.get_px(), self.get_py())
+    pub fn get_density(&self) -> f64 {
+        self.density
     }
 
     pub fn get_mouth_hue(&self) -> f64 {

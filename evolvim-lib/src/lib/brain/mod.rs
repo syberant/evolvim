@@ -35,7 +35,7 @@ pub trait RecombinationTwoParents {
 }
 
 pub trait RecombinationInfinite {
-    fn recombination_infinite_parents(parents: &Vec<crate::softbody::HLSoftBody<Self>>) -> Self
+    fn recombination_infinite_parents(parents: &[&crate::softbody::SoftBody<Self>]) -> Self
     where
         Self: NeuralNet + std::marker::Sized;
 }

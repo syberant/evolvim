@@ -1,5 +1,3 @@
-extern crate rand;
-
 mod gene;
 mod mutation;
 mod recombination;
@@ -95,9 +93,9 @@ impl Genome {
             InputType::Bias(1.0),
             InputType::MouthHue,
             InputType::Energy,
-            InputType::Eye(EYE[0]).clone(),
-            InputType::Eye(EYE[1]).clone(),
-            InputType::Eye(EYE[2]).clone(),
+            InputType::Eye(EYE[0].clone()),
+            InputType::Eye(EYE[1].clone()),
+            InputType::Eye(EYE[2].clone()),
         ];
         for i in 0..AMOUNT_INPUT {
             genome.add_node(NodeType::Sensor(input_nodes[i].clone()), node_counter);
