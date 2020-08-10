@@ -1,12 +1,12 @@
 use crate::ecs_board::{BoardSize, BoardPreciseCoordinate};
 use crate::softbody::Rock;
 use crate::{Climate, Terrain};
-use nphysics2d::object::BodyHandle;
+use nphysics2d::object::DefaultBodyHandle;
 
 pub struct EnvironmentMut<'a, B> {
     pub terrain: &'a mut Terrain,
     pub this_body: &'a mut Rock,
-    pub handle: BodyHandle,
+    pub handle: DefaultBodyHandle,
     pub board_size: BoardSize,
     pub time: f64,
     pub climate: &'a Climate,
@@ -18,7 +18,7 @@ impl<'a, B> EnvironmentMut<'a, B> {
     pub fn new(
         terrain: &'a mut Terrain,
         this_body: &'a mut Rock,
-        handle: BodyHandle,
+        handle: DefaultBodyHandle,
         board_size: BoardSize,
         time: f64,
         climate: &'a Climate,
@@ -40,12 +40,12 @@ impl<'a, B> EnvironmentMut<'a, B> {
 pub struct Environment<'a> {
     pub terrain: &'a Terrain,
     pub this_body: &'a Rock,
-    pub handle: BodyHandle,
+    pub handle: DefaultBodyHandle,
     pub world: &'a nphysics2d::world::World<f64>,
 }
 
 impl<'a> Environment<'a> {
-    pub fn new(terrain: &'a Terrain, this_body: &'a Rock, handle: BodyHandle, world: &'a nphysics2d::world::World<f64>) -> Self {
+    pub fn new(terrain: &'a Terrain, this_body: &'a Rock, handle: DefaultBodyHandle, world: &'a nphysics2d::world::World<f64>) -> Self {
         Environment { terrain, this_body, handle, world }
     }
 

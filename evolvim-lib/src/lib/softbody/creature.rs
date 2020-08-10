@@ -1,15 +1,15 @@
 use super::*;
 
-use nphysics2d::object::{BodyHandle, RigidBody};
+use nphysics2d::object::{DefaultBodyHandle, RigidBody};
 type World = nphysics2d::world::World<f64>;
 
 pub const MINIMUM_SURVIVABLE_SIZE: f64 = 0.06;
 
 #[derive(Clone)]
-struct Body(BodyHandle);
+struct Body(DefaultBodyHandle);
 
-impl From<BodyHandle> for Body {
-    fn from(b: BodyHandle) -> Body {
+impl From<DefaultBodyHandle> for Body {
+    fn from(b: DefaultBodyHandle) -> Body {
         Body(b)
     }
 }
@@ -197,7 +197,7 @@ impl<B> Creature<B> {
         self.base.get_energy() - SAFE_SIZE
     }
 
-    pub fn get_handle(&self) -> BodyHandle {
+    pub fn get_handle(&self) -> DefaultBodyHandle {
         self.body.0
     }
 
@@ -206,7 +206,7 @@ impl<B> Creature<B> {
     }
 }
 
-fn make_physics_creature(world: &mut World, cr: &Rock, position: nalgebra::Vector2<f64>) -> BodyHandle {
+fn make_physics_creature(world: &mut World, cr: &Rock, position: nalgebra::Vector2<f64>) -> DefaultBodyHandle {
     use ncollide2d::shape::{Ball, ShapeHandle};
     use nphysics2d::object::{ColliderDesc, RigidBodyDesc};
 
@@ -229,6 +229,6 @@ fn make_physics_creature(world: &mut World, cr: &Rock, position: nalgebra::Vecto
     return rigid_body.handle();
 }
 
-fn physics_creature_from_parent<B>(world: &mut World, cr: &Rock, par: &Creature<B>) -> BodyHandle {
+fn physics_creature_from_parent<B>(world: &mut World, cr: &Rock, par: &Creature<B>) -> DefaultBodyHandle {
     unimplemented!()
 }
